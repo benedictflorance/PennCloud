@@ -22,6 +22,18 @@ const static std::unordered_map<std::string_view, Method> method_map = {
 };
 
 void handle_socket(const int s) {
+	const int ofd = dup(s);
+	if (ofd < 0) {
+		throw std::system_error(errno, std::generic_category(), "dup");
+	}
+
+	__gnu_cxx::stdio_filebuf<char> osocket(ofd, std::ios::out | std::ios::binary);
+	if (!osocket.is_open()) {
+		close(ofd);
+		throw std::system_error(errno, std::generic_category(), "fdopen");
+	}
+	std::ostream ostream(&osocket);
+
 	{
 		static struct timeval timeout = {
 			.tv_sec = 5,
@@ -31,23 +43,12 @@ void handle_socket(const int s) {
 			throw std::system_error(errno, std::generic_category(), "setsockopt");
 		}
 	}
-
-	const int ofd = dup(s);
-	if (ofd < 0) {
-		throw std::system_error(errno, std::generic_category(), "dup");
-	}
-
 	__gnu_cxx::stdio_filebuf<char> socket(s, std::ios::in | std::ios::binary);
 	if (!socket.is_open()) {
+		close(s);
 		throw std::system_error(errno, std::generic_category(), "fdopen");
 	}
 	std::istream istream(&socket);
-
-	__gnu_cxx::stdio_filebuf<char> osocket(ofd, std::ios::out | std::ios::binary);
-	if (!osocket.is_open()) {
-		throw std::system_error(errno, std::generic_category(), "fdopen");
-	}
-	std::ostream ostream(&osocket);
 
 	std::string init_req;
 	if (!std::getline(istream, init_req) || init_req.empty() || init_req.back() != '\r') {
@@ -85,6 +86,7 @@ void handle_socket(const int s) {
 	}
 
 	std::string line;
+	Headers headers;
 	while (std::getline(istream, line)) {
 		if (line.empty() || line.back() != '\r') {
 			// TODO?
@@ -99,6 +101,7 @@ void handle_socket(const int s) {
 	Response response = {
 		.method = method,
 		.path = path,
+		.req_headers = std::move(headers),
 		.req_body = istream,
 	};
 
@@ -114,10 +117,11 @@ void handle_socket(const int s) {
 	handler(response);
 
 	ostream << "HTTP/1.0 " << response.status << "\r\n";
+	for (const auto &header : response.resp_headers)
+		ostream << header.first << ": " << header.second << "\r\n";
 	ostream << "\r\n";
-	if (response.resp_body) {
+	if (response.resp_body)
 		ostream << response.resp_body->rdbuf();
-	}
 }
 
 const Status Status::OK = "200 OK";

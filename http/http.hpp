@@ -25,12 +25,15 @@ struct Status : std::string_view {
 	static const Status HTTP_VERSION_NOT_SUPPORTED;
 };
 
+typedef std::unordered_multimap<std::string_view, std::string_view> Headers;
 struct Response {
 	const Method method;
 	const std::string_view path;
+	const Headers req_headers;
 	const std::istream &req_body;
 
 	Status status = Status::OK;
+	Headers resp_headers;
 	std::unique_ptr<std::istream> resp_body;
 };
 

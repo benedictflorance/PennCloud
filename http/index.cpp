@@ -10,7 +10,10 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-static void index_page(http::Response &resp) { resp.resp_body = std::make_unique<std::ifstream>("static/index.html"); }
+static void index_page(http::Response &resp) {
+	resp.resp_headers.emplace("Content-Type", "text/html");
+	resp.resp_body = std::make_unique<std::ifstream>("static/index.html");
+}
 
 static void dynamic_content(http::Response &resp) {
 	static int counter = 0;
