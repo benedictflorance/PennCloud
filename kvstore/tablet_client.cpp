@@ -4,27 +4,29 @@
 
 string prepare_request()
 {
-    Request request;
-    request->set_request("PUT");
-    request->set_rowkey("benedict");
-    request->set_columnkey("password");
-    request->set_value1("ML>>>Systems");
+    PennCloud::Request request;
+    request.set_type("PUT");
+    request.set_rowkey("benedict");
+    request.set_columnkey("password");
+    request.set_value1("ML>>>Systems");
     string request_str;
-    request.SerializeToString(request_str);
+    request.SerializeToString(&request_str);
     return request_str;
 }
-void create_client()
+int create_client()
 {
     int sockfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) 
     {
         if(verbose)
             cerr<<"Unable to create socket"<<endl;
+        return -1;
 
     }
     connect(sockfd, (struct sockaddr*)& tablet_addresses[curr_server_index], sizeof(tablet_addresses[curr_server_index]));
     string request_str = prepare_request();
-    write(client_socket, request_str.c_str(), strlen(request_str.c_str()));
+    write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
+    return 0;
 }
 
 int main(int argc, char *argv[])
