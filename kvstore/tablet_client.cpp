@@ -4,12 +4,12 @@
 
 string prepare_request()
 {
+    string request_str;
     PennCloud::Request request;
     request.set_type("PUT");
     request.set_rowkey("benedict");
     request.set_columnkey("password");
     request.set_value1("ML>>>Systems");
-    string request_str;
     request.SerializeToString(&request_str);
     return request_str;
 }
@@ -25,7 +25,9 @@ int create_client()
     }
     connect(sockfd, (struct sockaddr*)& tablet_addresses[curr_server_index], sizeof(tablet_addresses[curr_server_index]));
     string request_str = prepare_request();
+    request_str += "\r\n";
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
+    while(true)
     return 0;
 }
 

@@ -1,5 +1,6 @@
 #include "globalvars.h"
 #include "utils.h"
+#include "request.pb.h"
 
 void *process_client_thread(void *arg);
 int create_server();
@@ -29,7 +30,7 @@ void *process_client_thread(void *arg)
 	{	
 		char *command_end_index;
 		int client_shutdown = read(client_socket, current_buffer, BUFFER_SIZE-strlen(net_buffer));
-		if(shutdown_flag || (client_shutdown == 0))
+		if(shutdown_flag)
 		{
 			if(verbose)
 					cerr<<"["<<client_socket<<"] "<<closing_message<<endl;
@@ -39,7 +40,12 @@ void *process_client_thread(void *arg)
 		while((command_end_index = strstr(net_buffer, "\r\n")) != NULL)
 		{
 			int full_command_length = command_end_index + suffix_length - net_buffer;
-			string response = "Received " + string(net_buffer, full_command_length);
+			string request_str = string(net_buffer, full_command_length);
+			PennCloud::Request request;
+			request.ParseFromString(request_str);
+			string response = "Received a type of " + request.type() + " rowkey of " + request.rowkey() + " colummn key of " + request.columnkey() 
+				+ " and a value of " + request.value1() + "\n";
+			cout<<response<<endl;
 			write(client_socket, response.c_str(), strlen(response.c_str()));
 			if(verbose)
 				{
@@ -126,6 +132,7 @@ int create_server()
 
 int main(int argc, char *argv[])
 {
+	GOOGLE_PROTOBUF_VERIFY_VERSION;
     int option;
     while((option = getopt(argc, argv, "v")) != -1)
 	{   
