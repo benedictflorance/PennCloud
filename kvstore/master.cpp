@@ -25,7 +25,11 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <functional>
-#include "stdc++.h"
+#include "include/stdc++.h"
+#include <ctime>
+#include "include/update_manager.h"
+#include "include/date/date.h"
+#include <chrono>
 
 using namespace std;
 
@@ -35,14 +39,23 @@ bool v = false;
 string config_file = "tablet_server_config.txt";
 string master_address;
 
-//mapping from tablet server address to heartbeat
-unordered_map<string, int > heartbeat;
-
 //vector of pair of rowkeyrange: start, end, vector of tablets supporting it
 vector<pair<int,pair<int,vector<int> > > > rowkey_range;
 
 //vector of tablet addresses
 vector<string> tablet_addresses;
+
+//struct for heartbeats of each tablet server
+typedef struct Heartbeat{
+  int counter;
+  string status = "ALIVE";
+}Heartbeat;
+
+//mapping from tablet server address to heartbeat
+unordered_map<string, Heartbeat > heartbeat;
+
+//counter for number of alive commands received
+long long no_of_alive;
 
 // function for reading
 bool do_read(int fd, char *buf, int len){
@@ -124,7 +137,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
   int msg_size = 0;
   string left_over="";
   string req = "req";
-  string alive = "alive";
+  string alive;
 
   if(v){
     fprintf(stderr, "[%d] New Connection\n", comm_fd);
@@ -213,14 +226,16 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
 
     }
     else if(lower_case.find(alive) != string::npos){
+        //increment alive counter
+        no_of_alive++;
         //check which server it is
         socklen_t clientaddrlen = sizeof(clientaddr);
         char str[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &(clientaddr), str, INET_ADDRSTRLEN);
         if(heartbeat.find(str)==heartbeat.end()){
-            heartbeat[str] = 0;
+            heartbeat[str].counter = 0;
         }
-        heartbeat[str]++;
+        heartbeat[str].counter++;
     }
     else{
       char unknown[] = "-ERR Unknown command\r\n";
@@ -309,6 +324,28 @@ void createServer(int p){
   close(listen_fd);
 }
 
+//check if all servers are alive 
+void alive(){
+    auto t = UpdateManager::start();
+    this_thread::sleep_for(10s);
+    if(v){
+        cout<<"Checking for dead servers"<<endl;
+    }
+    for(auto h: heartbeat){
+        int diff = no_of_alive % (tablet_addresses.size());
+        Heartbeat current_h = h.second;
+        if(abs(diff - current_h.counter) < 2){
+            if(v){
+                cout<<"DEAD server detected "<<h.first<<endl;
+            }
+            h.second.status = "DEAD";
+        }
+        else{
+            h.second.status = "ALIVE";
+        }
+    }
+}
+
 int main(int argc, char *argv[]){
   // storing the port number, default is 10000
   int p = 10000;
@@ -338,6 +375,8 @@ int main(int argc, char *argv[]){
 
   //process file
   process_tablet_file();
+  thread handle_alive(alive);
+  
 
   // cout<<master_address<<endl;
   // for(auto pair : rowkey_range){
