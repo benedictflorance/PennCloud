@@ -49,7 +49,7 @@ UpdateManager::start()
                          {
                              using namespace std;
                              using namespace std::chrono;
-                             auto next = system_clock::now()+10s;
+                             auto next = system_clock::now()+0s;
                              while (!stop_)
                              {
                                  update();

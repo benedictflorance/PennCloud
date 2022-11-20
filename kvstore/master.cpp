@@ -323,25 +323,27 @@ void createServer(int p){
 
 //check if all servers are alive 
 void alive(){
-    auto t = UpdateManager::start();
-    this_thread::sleep_for(10s);
+    while(true){
+        auto t = UpdateManager::start();
+        this_thread::sleep_for(10s);
 
-    if(v){
-        cout<<"Checking for server status"<<endl;
-    }
-    for(auto h: heartbeat){
-        int diff = no_of_alive % (tablet_addresses.size());
-        Heartbeat current_h = h.second;
-        if(abs(diff - current_h.counter) < 2){
-            if(v){
-                cout<<"DEAD server detected "<<h.first<<endl;
+        if(v){
+            cout<<"Checking for server status"<<endl;
+        }
+        for(auto h: heartbeat){
+            int diff = no_of_alive % (tablet_addresses.size());
+            Heartbeat current_h = h.second;
+            if(abs(diff - current_h.counter) < 2){
+                if(v){
+                    cout<<"DEAD server detected "<<h.first<<endl;
+                }
+                h.second.status = "DEAD";
             }
-            h.second.status = "DEAD";
+            else{
+                h.second.status = "ALIVE";
+            }
         }
-        else{
-            h.second.status = "ALIVE";
-        }
-    }
+    }   
 }
 
 int main(int argc, char *argv[]){

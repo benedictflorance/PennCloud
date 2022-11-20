@@ -85,13 +85,27 @@ void *process_client_thread(void *arg)
 //placeholder for sending heartbeats
 void send_heartbeat(){
 	//connect with master
+	int sockfd = socket(PF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) 
+    {
+        if(verbose)
+            cerr<<"Unable to create socket"<<endl;
+    }
+    connect(sockfd, (struct sockaddr*)& master_address, sizeof(master_address));
 
 	//use update manager library
-	auto t = UpdateManager::start();
-    this_thread::sleep_for(1s);
+	while(true){
+		auto t = UpdateManager::start();
+		this_thread::sleep_for(1s);
 
-	//send ALIVE command at fixed intervals
-	
+		//send ALIVE command at fixed intervals
+		string alive = "ALIVE\r\n";
+		if(verbose)
+			cout<<"Sending Alive message to the master"<<endl;
+
+
+		write(sockfd, alive.c_str(), strlen(alive.c_str()));
+	}
 }
 
 int create_server()
