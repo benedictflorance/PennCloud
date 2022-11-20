@@ -328,12 +328,13 @@ void alive(){
         this_thread::sleep_for(10s);
 
         if(v){
-            cout<<"Checking for server status"<<endl;
+            cout<<"Checking for server status "<<endl;
         }
         for(auto h: heartbeat){
             int diff = no_of_alive % (tablet_addresses.size());
             Heartbeat current_h = h.second;
-            if(abs(diff - current_h.counter) < 2){
+            //UPDATE the check
+            if(abs(diff - current_h.counter) == 0){
                 if(v){
                     cout<<"DEAD server detected "<<h.first<<endl;
                 }
