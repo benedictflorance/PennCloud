@@ -273,20 +273,17 @@ void createServer(int p){
     exit(2);
   }
 
-  // Bind
+  
   struct sockaddr_in servaddr;
   bzero(&servaddr, sizeof(servaddr));
   servaddr.sin_family = AF_INET;
-  servaddr.sin_addr.s_addr = htons(INADDR_ANY);
+  //bind on the master address as given in the config file
+  inet_pton(AF_INET, master_address.c_str(), &(servaddr.sin_addr));
+  //servaddr.sin_addr.s_addr = htons(INADDR_ANY);
   servaddr.sin_port = htons(p);
 
-  // check bind to make it non blocking
+  // Bind
   bind(listen_fd, (struct sockaddr *)&servaddr, sizeof(servaddr));
-  //   if (b < 0){
-  //     if(v)
-  //       fprintf(stderr, "Cannot bind port (%s)\n", strerror(errno));
-  //     exit(2);
-  //   }
 
   // Listen
   // the second parameter corresponds to backlog in listening
@@ -328,8 +325,9 @@ void createServer(int p){
 void alive(){
     auto t = UpdateManager::start();
     this_thread::sleep_for(10s);
+
     if(v){
-        cout<<"Checking for dead servers"<<endl;
+        cout<<"Checking for server status"<<endl;
     }
     for(auto h: heartbeat){
         int diff = no_of_alive % (tablet_addresses.size());

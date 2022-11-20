@@ -68,14 +68,4 @@ void update()
     using namespace std;
     using namespace std::chrono;
     cerr << system_clock::now() << '\n';
-    cerr << "Checking for heartbeat"<<endl;
 }
-
-// demo
-
-// int main()
-// {
-//     auto t = UpdateManager::start();
-//     using namespace std;
-//     this_thread::sleep_for(10s);
-// }

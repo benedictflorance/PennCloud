@@ -1,6 +1,7 @@
 #include "globalvars.h"
 #include "utils.h"
 #include "request.pb.h"
+#include "include/update_manager.h"
 
 void *process_client_thread(void *arg);
 int create_server();
@@ -81,6 +82,18 @@ void *process_client_thread(void *arg)
 	}
 }
 
+//placeholder for sending heartbeats
+void send_heartbeat(){
+	//connect with master
+
+	//use update manager library
+	auto t = UpdateManager::start();
+    this_thread::sleep_for(1s);
+
+	//send ALIVE command at fixed intervals
+	
+}
+
 int create_server()
 {
 	/*
@@ -104,6 +117,10 @@ int create_server()
 		cerr << "Listen error!\r\n";
 		return -1;
 	}
+
+	//create a thread for sending heartbeats to the master
+	thread send_heartbeats(send_heartbeat);
+
 	while(true)
 	{
 		struct sockaddr_in clientaddr;
