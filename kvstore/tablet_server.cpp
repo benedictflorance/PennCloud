@@ -25,7 +25,7 @@ void *process_client_thread(void *arg)
 	while(true)
 	{	
 		char *command_end_index;
-		int client_shutdown = read(client_socket, current_buffer, BUFFER_SIZE-strlen(net_buffer));
+		read(client_socket, current_buffer, BUFFER_SIZE-strlen(net_buffer));
 		if(shutdown_flag)
 		{
 			if(verbose)
@@ -49,11 +49,11 @@ void *process_client_thread(void *arg)
 			else if (strcasecmp(request.type().c_str(), "GET") == 0)
 				process_get_request(request, response);
 			else if (strcasecmp(request.type().c_str(), "PUT") == 0)
-				process_get_request(request, response);
+				process_put_request(request, response);
 			else if (strcasecmp(request.type().c_str(), "CPUT") == 0)
-				process_get_request(request, response);
+				process_cput_request(request, response);
 			else if (strcasecmp(request.type().c_str(), "DELETE") == 0)
-				process_get_request(request, response);
+				process_delete_request(request, response);
 			else
 			{
 				response.set_status(unrecognized_command_message.first);
@@ -64,9 +64,10 @@ void *process_client_thread(void *arg)
 			if(verbose)
 				{
 					// [N] C: <text> (where <text> is a command received from the client and N is as above);
-					cerr<<"["<<client_socket<<"] "<<"C: "<<string(net_buffer, full_command_length)<<endl; 
+					cerr<<"["<<client_socket<<"] "<<"Client received a request type of "<<request.type()<<" a rowkey of "<<request.rowkey()<<" a columnkey of "<<request.columnkey()<<" a value1 of "<<request.value1()
+						<<" a value2 of "<<request.value2()<<endl; 
 					// [N] S: <text> (where <text> is a response sent by the server, and N is as above);
-					cerr<<"["<<client_socket<<"] "<<"S: "<<response.status()<<" "<<response.description()<<" "<<response.value()<<endl;
+					cerr<<"["<<client_socket<<"] "<<"Server sent a response status of  "<<response.status()<<" response description of "<<response.description()<<" response value of "<<response.value()<<endl;
 				}
 			current_buffer = net_buffer;
 			command_end_index += suffix_length;
@@ -112,8 +113,8 @@ void send_heartbeat(){
 
 		//send ALIVE command at fixed intervals
 		string alive = "ALIVE\r\n";
-		if(verbose)
-			cout<<"Sending Alive message to the master"<<endl;
+		// if(verbose)
+		// 	cout<<"Sending Alive message to the master"<<endl;
 
 
 		write(sockfd, alive.c_str(), strlen(alive.c_str()));
