@@ -10,7 +10,7 @@
 > Frontend server and the supported plugins need to explicitly request the rowkey from master using the command - REQ(rowkey)
 
 - Response
-> Master will then provide them the address of the relevant tablet server (in the form of string)
+> Master will then provide them the address of the relevant tablet server (in the form of a string) which may or may not be the primary
 
 # Tablet Server:
 
