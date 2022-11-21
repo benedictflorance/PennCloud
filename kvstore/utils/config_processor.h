@@ -1,5 +1,7 @@
-void process_config_file();
+void process_config_file(string config_file);
 sockaddr_in get_address(string socket_address);
+void signal_handler(int arg);
+
 sockaddr_in get_address(string socket_address)
 {
     int colon_index = socket_address.find(":");

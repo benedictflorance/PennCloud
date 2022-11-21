@@ -1,20 +1,15 @@
-#include "globalvars.h"
-#include "utils.h"
 #include "request.pb.h"
-#include "include/update_manager.h"
+#include "response.pb.h"
+#include "utils/command_processor.h"
+#include "utils/config_processor.h"
+#include "utils/update_manager.h"
 
 void *process_client_thread(void *arg);
 int create_server();
 
 void *process_client_thread(void *arg)
 {	
-	/*
-	When a client connects, the server should send a simple greeting message.The greeting message should have the form +OK Server ready 
-  (Author: Linh Thi Xuan Phan / linhphan), except that you should fill in your own name and SEAS login.
-	*/
 	int client_socket = *(int*) arg;
-  // Once the TCP connection has been opened by a POP3 client, the POP3 server issues a one line greeting.  This can be any positive
-  // response.  An example might be: S:  +OK POP3 server ready
 	write(client_socket, service_ready_message, strlen(service_ready_message));
 	if(verbose)
 	{
@@ -44,17 +39,34 @@ void *process_client_thread(void *arg)
 			string request_str = string(net_buffer, full_command_length);
 			PennCloud::Request request;
 			request.ParseFromString(request_str);
-			string response = "Received a type of " + request.type() + " rowkey of " + request.rowkey() + " colummn key of " + request.columnkey() 
-				+ " and a value of " + request.value1() + "\n";
-			cout<<response<<endl;
-			write(client_socket, response.c_str(), strlen(response.c_str()));
+			PennCloud::Response response;
+			string response_str;
+			if(!request.has_type())
+			{
+				response.set_status(type_unset_message.first);
+				response.set_description(type_unset_message.second);
+			}
+			else if (strcasecmp(request.type().c_str(), "GET") == 0)
+				process_get_request(request, response);
+			else if (strcasecmp(request.type().c_str(), "PUT") == 0)
+				process_get_request(request, response);
+			else if (strcasecmp(request.type().c_str(), "CPUT") == 0)
+				process_get_request(request, response);
+			else if (strcasecmp(request.type().c_str(), "DELETE") == 0)
+				process_get_request(request, response);
+			else
+			{
+				response.set_status(unrecognized_command_message.first);
+				response.set_description(unrecognized_command_message.second);
+			}		
+			response.SerializeToString(&response_str);								
+			write(client_socket, response_str.c_str(), strlen(response_str.c_str()));
 			if(verbose)
 				{
 					// [N] C: <text> (where <text> is a command received from the client and N is as above);
 					cerr<<"["<<client_socket<<"] "<<"C: "<<string(net_buffer, full_command_length)<<endl; 
 					// [N] S: <text> (where <text> is a response sent by the server, and N is as above);
-					if(response != "") 
-						cerr<<"["<<client_socket<<"] "<<"S: "<<response<<endl;
+					cerr<<"["<<client_socket<<"] "<<"S: "<<response.status()<<" "<<response.description()<<" "<<response.value()<<endl;
 				}
 			current_buffer = net_buffer;
 			command_end_index += suffix_length;

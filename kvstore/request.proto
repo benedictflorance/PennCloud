@@ -1,11 +1,11 @@
-syntax = "proto3";
+syntax = "proto2";
 
 package PennCloud;
 
 message Request{
-    string type = 1;
-    string rowkey = 2;
-    string columnkey = 3;
+    required string type = 1;
+    required string rowkey = 2;
+    required string columnkey = 3;
     optional string value1 = 4; // Used only for PUT and CPUT requests
     optional string value2 = 5; // Used only for CPUT requests
 }

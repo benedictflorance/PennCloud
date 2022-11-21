@@ -92,6 +92,13 @@ class Request final :
     return *this;
   }
 
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -179,7 +186,11 @@ class Request final :
     kValue1FieldNumber = 4,
     kValue2FieldNumber = 5,
   };
-  // string type = 1;
+  // required string type = 1;
+  bool has_type() const;
+  private:
+  bool _internal_has_type() const;
+  public:
   void clear_type();
   const std::string& type() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
@@ -193,7 +204,11 @@ class Request final :
   std::string* _internal_mutable_type();
   public:
 
-  // string rowkey = 2;
+  // required string rowkey = 2;
+  bool has_rowkey() const;
+  private:
+  bool _internal_has_rowkey() const;
+  public:
   void clear_rowkey();
   const std::string& rowkey() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
@@ -207,7 +222,11 @@ class Request final :
   std::string* _internal_mutable_rowkey();
   public:
 
-  // string columnkey = 3;
+  // required string columnkey = 3;
+  bool has_columnkey() const;
+  private:
+  bool _internal_has_columnkey() const;
+  public:
   void clear_columnkey();
   const std::string& columnkey() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
@@ -261,6 +280,9 @@ class Request final :
  private:
   class _Internal;
 
+  // helper for ByteSizeLong()
+  size_t RequiredFieldsByteSizeFallback() const;
+
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -284,9 +306,17 @@ class Request final :
 #endif  // __GNUC__
 // Request
 
-// string type = 1;
+// required string type = 1;
+inline bool Request::_internal_has_type() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool Request::has_type() const {
+  return _internal_has_type();
+}
 inline void Request::clear_type() {
   type_.ClearToEmpty();
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& Request::type() const {
   // @@protoc_insertion_point(field_get:PennCloud.Request.type)
@@ -295,7 +325,7 @@ inline const std::string& Request::type() const {
 template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void Request::set_type(ArgT0&& arg0, ArgT... args) {
- 
+ _has_bits_[0] |= 0x00000001u;
  type_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:PennCloud.Request.type)
 }
@@ -307,31 +337,43 @@ inline const std::string& Request::_internal_type() const {
   return type_.Get();
 }
 inline void Request::_internal_set_type(const std::string& value) {
-  
+  _has_bits_[0] |= 0x00000001u;
   type_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
 }
 inline std::string* Request::_internal_mutable_type() {
-  
+  _has_bits_[0] |= 0x00000001u;
   return type_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
 }
 inline std::string* Request::release_type() {
   // @@protoc_insertion_point(field_release:PennCloud.Request.type)
-  return type_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  if (!_internal_has_type()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000001u;
+  return type_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 }
 inline void Request::set_allocated_type(std::string* type) {
   if (type != nullptr) {
-    
+    _has_bits_[0] |= 0x00000001u;
   } else {
-    
+    _has_bits_[0] &= ~0x00000001u;
   }
   type_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), type,
       GetArenaForAllocation());
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.type)
 }
 
-// string rowkey = 2;
+// required string rowkey = 2;
+inline bool Request::_internal_has_rowkey() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline bool Request::has_rowkey() const {
+  return _internal_has_rowkey();
+}
 inline void Request::clear_rowkey() {
   rowkey_.ClearToEmpty();
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& Request::rowkey() const {
   // @@protoc_insertion_point(field_get:PennCloud.Request.rowkey)
@@ -340,7 +382,7 @@ inline const std::string& Request::rowkey() const {
 template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void Request::set_rowkey(ArgT0&& arg0, ArgT... args) {
- 
+ _has_bits_[0] |= 0x00000002u;
  rowkey_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:PennCloud.Request.rowkey)
 }
@@ -352,31 +394,43 @@ inline const std::string& Request::_internal_rowkey() const {
   return rowkey_.Get();
 }
 inline void Request::_internal_set_rowkey(const std::string& value) {
-  
+  _has_bits_[0] |= 0x00000002u;
   rowkey_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
 }
 inline std::string* Request::_internal_mutable_rowkey() {
-  
+  _has_bits_[0] |= 0x00000002u;
   return rowkey_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
 }
 inline std::string* Request::release_rowkey() {
   // @@protoc_insertion_point(field_release:PennCloud.Request.rowkey)
-  return rowkey_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  if (!_internal_has_rowkey()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000002u;
+  return rowkey_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 }
 inline void Request::set_allocated_rowkey(std::string* rowkey) {
   if (rowkey != nullptr) {
-    
+    _has_bits_[0] |= 0x00000002u;
   } else {
-    
+    _has_bits_[0] &= ~0x00000002u;
   }
   rowkey_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), rowkey,
       GetArenaForAllocation());
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.rowkey)
 }
 
-// string columnkey = 3;
+// required string columnkey = 3;
+inline bool Request::_internal_has_columnkey() const {
+  bool value = (_has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline bool Request::has_columnkey() const {
+  return _internal_has_columnkey();
+}
 inline void Request::clear_columnkey() {
   columnkey_.ClearToEmpty();
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline const std::string& Request::columnkey() const {
   // @@protoc_insertion_point(field_get:PennCloud.Request.columnkey)
@@ -385,7 +439,7 @@ inline const std::string& Request::columnkey() const {
 template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void Request::set_columnkey(ArgT0&& arg0, ArgT... args) {
- 
+ _has_bits_[0] |= 0x00000004u;
  columnkey_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:PennCloud.Request.columnkey)
 }
@@ -397,22 +451,26 @@ inline const std::string& Request::_internal_columnkey() const {
   return columnkey_.Get();
 }
 inline void Request::_internal_set_columnkey(const std::string& value) {
-  
+  _has_bits_[0] |= 0x00000004u;
   columnkey_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
 }
 inline std::string* Request::_internal_mutable_columnkey() {
-  
+  _has_bits_[0] |= 0x00000004u;
   return columnkey_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
 }
 inline std::string* Request::release_columnkey() {
   // @@protoc_insertion_point(field_release:PennCloud.Request.columnkey)
-  return columnkey_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  if (!_internal_has_columnkey()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000004u;
+  return columnkey_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 }
 inline void Request::set_allocated_columnkey(std::string* columnkey) {
   if (columnkey != nullptr) {
-    
+    _has_bits_[0] |= 0x00000004u;
   } else {
-    
+    _has_bits_[0] &= ~0x00000004u;
   }
   columnkey_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), columnkey,
       GetArenaForAllocation());
@@ -421,7 +479,7 @@ inline void Request::set_allocated_columnkey(std::string* columnkey) {
 
 // optional string value1 = 4;
 inline bool Request::_internal_has_value1() const {
-  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  bool value = (_has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline bool Request::has_value1() const {
@@ -429,7 +487,7 @@ inline bool Request::has_value1() const {
 }
 inline void Request::clear_value1() {
   value1_.ClearToEmpty();
-  _has_bits_[0] &= ~0x00000001u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline const std::string& Request::value1() const {
   // @@protoc_insertion_point(field_get:PennCloud.Request.value1)
@@ -438,7 +496,7 @@ inline const std::string& Request::value1() const {
 template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void Request::set_value1(ArgT0&& arg0, ArgT... args) {
- _has_bits_[0] |= 0x00000001u;
+ _has_bits_[0] |= 0x00000008u;
  value1_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:PennCloud.Request.value1)
 }
@@ -450,11 +508,11 @@ inline const std::string& Request::_internal_value1() const {
   return value1_.Get();
 }
 inline void Request::_internal_set_value1(const std::string& value) {
-  _has_bits_[0] |= 0x00000001u;
+  _has_bits_[0] |= 0x00000008u;
   value1_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
 }
 inline std::string* Request::_internal_mutable_value1() {
-  _has_bits_[0] |= 0x00000001u;
+  _has_bits_[0] |= 0x00000008u;
   return value1_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
 }
 inline std::string* Request::release_value1() {
@@ -462,14 +520,14 @@ inline std::string* Request::release_value1() {
   if (!_internal_has_value1()) {
     return nullptr;
   }
-  _has_bits_[0] &= ~0x00000001u;
+  _has_bits_[0] &= ~0x00000008u;
   return value1_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 }
 inline void Request::set_allocated_value1(std::string* value1) {
   if (value1 != nullptr) {
-    _has_bits_[0] |= 0x00000001u;
+    _has_bits_[0] |= 0x00000008u;
   } else {
-    _has_bits_[0] &= ~0x00000001u;
+    _has_bits_[0] &= ~0x00000008u;
   }
   value1_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value1,
       GetArenaForAllocation());
@@ -478,7 +536,7 @@ inline void Request::set_allocated_value1(std::string* value1) {
 
 // optional string value2 = 5;
 inline bool Request::_internal_has_value2() const {
-  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  bool value = (_has_bits_[0] & 0x00000010u) != 0;
   return value;
 }
 inline bool Request::has_value2() const {
@@ -486,7 +544,7 @@ inline bool Request::has_value2() const {
 }
 inline void Request::clear_value2() {
   value2_.ClearToEmpty();
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline const std::string& Request::value2() const {
   // @@protoc_insertion_point(field_get:PennCloud.Request.value2)
@@ -495,7 +553,7 @@ inline const std::string& Request::value2() const {
 template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void Request::set_value2(ArgT0&& arg0, ArgT... args) {
- _has_bits_[0] |= 0x00000002u;
+ _has_bits_[0] |= 0x00000010u;
  value2_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:PennCloud.Request.value2)
 }
@@ -507,11 +565,11 @@ inline const std::string& Request::_internal_value2() const {
   return value2_.Get();
 }
 inline void Request::_internal_set_value2(const std::string& value) {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000010u;
   value2_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
 }
 inline std::string* Request::_internal_mutable_value2() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000010u;
   return value2_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
 }
 inline std::string* Request::release_value2() {
@@ -519,14 +577,14 @@ inline std::string* Request::release_value2() {
   if (!_internal_has_value2()) {
     return nullptr;
   }
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000010u;
   return value2_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 }
 inline void Request::set_allocated_value2(std::string* value2) {
   if (value2 != nullptr) {
-    _has_bits_[0] |= 0x00000002u;
+    _has_bits_[0] |= 0x00000010u;
   } else {
-    _has_bits_[0] &= ~0x00000002u;
+    _has_bits_[0] &= ~0x00000010u;
   }
   value2_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value2,
       GetArenaForAllocation());

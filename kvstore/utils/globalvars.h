@@ -29,6 +29,11 @@ const char* shutdown_message = "-ERR Tablet server shutting down\r\n";
 const char* service_ready_message = "+OK Tablet server ready\r\n";
 const char* new_connection_message = "New connection\r\n";
 const char* closing_message = "Connection closed\r\n";
+pair<const char*, const char*> type_unset_message = make_pair("-ERR", "Request type not set");
+pair<const char*, const char*>  unrecognized_command_message = make_pair("-ERR", "Unrecognized command");
+pair<const char*, const char*>  param_unset_message = make_pair("-ERR", "Parameter(s) required for this command are not set");
+pair<const char*, const char*>  invalid_rowkey_message = make_pair("-ERR", "This tablet does not process this rowkey");
+pair<const char*, const char*>  key_inexistence_message = make_pair("-ERR", "Row or column key doesn't exist");
 
 // Integer constants
 const int BUFFER_SIZE = 50000;
@@ -45,3 +50,4 @@ sockaddr_in master_address;
 int server_socket;
 vector<int> client_sockets;
 vector<pthread_t> client_threads;
+unordered_map<string, unordered_map<string, string>> kv_store;

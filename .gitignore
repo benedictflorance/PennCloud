@@ -4,3 +4,4 @@
 *.o
 tablet_server
 tablet_client
+master

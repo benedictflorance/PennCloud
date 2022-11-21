@@ -49,11 +49,11 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_request_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::PennCloud::Request, columnkey_),
   PROTOBUF_FIELD_OFFSET(::PennCloud::Request, value1_),
   PROTOBUF_FIELD_OFFSET(::PennCloud::Request, value2_),
-  ~0u,
-  ~0u,
-  ~0u,
   0,
   1,
+  2,
+  3,
+  4,
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 10, sizeof(::PennCloud::Request)},
@@ -64,14 +64,13 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 };
 
 const char descriptor_table_protodef_request_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\rrequest.proto\022\tPennCloud\"z\n\007Request\022\014\n"
-  "\004type\030\001 \001(\t\022\016\n\006rowkey\030\002 \001(\t\022\021\n\tcolumnkey"
-  "\030\003 \001(\t\022\023\n\006value1\030\004 \001(\tH\000\210\001\001\022\023\n\006value2\030\005 "
-  "\001(\tH\001\210\001\001B\t\n\007_value1B\t\n\007_value2b\006proto3"
+  "\n\rrequest.proto\022\tPennCloud\"Z\n\007Request\022\014\n"
+  "\004type\030\001 \002(\t\022\016\n\006rowkey\030\002 \002(\t\022\021\n\tcolumnkey"
+  "\030\003 \002(\t\022\016\n\006value1\030\004 \001(\t\022\016\n\006value2\030\005 \001(\t"
   ;
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_request_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_request_2eproto = {
-  false, false, 158, descriptor_table_protodef_request_2eproto, "request.proto", 
+  false, false, 118, descriptor_table_protodef_request_2eproto, "request.proto", 
   &descriptor_table_request_2eproto_once, nullptr, 0, 1,
   schemas, file_default_instances, TableStruct_request_2eproto::offsets,
   file_level_metadata_request_2eproto, file_level_enum_descriptors_request_2eproto, file_level_service_descriptors_request_2eproto,
@@ -89,11 +88,23 @@ namespace PennCloud {
 class Request::_Internal {
  public:
   using HasBits = decltype(std::declval<Request>()._has_bits_);
-  static void set_has_value1(HasBits* has_bits) {
+  static void set_has_type(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
-  static void set_has_value2(HasBits* has_bits) {
+  static void set_has_rowkey(HasBits* has_bits) {
     (*has_bits)[0] |= 2u;
+  }
+  static void set_has_columnkey(HasBits* has_bits) {
+    (*has_bits)[0] |= 4u;
+  }
+  static void set_has_value1(HasBits* has_bits) {
+    (*has_bits)[0] |= 8u;
+  }
+  static void set_has_value2(HasBits* has_bits) {
+    (*has_bits)[0] |= 16u;
+  }
+  static bool MissingRequiredFields(const HasBits& has_bits) {
+    return ((has_bits[0] & 0x00000007) ^ 0x00000007) != 0;
   }
 };
 
@@ -108,17 +119,17 @@ Request::Request(const Request& from)
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   type_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_type().empty()) {
+  if (from._internal_has_type()) {
     type_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_type(), 
       GetArenaForAllocation());
   }
   rowkey_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_rowkey().empty()) {
+  if (from._internal_has_rowkey()) {
     rowkey_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_rowkey(), 
       GetArenaForAllocation());
   }
   columnkey_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_columnkey().empty()) {
+  if (from._internal_has_columnkey()) {
     columnkey_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_columnkey(), 
       GetArenaForAllocation());
   }
@@ -174,15 +185,21 @@ void Request::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  type_.ClearToEmpty();
-  rowkey_.ClearToEmpty();
-  columnkey_.ClearToEmpty();
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (cached_has_bits & 0x0000001fu) {
     if (cached_has_bits & 0x00000001u) {
-      value1_.ClearNonDefaultToEmpty();
+      type_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
+      rowkey_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000004u) {
+      columnkey_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000008u) {
+      value1_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000010u) {
       value2_.ClearNonDefaultToEmpty();
     }
   }
@@ -197,30 +214,36 @@ const char* Request::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     switch (tag >> 3) {
-      // string type = 1;
+      // required string type = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
           auto str = _internal_mutable_type();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "PennCloud.Request.type"));
+          #ifndef NDEBUG
+          ::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "PennCloud.Request.type");
+          #endif  // !NDEBUG
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // string rowkey = 2;
+      // required string rowkey = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
           auto str = _internal_mutable_rowkey();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "PennCloud.Request.rowkey"));
+          #ifndef NDEBUG
+          ::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "PennCloud.Request.rowkey");
+          #endif  // !NDEBUG
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // string columnkey = 3;
+      // required string columnkey = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
           auto str = _internal_mutable_columnkey();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "PennCloud.Request.columnkey"));
+          #ifndef NDEBUG
+          ::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "PennCloud.Request.columnkey");
+          #endif  // !NDEBUG
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -229,7 +252,9 @@ const char* Request::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
           auto str = _internal_mutable_value1();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "PennCloud.Request.value1"));
+          #ifndef NDEBUG
+          ::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "PennCloud.Request.value1");
+          #endif  // !NDEBUG
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -238,7 +263,9 @@ const char* Request::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
           auto str = _internal_mutable_value2();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "PennCloud.Request.value2"));
+          #ifndef NDEBUG
+          ::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "PennCloud.Request.value2");
+          #endif  // !NDEBUG
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -272,51 +299,52 @@ failure:
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // string type = 1;
-  if (!this->type().empty()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+  cached_has_bits = _has_bits_[0];
+  // required string type = 1;
+  if (cached_has_bits & 0x00000001u) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
       this->_internal_type().data(), static_cast<int>(this->_internal_type().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
       "PennCloud.Request.type");
     target = stream->WriteStringMaybeAliased(
         1, this->_internal_type(), target);
   }
 
-  // string rowkey = 2;
-  if (!this->rowkey().empty()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+  // required string rowkey = 2;
+  if (cached_has_bits & 0x00000002u) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
       this->_internal_rowkey().data(), static_cast<int>(this->_internal_rowkey().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
       "PennCloud.Request.rowkey");
     target = stream->WriteStringMaybeAliased(
         2, this->_internal_rowkey(), target);
   }
 
-  // string columnkey = 3;
-  if (!this->columnkey().empty()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+  // required string columnkey = 3;
+  if (cached_has_bits & 0x00000004u) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
       this->_internal_columnkey().data(), static_cast<int>(this->_internal_columnkey().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
       "PennCloud.Request.columnkey");
     target = stream->WriteStringMaybeAliased(
         3, this->_internal_columnkey(), target);
   }
 
   // optional string value1 = 4;
-  if (_internal_has_value1()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+  if (cached_has_bits & 0x00000008u) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
       this->_internal_value1().data(), static_cast<int>(this->_internal_value1().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
       "PennCloud.Request.value1");
     target = stream->WriteStringMaybeAliased(
         4, this->_internal_value1(), target);
   }
 
   // optional string value2 = 5;
-  if (_internal_has_value2()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+  if (cached_has_bits & 0x00000010u) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
       this->_internal_value2().data(), static_cast<int>(this->_internal_value2().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
       "PennCloud.Request.value2");
     target = stream->WriteStringMaybeAliased(
         5, this->_internal_value2(), target);
@@ -330,46 +358,71 @@ failure:
   return target;
 }
 
-size_t Request::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:PennCloud.Request)
+size_t Request::RequiredFieldsByteSizeFallback() const {
+// @@protoc_insertion_point(required_fields_byte_size_fallback_start:PennCloud.Request)
   size_t total_size = 0;
 
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  // string type = 1;
-  if (!this->type().empty()) {
+  if (_internal_has_type()) {
+    // required string type = 1;
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->_internal_type());
   }
 
-  // string rowkey = 2;
-  if (!this->rowkey().empty()) {
+  if (_internal_has_rowkey()) {
+    // required string rowkey = 2;
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->_internal_rowkey());
   }
 
-  // string columnkey = 3;
-  if (!this->columnkey().empty()) {
+  if (_internal_has_columnkey()) {
+    // required string columnkey = 3;
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->_internal_columnkey());
   }
 
+  return total_size;
+}
+size_t Request::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:PennCloud.Request)
+  size_t total_size = 0;
+
+  if (((_has_bits_[0] & 0x00000007) ^ 0x00000007) == 0) {  // All required fields are present.
+    // required string type = 1;
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_type());
+
+    // required string rowkey = 2;
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_rowkey());
+
+    // required string columnkey = 3;
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_columnkey());
+
+  } else {
+    total_size += RequiredFieldsByteSizeFallback();
+  }
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (cached_has_bits & 0x00000018u) {
     // optional string value1 = 4;
-    if (cached_has_bits & 0x00000001u) {
+    if (cached_has_bits & 0x00000008u) {
       total_size += 1 +
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
           this->_internal_value1());
     }
 
     // optional string value2 = 5;
-    if (cached_has_bits & 0x00000002u) {
+    if (cached_has_bits & 0x00000010u) {
       total_size += 1 +
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
           this->_internal_value2());
@@ -407,21 +460,21 @@ void Request::MergeFrom(const Request& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (!from.type().empty()) {
-    _internal_set_type(from._internal_type());
-  }
-  if (!from.rowkey().empty()) {
-    _internal_set_rowkey(from._internal_rowkey());
-  }
-  if (!from.columnkey().empty()) {
-    _internal_set_columnkey(from._internal_columnkey());
-  }
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (cached_has_bits & 0x0000001fu) {
     if (cached_has_bits & 0x00000001u) {
-      _internal_set_value1(from._internal_value1());
+      _internal_set_type(from._internal_type());
     }
     if (cached_has_bits & 0x00000002u) {
+      _internal_set_rowkey(from._internal_rowkey());
+    }
+    if (cached_has_bits & 0x00000004u) {
+      _internal_set_columnkey(from._internal_columnkey());
+    }
+    if (cached_has_bits & 0x00000008u) {
+      _internal_set_value1(from._internal_value1());
+    }
+    if (cached_has_bits & 0x00000010u) {
       _internal_set_value2(from._internal_value2());
     }
   }
@@ -442,6 +495,7 @@ void Request::CopyFrom(const Request& from) {
 }
 
 bool Request::IsInitialized() const {
+  if (_Internal::MissingRequiredFields(_has_bits_)) return false;
   return true;
 }
 

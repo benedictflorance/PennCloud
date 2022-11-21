@@ -1,5 +1,5 @@
-#include "globalvars.h"
-#include "utils.h"
+#include "utils/globalvars.h"
+#include "utils/config_processor.h"
 #include "request.pb.h"
 
 string prepare_request()
