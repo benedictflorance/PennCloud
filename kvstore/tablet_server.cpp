@@ -115,8 +115,6 @@ void send_heartbeat(){
 		string alive = "ALIVE\r\n";
 		// if(verbose)
 		// 	cout<<"Sending Alive message to the master"<<endl;
-
-
 		write(sockfd, alive.c_str(), strlen(alive.c_str()));
 	}
 }

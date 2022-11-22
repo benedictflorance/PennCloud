@@ -67,5 +67,5 @@ void update()
     using namespace date;
     using namespace std;
     using namespace std::chrono;
-    cerr << system_clock::now() << '\n';
+    //cerr << system_clock::now() << '\n';
 }

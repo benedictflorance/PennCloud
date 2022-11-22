@@ -36,7 +36,10 @@ using namespace std;
 // boolean for the v flag (debugging)
 bool v = false;
 
-string config_file = "tablet_server_config.txt";
+pthread_t id_heartbeat;
+pthread_t id_frontend;
+
+string config_file = "configs/tablet_server_config.txt";
 string master_address;
 
 //vector of pair of rowkeyrange: start, end, vector of tablets supporting it
@@ -95,8 +98,7 @@ char to_lowercase(char c){
 }
 
 //store rowkey to tablet server mapping an populate master
-void process_tablet_file()
-{
+void process_tablet_file(){
     ifstream config_fstream(config_file);
     string line;
     getline(config_fstream, line); // Get <MASTER>
@@ -137,7 +139,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
   int msg_size = 0;
   string left_over="";
   string req = "req";
-  string alive;
+  string alive ="alive";
 
   if(v){
     fprintf(stderr, "[%d] New Connection\n", comm_fd);
@@ -232,9 +234,14 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
         socklen_t clientaddrlen = sizeof(clientaddr);
         char str[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &(clientaddr), str, INET_ADDRSTRLEN);
+        //if it is the first heartbeat from the tablet server
         if(heartbeat.find(str)==heartbeat.end()){
-            heartbeat[str].counter = 0;
+            Heartbeat temp_h;
+            temp_h.counter =0;
+            temp_h.status = "ALIVE";
+            heartbeat.insert({str,temp_h});
         }
+        //increment the heartbeat counter
         heartbeat[str].counter++;
     }
     else{
@@ -252,7 +259,6 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
       buffer_string = buffer_string.substr(found + crlf.size());
     }
     left_over = buffer_string;
-
   }
 
   close(comm_fd);
@@ -263,7 +269,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
 }
 
 // function for creating server
-void createServer(int p){
+void createServer(){
   // Socket Creation
   int listen_fd = socket(PF_INET, SOCK_STREAM, 0);
   // check socket to make it non blocking
@@ -273,17 +279,33 @@ void createServer(int p){
     exit(2);
   }
 
-  
   struct sockaddr_in servaddr;
   bzero(&servaddr, sizeof(servaddr));
   servaddr.sin_family = AF_INET;
   //bind on the master address as given in the config file
   inet_pton(AF_INET, master_address.c_str(), &(servaddr.sin_addr));
   //servaddr.sin_addr.s_addr = htons(INADDR_ANY);
-  servaddr.sin_port = htons(p);
+  cout<<master_address<<endl;
+  int colon_index = master_address.find(':');
+  string port_str = master_address.substr(colon_index + 1);
+  int port;
+  try{
+        port = stoi(port_str);
+  }
+  catch(const std::invalid_argument&)
+    {
+        cerr <<"Invalid IP Address \n";
+        exit(-1);
+  }
+  servaddr.sin_port = htons(port);
 
   // Bind
-  bind(listen_fd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+  // check bind to make it non blocking
+  if(::bind(listen_fd, (struct sockaddr *)&servaddr, sizeof(servaddr))<0){
+    if(v)
+      fprintf(stderr, "Bind error (%s)\n", strerror(errno));
+    exit(2);
+  }
 
   // Listen
   // the second parameter corresponds to backlog in listening
@@ -316,7 +338,8 @@ void createServer(int p){
     if(v)
         fprintf(stderr, "Creating handler for frontend\n");
     thread handle_frontend(worker,fd,clientaddr);
-    handle_frontend.join();
+    id_frontend = handle_frontend.native_handle();
+    handle_frontend.detach();
   }
   close(listen_fd);
 }
@@ -334,7 +357,7 @@ void alive(){
             int diff = no_of_alive % (tablet_addresses.size());
             Heartbeat current_h = h.second;
             //UPDATE the check
-            if(abs(diff - current_h.counter) == 0){
+            if((diff - current_h.counter) > 0){
                 if(v){
                     cout<<"DEAD server detected "<<h.first<<endl;
                 }
@@ -347,22 +370,28 @@ void alive(){
     }   
 }
 
+//kill all the running threads and exit
+void signal_handler(int arg){
+    pthread_cancel(id_heartbeat);
+    pthread_cancel(id_frontend);
+    exit(0);
+}
+
 int main(int argc, char *argv[]){
-  // storing the port number, default is 10000
-  int p = 10000;
+
+  signal(SIGINT, signal_handler);
+  // storing the port number, default is 5000
+  //int p = 5000;
 
   // boolean for the a flag
   bool a = false;
 
   int c;
-  while ((c = getopt(argc, argv, "avp:")) != -1)
+  while ((c = getopt(argc, argv, "av")) != -1)
     switch (c)
     {
     case 'a':
       a = true;
-      break;
-    case 'p':
-      p = stoi(optarg);
       break;
     case 'v':
       v = true;
@@ -376,18 +405,20 @@ int main(int argc, char *argv[]){
 
   //process file
   process_tablet_file();
-  thread handle_alive(alive);
-  
 
-  // cout<<master_address<<endl;
-  // for(auto pair : rowkey_range){
-  //   cout<<(char) pair.first<<"-"<< (char) pair.second.first<<" "<<endl;
-  //   for(auto i : pair.second.second)
-  //       cout<<i<<endl;
-  // }
+  //start evaluating server status
+  thread handle_alive(alive);
+  id_heartbeat = handle_alive.native_handle();
+
+//   cout<<master_address<<endl;
+//   for(auto pair : rowkey_range){
+//     cout<<(char) pair.first<<"-"<< (char) pair.second.first<<" "<<endl;
+//     for(auto i : pair.second.second)
+//         cout<<i<<endl;
+//   }
 
   // create listening server
-  createServer(p);
+  createServer();
 
   return 0;
 }

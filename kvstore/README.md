@@ -1,7 +1,7 @@
 # Master Server:
 
 - How to launch the master?
-> `./master` should be sufficient. Master supports -v flag for verbose and -p for specifying the port number
+> `./master` should be sufficient. Master supports -v flag for verbose.
 
 - How to establish connection with the master?
 > Master has a TCP Socket open at address in the \<MASTER> section of config file - `./configs/tablet_server_config.txt`
