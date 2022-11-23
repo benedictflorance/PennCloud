@@ -52,6 +52,7 @@ vector<string> tablet_addresses;
 typedef struct Heartbeat{
   int counter;
   string status = "ALIVE";
+  long long timestamp;
 }Heartbeat;
 
 //mapping from tablet server address to heartbeat
@@ -239,10 +240,13 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
             Heartbeat temp_h;
             temp_h.counter =0;
             temp_h.status = "ALIVE";
-            heartbeat.insert({str,temp_h});
+            heartbeat.insert({str,temp_h});     
         }
+        time_t timeInSec;
+        time(&timeInSec);
         //increment the heartbeat counter
         heartbeat[str].counter++;
+        heartbeat[str].timestamp =(long long) timeInSec;
     }
     else{
       char unknown[] = "-ERR Unknown command\r\n";
@@ -353,11 +357,13 @@ void alive(){
         if(v){
             cout<<"Checking for server status "<<endl;
         }
+        time_t timeInSec;
+        time(&timeInSec);
+        int threshold = 3;
         for(auto h: heartbeat){
-            int diff = no_of_alive % (tablet_addresses.size());
+            //int expected_heartbeat = no_of_alive / (tablet_addresses.size());
             Heartbeat current_h = h.second;
-            //UPDATE the check
-            if((diff - current_h.counter) > 0){
+            if((timeInSec - current_h.timestamp) > threshold){
                 if(v){
                     cout<<"DEAD server detected "<<h.first<<endl;
                 }
