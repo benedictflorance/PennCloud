@@ -33,7 +33,7 @@ const char* shutdown_message = "-ERR Tablet server shutting down\r\n";
 const char* service_ready_message = "+OK Tablet server ready\r\n";
 const char* new_connection_message = "New connection\r\n";
 const char* closing_message = "Connection closed\r\n";
-const char* alive_command = "ALIVE\r\n";
+const char* alive_command = "ALIVE";
 pair<const char*, const char*> type_unset_message = make_pair("-ERR", "Request type not set");
 pair<const char*, const char*>  unrecognized_command_message = make_pair("-ERR", "Unrecognized command");
 pair<const char*, const char*>  param_unset_message = make_pair("-ERR", "Parameter(s) required for this command are not set");
@@ -46,6 +46,7 @@ const int suffix_length = strlen("\r\n");
 const string replicas_header = "<REPLICAS>";
 const string checkpt_dir = "checkpoints/";
 const string checkpt_meta_dir = "metadata/";
+const string log_dir = "log/";
 
 // Global variables
 bool verbose = false;

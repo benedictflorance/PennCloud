@@ -24,7 +24,11 @@ void send_heartbeat(){
 			close(socket_to_master);
 			pthread_exit(NULL);
 		}
-		write(socket_to_master, alive_command, strlen(alive_command));
+        char str[INET_ADDRSTRLEN];
+        inet_ntop(PF_INET, &tablet_addresses[curr_server_index], str, INET_ADDRSTRLEN);
+        string ip(str);
+        string alive = "ALIVE-" + to_string(curr_server_index)+ "\r\n";
+		write(socket_to_master, alive.c_str(), strlen(alive.c_str()));
 	}
 }
 void checkpoint_kvstore()

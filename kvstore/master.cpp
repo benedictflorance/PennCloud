@@ -231,7 +231,15 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
     }
     else if(lower_case.find(alive) != string::npos){
         //check which server it is
-        string str = string(inet_ntoa(clientaddr.sin_addr)) + ":" + to_string(ntohs(clientaddr.sin_port));
+        string argument(buffer);
+        string append = left_over + argument;
+        argument = append;
+
+        //find index of hyphen
+        int found = argument.find('-');
+        argument = argument.substr(found+1);
+        string str = tablet_addresses[stoi(argument)];
+
         //if it is the first heartbeat from the tablet server
         if(heartbeat.find(str)==heartbeat.end()){
             Heartbeat temp_h;
@@ -239,6 +247,8 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
             temp_h.status = "ALIVE";
             heartbeat.insert({str,temp_h});     
         }
+        
+        //get the time heartbeat was received
         time_t timeInSec;
         time(&timeInSec);
         //increment the heartbeat counter
@@ -290,7 +300,8 @@ void createServer(){
   //bind on the master address as given in the config file
   inet_pton(AF_INET, master_address.c_str(), &(servaddr.sin_addr));
   //servaddr.sin_addr.s_addr = htons(INADDR_ANY);
-  cout<<master_address<<endl;
+  if(v)
+    cout<<"Listening on "<<master_address<<endl;
   int colon_index = master_address.find(':');
   string port_str = master_address.substr(colon_index + 1);
   int port;
@@ -385,8 +396,6 @@ void signal_handler(int arg){
 int main(int argc, char *argv[]){
 
   signal(SIGINT, signal_handler);
-  // storing the port number, default is 5000
-  //int p = 5000;
 
   // boolean for the a flag
   bool a = false;
@@ -414,13 +423,6 @@ int main(int argc, char *argv[]){
   //start evaluating server status
   thread handle_alive(alive);
   id_heartbeat = handle_alive.native_handle();
-
-//   cout<<master_address<<endl;
-//   for(auto pair : rowkey_range){
-//     cout<<(char) pair.first<<"-"<< (char) pair.second.first<<" "<<endl;
-//     for(auto i : pair.second.second)
-//         cout<<i<<endl;
-//   }
 
   // create listening server
   createServer();

@@ -52,7 +52,6 @@ void process_get_request(PennCloud::Request &request, PennCloud::Response &respo
 }
 void process_put_request(PennCloud::Request &request, PennCloud::Response &response)
 {
-    
     if(!request.has_rowkey() || !request.has_columnkey() || !request.has_value1())
     {
         response.set_status(param_unset_message.first);

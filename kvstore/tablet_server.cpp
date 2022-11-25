@@ -2,8 +2,19 @@
 #include "utils/config_processor.h"
 #include "utils/update_manager.h"
 #include "utils/background_daemons.h"
+#include "utils/tools.h"
+#include "utils/log.h"
+
 void *process_client_thread(void *arg);
 int create_server();
+
+string log_file_name;
+
+void create_log_file(){
+	log_file_name = log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
+	create_dir(log_dir);
+	create_file(log_file_name);
+}
 
 void *process_client_thread(void *arg)
 {	
@@ -45,14 +56,21 @@ void *process_client_thread(void *arg)
 				response.set_status(type_unset_message.first);
 				response.set_description(type_unset_message.second);
 			}
-			else if (strcasecmp(request.type().c_str(), "GET") == 0)
+			else if (strcasecmp(request.type().c_str(), "GET") == 0){
 				process_get_request(request, response);
-			else if (strcasecmp(request.type().c_str(), "PUT") == 0)
+			}
+			else if (strcasecmp(request.type().c_str(), "PUT") == 0){
+				update_log(log_file_name,request_str);
 				process_put_request(request, response);
-			else if (strcasecmp(request.type().c_str(), "CPUT") == 0)
+			}
+			else if (strcasecmp(request.type().c_str(), "CPUT") == 0){
+				update_log(log_file_name,request_str);
 				process_cput_request(request, response);
-			else if (strcasecmp(request.type().c_str(), "DELETE") == 0)
+			}
+			else if (strcasecmp(request.type().c_str(), "DELETE") == 0){
+				update_log(log_file_name,request_str);
 				process_delete_request(request, response);
+			}
 			else
 			{
 				response.set_status(unrecognized_command_message.first);
@@ -188,6 +206,9 @@ int main(int argc, char *argv[])
     }
     process_config_file(config_file);
 	load_kvstore_from_disk();
+	//create log file if it doesn't exist
+	create_log_file();
+	replay_log(log_file_name);
     int isSuccess = create_server();
 	return isSuccess;
 }
