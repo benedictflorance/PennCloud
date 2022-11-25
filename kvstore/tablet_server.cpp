@@ -1,5 +1,3 @@
-#include "request.pb.h"
-#include "response.pb.h"
 #include "utils/command_processor.h"
 #include "utils/config_processor.h"
 #include "utils/update_manager.h"

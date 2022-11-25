@@ -5,3 +5,6 @@
 tablet_server
 tablet_client
 master
+checkpoints/
+metadata/
+logs/

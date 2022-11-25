@@ -126,6 +126,7 @@ void load_kvstore_from_disk()
         fstream checkpt_file(check_filename, ios::in);
         fstream meta_file(meta_filename, ios::in);
         string line;
+        char rkey_char[BUFFER_SIZE], ckey_char[BUFFER_SIZE], value_char[BUFFER_SIZE];
         while(getline(meta_file, line))
         {
             stringstream meta(line); 
@@ -142,7 +143,9 @@ void load_kvstore_from_disk()
                 ckey_size = stoi(ckey_size_str), 
                 val_start = stoi(val_start_str), 
                 val_size= stoi(val_size_str);
-            char rkey_char[BUFFER_SIZE], ckey_char[BUFFER_SIZE], value_char[BUFFER_SIZE];
+            memset(rkey_char, 0, sizeof(rkey_char));
+            memset(ckey_char, 0, sizeof(ckey_char));
+            memset(value_char, 0, sizeof(value_char));
             checkpt_file.seekg(rkey_start, ios::beg);
             checkpt_file.read(rkey_char, rkey_size);
             checkpt_file.seekg(ckey_start, ios::beg);
@@ -150,8 +153,6 @@ void load_kvstore_from_disk()
             checkpt_file.seekg(val_start, ios::beg);
             checkpt_file.read(value_char, val_size);
             string rkey = string(rkey_char), ckey = string(ckey_char), value = string(value_char);
-            if(verbose)
-                cerr<<rkey<<" "<<ckey<<" "<<value<<endl;
             if(kv_store.find(rkey) != kv_store.end())
             {
                 kv_store[rkey][ckey] = value;              

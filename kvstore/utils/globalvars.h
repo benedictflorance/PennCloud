@@ -22,6 +22,8 @@
 #include <sstream>
 #include <thread>
 #include <filesystem>
+#include "../request.pb.h"
+#include "../response.pb.h"
 namespace fs = std::filesystem;
 using namespace std;
 
@@ -59,3 +61,4 @@ vector<int> client_sockets;
 vector<pthread_t> client_threads;
 unordered_map<string, unordered_map<string, string>> kv_store;
 int socket_to_master;
+std::mutex kvstore_lock;
