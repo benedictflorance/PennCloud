@@ -25,8 +25,8 @@ void *process_client_thread(void *arg)
 	while(true)
 	{	
 		char *command_end_index;
-		read(client_socket, current_buffer, BUFFER_SIZE-strlen(net_buffer));
-		if(shutdown_flag)
+		int client_shutdown = read(client_socket, current_buffer, BUFFER_SIZE-strlen(net_buffer));
+		if(shutdown_flag || client_shutdown == 0)
 		{
 			if(verbose)
 					cerr<<"["<<client_socket<<"] "<<closing_message<<endl;

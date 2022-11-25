@@ -166,6 +166,11 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
           }
       }
     }
+    if(bytes_read == 0)
+    {
+ 			close(comm_fd);
+			pthread_exit(NULL);     
+    }
     // convert buffer to lowercase
     string lower_case(buffer);
     string append = left_over + lower_case;
