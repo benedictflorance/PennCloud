@@ -84,6 +84,7 @@ void signal_handler(int arg)
 	*/
 	shutdown_flag = true;
 	close(server_socket);
+    close(socket_to_master);
 	cerr<<endl<<shutdown_message;
 	for(int i = 0; i < client_sockets.size(); i++)
 	{

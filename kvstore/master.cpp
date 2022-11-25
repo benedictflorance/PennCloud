@@ -58,9 +58,6 @@ typedef struct Heartbeat{
 //mapping from tablet server address to heartbeat
 unordered_map<string, Heartbeat > heartbeat;
 
-//counter for number of alive commands received
-long long no_of_alive;
-
 // function for reading
 bool do_read(int fd, char *buf, int len){
   int rcvd = 0;
@@ -169,7 +166,6 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
           }
       }
     }
-
     // convert buffer to lowercase
     string lower_case(buffer);
     string append = left_over + lower_case;
@@ -229,8 +225,6 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
 
     }
     else if(lower_case.find(alive) != string::npos){
-        //increment alive counter
-        no_of_alive++;
         //check which server it is
         socklen_t clientaddrlen = sizeof(clientaddr);
         char str[INET_ADDRSTRLEN];
@@ -247,6 +241,10 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
         //increment the heartbeat counter
         heartbeat[str].counter++;
         heartbeat[str].timestamp =(long long) timeInSec;
+        if(v)
+        {
+          cerr<<"Heartbeat received from "<<str<<" with counter "<<heartbeat[str].counter<<" and timestamp "<<heartbeat[str].timestamp<<endl;
+        }
     }
     else{
       char unknown[] = "-ERR Unknown command\r\n";
@@ -345,7 +343,6 @@ void createServer(){
     id_frontend = handle_frontend.native_handle();
     handle_frontend.detach();
   }
-  close(listen_fd);
 }
 
 //check if all servers are alive 
@@ -359,9 +356,8 @@ void alive(){
         }
         time_t timeInSec;
         time(&timeInSec);
-        int threshold = 3;
+        int threshold = 4;
         for(auto h: heartbeat){
-            //int expected_heartbeat = no_of_alive / (tablet_addresses.size());
             Heartbeat current_h = h.second;
             if((timeInSec - current_h.timestamp) > threshold){
                 if(v){

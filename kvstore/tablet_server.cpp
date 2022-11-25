@@ -30,8 +30,9 @@ void *process_client_thread(void *arg)
 		{
 			if(verbose)
 					cerr<<"["<<client_socket<<"] "<<closing_message<<endl;
-					write(client_socket, shutdown_message, strlen(shutdown_message));
-					close(client_socket);
+			write(client_socket, shutdown_message, strlen(shutdown_message));
+			close(client_socket);
+			pthread_exit(NULL);
 		}
 		while((command_end_index = strstr(net_buffer, "\r\n")) != NULL)
 		{
@@ -98,24 +99,29 @@ void *process_client_thread(void *arg)
 //placeholder for sending heartbeats
 void send_heartbeat(){
 	//connect with master
-	int sockfd = socket(PF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) 
+	socket_to_master = socket(PF_INET, SOCK_STREAM, 0);
+    if (socket_to_master < 0) 
     {
         if(verbose)
             cerr<<"Unable to create socket"<<endl;
     }
-    connect(sockfd, (struct sockaddr*)& master_address, sizeof(master_address));
+    connect(socket_to_master, (struct sockaddr*)& master_address, sizeof(master_address));
 
 	//use update manager library
 	while(true){
 		auto t = UpdateManager::start();
-		this_thread::sleep_for(1s);
+		this_thread::sleep_for(2s);
 
 		//send ALIVE command at fixed intervals
 		string alive = "ALIVE\r\n";
-		// if(verbose)
-		// 	cout<<"Sending Alive message to the master"<<endl;
-		write(sockfd, alive.c_str(), strlen(alive.c_str()));
+		if(verbose)
+			cout<<"Sending Alive message to the master"<<endl;
+		if(shutdown_flag)
+		{
+			close(socket_to_master);
+			pthread_exit(NULL);
+		}
+		write(socket_to_master, alive.c_str(), strlen(alive.c_str()));
 	}
 }
 

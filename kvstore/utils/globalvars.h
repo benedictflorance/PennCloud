@@ -51,3 +51,4 @@ int server_socket;
 vector<int> client_sockets;
 vector<pthread_t> client_threads;
 unordered_map<string, unordered_map<string, string>> kv_store;
+int socket_to_master;
