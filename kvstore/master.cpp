@@ -231,9 +231,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
     }
     else if(lower_case.find(alive) != string::npos){
         //check which server it is
-        socklen_t clientaddrlen = sizeof(clientaddr);
-        char str[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &(clientaddr), str, INET_ADDRSTRLEN);
+        string str = string(inet_ntoa(clientaddr.sin_addr)) + ":" + to_string(ntohs(clientaddr.sin_port));
         //if it is the first heartbeat from the tablet server
         if(heartbeat.find(str)==heartbeat.end()){
             Heartbeat temp_h;
