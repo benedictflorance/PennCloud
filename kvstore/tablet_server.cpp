@@ -3,7 +3,7 @@
 #include "utils/command_processor.h"
 #include "utils/config_processor.h"
 #include "utils/update_manager.h"
-
+#include "utils/background_daemons.h"
 void *process_client_thread(void *arg);
 int create_server();
 
@@ -96,35 +96,6 @@ void *process_client_thread(void *arg)
 	}
 }
 
-//placeholder for sending heartbeats
-void send_heartbeat(){
-	//connect with master
-	socket_to_master = socket(PF_INET, SOCK_STREAM, 0);
-    if (socket_to_master < 0) 
-    {
-        if(verbose)
-            cerr<<"Unable to create socket"<<endl;
-    }
-    connect(socket_to_master, (struct sockaddr*)& master_address, sizeof(master_address));
-
-	//use update manager library
-	while(true){
-		auto t = UpdateManager::start();
-		this_thread::sleep_for(2s);
-
-		//send ALIVE command at fixed intervals
-		string alive = "ALIVE\r\n";
-		if(verbose)
-			cout<<"Sending Alive message to the master"<<endl;
-		if(shutdown_flag)
-		{
-			close(socket_to_master);
-			pthread_exit(NULL);
-		}
-		write(socket_to_master, alive.c_str(), strlen(alive.c_str()));
-	}
-}
-
 int create_server()
 {
 	/*
@@ -151,6 +122,7 @@ int create_server()
 
 	//create a thread for sending heartbeats to the master
 	thread send_heartbeats(send_heartbeat);
+	thread checkpoint_thread(checkpoint_kvstore);
 
 	while(true)
 	{
@@ -217,6 +189,7 @@ int main(int argc, char *argv[])
         exit(-1);
     }
     process_config_file(config_file);
+	load_kvstore_from_disk();
     int isSuccess = create_server();
 	return isSuccess;
 }

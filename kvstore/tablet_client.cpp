@@ -120,25 +120,47 @@ void send_requests(int &sockfd)
     response.ParseFromString(response_buffer);
     clear_keys(request, response, request_str, response_buffer);
     // Test delete 
-    request.set_type("DELETE");
-    request.set_rowkey("0benedict");
-    request.set_columnkey("password");
-    request.SerializeToString(&request_str);
-    request_str += "\r\n";
-    write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
-    while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
-    response.ParseFromString(response_buffer);
-    clear_keys(request, response, request_str, response_buffer);
+    // request.set_type("DELETE");
+    // request.set_rowkey("0benedict");
+    // request.set_columnkey("password");
+    // request.SerializeToString(&request_str);
+    // request_str += "\r\n";
+    // write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
+    // while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
+    // response.ParseFromString(response_buffer);
+    // clear_keys(request, response, request_str, response_buffer);
     // Test valid rowkey
-    request.set_type("GET");
-    request.set_rowkey("0benedict");
-    request.set_columnkey("password");
+    // request.set_type("GET");
+    // request.set_rowkey("0benedict");
+    // request.set_columnkey("password");
+    // request.SerializeToString(&request_str);
+    // request_str += "\r\n";
+    // write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
+    // while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
+    // response.ParseFromString(response_buffer);
+    // clear_keys(request, response, request_str, response_buffer);
+    // Test PUT
+    request.set_type("PUT");
+    request.set_rowkey("benny");
+    request.set_columnkey("cookie");
+    request.set_value1("ML>>>Systems");
     request.SerializeToString(&request_str);
     request_str += "\r\n";
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
     clear_keys(request, response, request_str, response_buffer);
+    request.set_type("PUT");
+    request.set_rowkey("15benny");
+    request.set_columnkey("email");
+    request.set_value1("mailme@sherlock.com");
+    request.SerializeToString(&request_str);
+    request_str += "\r\n";
+    write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
+    while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
+    response.ParseFromString(response_buffer);
+    clear_keys(request, response, request_str, response_buffer);
+
 }
 int create_client()
 {

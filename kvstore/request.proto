@@ -6,6 +6,6 @@ message Request{
     required string type = 1;
     required string rowkey = 2;
     required string columnkey = 3;
-    optional string value1 = 4; // Used only for PUT and CPUT requests
-    optional string value2 = 5; // Used only for CPUT requests
+    optional bytes value1 = 4; // Used only for PUT and CPUT requests
+    optional bytes value2 = 5; // Used only for CPUT requests
 }

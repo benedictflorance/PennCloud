@@ -41,7 +41,7 @@ void process_config_file(string config_file)
     int index = 0;
     while(getline(config_fstream, line))
     {
-        if(line == "<REPLICAS>")
+        if(line == replicas_header)
             break;
         if(index == curr_server_index && verbose)
             cerr<<"Listening on "<<line<<endl;
@@ -75,6 +75,7 @@ void process_config_file(string config_file)
         }
         cerr<<endl;
     }
+    curr_ip_addr = string(inet_ntoa(tablet_addresses[curr_server_index].sin_addr)) + ":" + to_string(ntohs(tablet_addresses[curr_server_index].sin_port));
 }
 void signal_handler(int arg)
 {
@@ -97,4 +98,71 @@ void signal_handler(int arg)
 		}
 	}
 	exit(-1);
+}
+void load_kvstore_from_disk()
+{
+    string latest_checkpt = "";
+    for (const auto & entry : fs::directory_iterator(checkpt_dir))
+    {
+        string filename = entry.path().generic_string();
+        if(filename.find(curr_ip_addr) != string::npos)
+        {
+            if(latest_checkpt == "" || filename > latest_checkpt)
+            {
+                latest_checkpt = filename;
+            }
+        }
+    }
+    if(latest_checkpt != "")
+    {
+        string check_filename = latest_checkpt;
+        string meta_filename = latest_checkpt.replace(latest_checkpt.find(checkpt_dir), sizeof("checkpoints/") - 1, checkpt_meta_dir)
+                                .replace(latest_checkpt.find("_checkpoint_"), sizeof("_checkpoint_") - 1, "_metadata_");
+        if(verbose)
+        {
+            cout<<"Loading checkpoint from "<<check_filename<<endl;
+            cout<<"Loading metadata from "<<meta_filename<<endl;
+        }
+        fstream checkpt_file(check_filename, ios::in);
+        fstream meta_file(meta_filename, ios::in);
+        string line;
+        while(getline(meta_file, line))
+        {
+            stringstream meta(line); 
+            string rkey_start_str, rkey_size_str, ckey_start_str, ckey_size_str, val_start_str, val_size_str;
+            getline(meta, rkey_start_str, ',');
+            getline(meta, rkey_size_str, ',');
+            getline(meta, ckey_start_str, ',');
+            getline(meta, ckey_size_str, ',');
+            getline(meta, val_start_str, ',');
+            getline(meta, val_size_str, ',');
+            int rkey_start = stoi(rkey_start_str), 
+                rkey_size = stoi(rkey_size_str), 
+                ckey_start = stoi(ckey_start_str), 
+                ckey_size = stoi(ckey_size_str), 
+                val_start = stoi(val_start_str), 
+                val_size= stoi(val_size_str);
+            char rkey_char[BUFFER_SIZE], ckey_char[BUFFER_SIZE], value_char[BUFFER_SIZE];
+            checkpt_file.seekg(rkey_start, ios::beg);
+            checkpt_file.read(rkey_char, rkey_size);
+            checkpt_file.seekg(ckey_start, ios::beg);
+            checkpt_file.read(ckey_char, ckey_size);
+            checkpt_file.seekg(val_start, ios::beg);
+            checkpt_file.read(value_char, val_size);
+            string rkey = string(rkey_char), ckey = string(ckey_char), value = string(value_char);
+            if(verbose)
+                cerr<<rkey<<" "<<ckey<<" "<<value<<endl;
+            if(kv_store.find(rkey) != kv_store.end())
+            {
+                kv_store[rkey][ckey] = value;              
+            }
+            else
+            {
+                kv_store[rkey] = unordered_map<string, string>();
+                kv_store[rkey][ckey] = value;   
+            }
+        }
+        if(verbose)
+            cerr<<"Checkpoint loaded into memory!"<<endl;
+    }
 }

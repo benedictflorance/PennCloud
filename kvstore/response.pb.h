@@ -220,7 +220,7 @@ class Response final :
   std::string* _internal_mutable_description();
   public:
 
-  // optional string value = 3;
+  // optional bytes value = 3;
   bool has_value() const;
   private:
   bool _internal_has_value() const;
@@ -377,7 +377,7 @@ inline void Response::set_allocated_description(std::string* description) {
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Response.description)
 }
 
-// optional string value = 3;
+// optional bytes value = 3;
 inline bool Response::_internal_has_value() const {
   bool value = (_has_bits_[0] & 0x00000004u) != 0;
   return value;
@@ -397,7 +397,7 @@ template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void Response::set_value(ArgT0&& arg0, ArgT... args) {
  _has_bits_[0] |= 0x00000004u;
- value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+ value_.SetBytes(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:PennCloud.Response.value)
 }
 inline std::string* Response::mutable_value() {

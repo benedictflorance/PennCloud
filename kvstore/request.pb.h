@@ -240,7 +240,7 @@ class Request final :
   std::string* _internal_mutable_columnkey();
   public:
 
-  // optional string value1 = 4;
+  // optional bytes value1 = 4;
   bool has_value1() const;
   private:
   bool _internal_has_value1() const;
@@ -258,7 +258,7 @@ class Request final :
   std::string* _internal_mutable_value1();
   public:
 
-  // optional string value2 = 5;
+  // optional bytes value2 = 5;
   bool has_value2() const;
   private:
   bool _internal_has_value2() const;
@@ -477,7 +477,7 @@ inline void Request::set_allocated_columnkey(std::string* columnkey) {
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.columnkey)
 }
 
-// optional string value1 = 4;
+// optional bytes value1 = 4;
 inline bool Request::_internal_has_value1() const {
   bool value = (_has_bits_[0] & 0x00000008u) != 0;
   return value;
@@ -497,7 +497,7 @@ template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void Request::set_value1(ArgT0&& arg0, ArgT... args) {
  _has_bits_[0] |= 0x00000008u;
- value1_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+ value1_.SetBytes(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:PennCloud.Request.value1)
 }
 inline std::string* Request::mutable_value1() {
@@ -534,7 +534,7 @@ inline void Request::set_allocated_value1(std::string* value1) {
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.value1)
 }
 
-// optional string value2 = 5;
+// optional bytes value2 = 5;
 inline bool Request::_internal_has_value2() const {
   bool value = (_has_bits_[0] & 0x00000010u) != 0;
   return value;
@@ -554,7 +554,7 @@ template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void Request::set_value2(ArgT0&& arg0, ArgT... args) {
  _has_bits_[0] |= 0x00000010u;
- value2_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+ value2_.SetBytes(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:PennCloud.Request.value2)
 }
 inline std::string* Request::mutable_value2() {
