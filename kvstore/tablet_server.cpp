@@ -1,15 +1,12 @@
 #include "utils/command_processor.h"
+#include "utils/tools.h"
+#include "utils/log.h"
 #include "utils/config_processor.h"
 #include "utils/update_manager.h"
 #include "utils/background_daemons.h"
-#include "utils/tools.h"
-#include "utils/log.h"
 
 void *process_client_thread(void *arg);
 int create_server();
-
-string log_file_name;
-string meta_log_file_name;
 
 void create_log_file(){
 	log_file_name = log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";

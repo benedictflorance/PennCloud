@@ -153,7 +153,7 @@ void send_requests(int &sockfd)
     request.set_type("PUT");
     request.set_rowkey("15benny");
     request.set_columnkey("email");
-    request.set_value1("mailme@sherlock.com");
+    request.set_value1("mailmelogcrashcheck@sherlock.com");
     request.SerializeToString(&request_str);
     request_str += "\r\n";
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));

@@ -50,7 +50,6 @@ void checkpoint_kvstore()
                 for(auto &colkey : rowkey.second)
                 {
                     string rkey = rowkey.first, ckey = colkey.first, value = colkey.second;
-                    cout<<rkey<<" "<<ckey<<" "<<value<<endl;
                     int rkey_start = checkpt_file.tellg();
                     checkpt_file<<rkey; // Dump it as string itself
                     int ckey_start = checkpt_file.tellg();
@@ -64,11 +63,10 @@ void checkpoint_kvstore()
         meta_file.close();
         time(&timeInSec);
 		time_string = to_string((long long) timeInSec);
-        //clear log files
-        //clear_log(log_file_name, meta_log_file_name)
 		if(verbose)
 			cout<<"Checkpoint complete at "<<time_string<<endl;
         }
+        clear_log(log_file_name, meta_log_file_name);
 	}
 
 }

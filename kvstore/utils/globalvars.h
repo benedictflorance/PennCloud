@@ -64,3 +64,5 @@ vector<pthread_t> client_threads;
 unordered_map<string, unordered_map<string, string>> kv_store;
 int socket_to_master;
 std::mutex kvstore_lock;
+string log_file_name;
+string meta_log_file_name;

@@ -127,8 +127,10 @@ void load_kvstore_from_disk()
         fstream meta_file(meta_filename, ios::in);
         string line;
         char rkey_char[BUFFER_SIZE], ckey_char[BUFFER_SIZE], value_char[BUFFER_SIZE];
+        int count = 0;
         while(getline(meta_file, line))
         {
+            count++;
             stringstream meta(line); 
             string rkey_start_str, rkey_size_str, ckey_start_str, ckey_size_str, val_start_str, val_size_str;
             getline(meta, rkey_start_str, ',');
@@ -164,6 +166,6 @@ void load_kvstore_from_disk()
             }
         }
         if(verbose)
-            cerr<<"Checkpoint loaded into memory!"<<endl;
+            cerr<<"Checkpoint loaded into memory with "<<count<<" k-v pairs"<<endl;
     }
 }
