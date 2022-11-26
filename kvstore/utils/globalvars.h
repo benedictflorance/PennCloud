@@ -47,6 +47,7 @@ const string replicas_header = "<REPLICAS>";
 const string checkpt_dir = "checkpoints/";
 const string checkpt_meta_dir = "metadata/";
 const string log_dir = "log/";
+const string meta_log_dir = "metadata_log/";
 
 // Global variables
 bool verbose = false;

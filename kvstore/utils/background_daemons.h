@@ -64,6 +64,8 @@ void checkpoint_kvstore()
         meta_file.close();
         time(&timeInSec);
 		time_string = to_string((long long) timeInSec);
+        //clear log files
+        //clear_log(log_file_name, meta_log_file_name)
 		if(verbose)
 			cout<<"Checkpoint complete at "<<time_string<<endl;
         }

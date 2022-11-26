@@ -9,11 +9,15 @@ void *process_client_thread(void *arg);
 int create_server();
 
 string log_file_name;
+string meta_log_file_name;
 
 void create_log_file(){
 	log_file_name = log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
+	meta_log_file_name = meta_log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
 	create_dir(log_dir);
+	create_dir(meta_log_dir);
 	create_file(log_file_name);
+	create_file(meta_log_file_name);
 }
 
 void *process_client_thread(void *arg)
@@ -60,15 +64,15 @@ void *process_client_thread(void *arg)
 				process_get_request(request, response);
 			}
 			else if (strcasecmp(request.type().c_str(), "PUT") == 0){
-				update_log(log_file_name,request_str);
+				update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
 				process_put_request(request, response);
 			}
 			else if (strcasecmp(request.type().c_str(), "CPUT") == 0){
-				update_log(log_file_name,request_str);
+				update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
 				process_cput_request(request, response);
 			}
 			else if (strcasecmp(request.type().c_str(), "DELETE") == 0){
-				update_log(log_file_name,request_str);
+				update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
 				process_delete_request(request, response);
 			}
 			else
@@ -208,7 +212,7 @@ int main(int argc, char *argv[])
 	load_kvstore_from_disk();
 	//create log file if it doesn't exist
 	create_log_file();
-	replay_log(log_file_name);
+	replay_log(log_file_name, meta_log_file_name);
     int isSuccess = create_server();
 	return isSuccess;
 }

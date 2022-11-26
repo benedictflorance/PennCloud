@@ -8,3 +8,4 @@ master
 checkpoints/
 metadata/
 log/
+metadata_log/
