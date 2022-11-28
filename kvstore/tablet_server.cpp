@@ -5,6 +5,7 @@
 #include "utils/config_processor.h"
 #include "utils/update_manager.h"
 #include "utils/background_daemons.h"
+#include "utils/replication.h"
 
 void *process_client_thread(void *arg);
 int create_server();
@@ -49,12 +50,12 @@ void *process_client_thread(void *arg)
 		{
 			int full_command_length = command_end_index + suffix_length - net_buffer;
 			string request_str = string(net_buffer, full_command_length);
+			cout<<net_buffer<<endl;
 			PennCloud::Request request;
 			request.ParseFromString(request_str);
 			PennCloud::Response response;
 			string response_str;
-			if(!request.has_type())
-			{
+			if(!request.has_type()){
 				response.set_status(type_unset_message.first);
 				response.set_description(type_unset_message.second);
 			}
@@ -62,6 +63,27 @@ void *process_client_thread(void *arg)
 				process_get_request(request, response);
 			}
 			else if (strcasecmp(request.type().c_str(), "PUT") == 0){
+				if(isPrimary){
+					//lock the row key
+					update_kv_store(request_str);
+					//unlock the row key
+
+					//send the updates to the secondary
+					update_secondary(request_str); //busy wait here
+
+					//process request
+					
+				}
+				else{
+					request_primary(request_str); //busy wait here
+
+					//lock the row key
+					update_kv_store(request_str);
+					//unlock the row key
+
+
+
+				}
 				update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
 				process_put_request(request, response);
 			}
@@ -152,17 +174,28 @@ int create_server()
 			cerr << "Acceptance error!\r\n";
 			return -1;			
 		}
-		client_sockets.push_back(client_socket);
-		if(verbose)
-			cerr<<("Connection from %s\n", inet_ntoa(clientaddr.sin_addr));
-		pthread_t thread;
-		if(pthread_create(&thread, NULL, process_client_thread, &client_sockets.back()) != 0)
-		{
-			cerr << "Thread creation error!\r\n";
-			return -1;
+		//check if msg is from a fellow tablet server
+
+		if(replica_msg_check(clientaddr)){
+			if(isPrimary){
+				//create holdback queue for each row key range
+				//check for ACKS in the holdback queue
+			}
+
 		}
-		client_threads.push_back(thread);
-		pthread_detach(thread);
+		else{
+			client_sockets.push_back(client_socket);
+			if(verbose)
+				cerr<<("Connection from %s\n", inet_ntoa(clientaddr.sin_addr));
+			pthread_t thread;
+			if(pthread_create(&thread, NULL, process_client_thread, &client_sockets.back()) != 0)
+			{
+				cerr << "Thread creation error!\r\n";
+				return -1;
+			}
+			client_threads.push_back(thread);
+			pthread_detach(thread);
+		}	
 	}
 	return 0;
 }
