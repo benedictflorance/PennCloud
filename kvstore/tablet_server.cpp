@@ -19,6 +19,46 @@ void create_log_file(){
 	create_file(meta_log_file_name);
 }
 
+void process_request(string request_str, int client_socket){
+	PennCloud::Request request;
+	request.ParseFromString(request_str);
+	PennCloud::Response response;
+	string response_str;
+	if(!request.has_type()){
+		response.set_status(type_unset_message.first);
+		response.set_description(type_unset_message.second);
+	}
+	else if (strcasecmp(request.type().c_str(), "GET") == 0){
+		process_get_request(request, response);
+	}
+	else if (strcasecmp(request.type().c_str(), "PUT") == 0){
+		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
+		process_put_request(request, response);
+	}
+	else if (strcasecmp(request.type().c_str(), "CPUT") == 0){
+		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
+		process_cput_request(request, response);
+	}
+	else if (strcasecmp(request.type().c_str(), "DELETE") == 0){
+		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
+		process_delete_request(request, response);
+	}
+	else{
+		response.set_status(unrecognized_command_message.first);
+		response.set_description(unrecognized_command_message.second);
+	}		
+	response.SerializeToString(&response_str);								
+	write(client_socket, response_str.c_str(), strlen(response_str.c_str()));
+	if(verbose)
+	{
+		// [N] C: <text> (where <text> is a command received from the client and N is as above);
+		cerr<<"["<<client_socket<<"] "<<"Client received a request type of "<<request.type()<<" a rowkey of "<<request.rowkey()<<" a columnkey of "<<request.columnkey()<<" a value1 of "<<request.value1()
+		<<" a value2 of "<<request.value2()<<endl; 
+		// [N] S: <text> (where <text> is a response sent by the server, and N is as above);
+		cerr<<"["<<client_socket<<"] "<<"Server sent a response status of  "<<response.status()<<" response description of "<<response.description()<<" response value of "<<response.value()<<endl;
+	}
+}
+
 void *process_client_thread(void *arg)
 {	
 	int client_socket = *(int*) arg;
@@ -38,7 +78,8 @@ void *process_client_thread(void *arg)
 	{	
 		char *command_end_index;
 		int client_shutdown = read(client_socket, current_buffer, BUFFER_SIZE-strlen(net_buffer));
-		if(shutdown_flag || client_shutdown == 0)
+		//if(shutdown_flag || client_shutdown == 0)
+		if(shutdown_flag)
 		{
 			if(verbose)
 					cerr<<"["<<client_socket<<"] "<<closing_message<<endl;
@@ -48,66 +89,82 @@ void *process_client_thread(void *arg)
 		}
 		while((command_end_index = strstr(net_buffer, "\r\n")) != NULL)
 		{
+
 			int full_command_length = command_end_index + suffix_length - net_buffer;
 			string request_str = string(net_buffer, full_command_length);
-			cout<<request_str<<endl;
+
 			PennCloud::Request request;
 			request.ParseFromString(request_str);
-			PennCloud::Response response;
-			string response_str;
-			if(!request.has_type()){
-				response.set_status(type_unset_message.first);
-				response.set_description(type_unset_message.second);
-			}
-			else if (strcasecmp(request.type().c_str(), "GET") == 0){
-				process_get_request(request, response);
-			}
-			else if (strcasecmp(request.type().c_str(), "PUT") == 0){
-				if(isPrimary){
-					//lock the row key
-					update_kv_store(request_str);
-					//unlock the row key
 
-					//send the updates to the secondary
-					update_secondary(request_str); //busy wait here
+			//message from another server
+			if(request.has_command()){
+				//this is the secondary server receiving a WRITE message for replication protocol
+				if(request.command() == "WRITE"){
+					cout<<"received WRITE"<<endl;
+					//locally update and send an ACK
+					update_kv_store(request_str,client_socket);
+				}
+				//this is the primary server receiving request to WRITE
+				else if(request.command() == "REQUEST"){
+					cout<<"received REQUEST"<<endl;
+					//locally update
+					update_kv_store(request_str);
+					//ask secondary servers to update
+					update_secondary(request_str);
+					//add the msg to holdback queue - TODO
+
+				}
+				//this is the primary server, receiving an ACK message about a request
+				else if(request.command() == "ACK"){
+					cout<<"received ACK"<<endl;
+					//update holdback queue
+
+					//count ACKs per request_str
 
 					//process request
+
+				}
+				//this is a secondary server, request was granted by the primary and can now be processed
+				else if(request.command() == "GRANT"){
+					//process request
+					process_request(request_str,client_socket);
+				}
+			}
+			// //this is the secondary server receiving a WRITE message for replication protocol
+			// if(request_str.find(write_command)!=string::npos){
+			// 	cout<<"received WRITE"<<endl;
+			// 	request_str = request_str.substr(6);
+			// 	update_kv_store(request_str,client_socket);
+			// }
+			// //this is the primary server, receiving an ACK message about a request
+			// else if(request_str.find(ack_command)!=string::npos){
+			// 	cout<<"received ACK"<<endl;
 				
+			// 	//update holdback queue
+
+			// 	//count ACKs per request_str
+			// 	//process request
+			// }
+			// //this is a secondary server, request was granted by the primary and can now be processed
+			// else if(request_str.find(grant_command)!=string::npos){
+			// 	request_str = request_str.substr(6);
+			// }
+			//request from client
+			else{
+				cout<<"Request from Client"<<endl;
+				if(isPrimary){
+					//locally update
+					update_kv_store(request_str);
+					//ask secondary servers to update
+					update_secondary(request_str);
+					//add the msg to holdback queue
 				}
 				else{
-					request_primary(request_str); //busy wait here
-
-					//lock the row key
-					update_kv_store(request_str);
-					//unlock the row key
-
+					//request primary for permission
+					request_primary(request_str);
 				}
-				update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
-				process_put_request(request, response);
 			}
-			else if (strcasecmp(request.type().c_str(), "CPUT") == 0){
-				update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
-				process_cput_request(request, response);
-			}
-			else if (strcasecmp(request.type().c_str(), "DELETE") == 0){
-				update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
-				process_delete_request(request, response);
-			}
-			else
-			{
-				response.set_status(unrecognized_command_message.first);
-				response.set_description(unrecognized_command_message.second);
-			}		
-			response.SerializeToString(&response_str);								
-			write(client_socket, response_str.c_str(), strlen(response_str.c_str()));
-			if(verbose)
-				{
-					// [N] C: <text> (where <text> is a command received from the client and N is as above);
-					cerr<<"["<<client_socket<<"] "<<"Client received a request type of "<<request.type()<<" a rowkey of "<<request.rowkey()<<" a columnkey of "<<request.columnkey()<<" a value1 of "<<request.value1()
-						<<" a value2 of "<<request.value2()<<endl; 
-					// [N] S: <text> (where <text> is a response sent by the server, and N is as above);
-					cerr<<"["<<client_socket<<"] "<<"Server sent a response status of  "<<response.status()<<" response description of "<<response.description()<<" response value of "<<response.value()<<endl;
-				}
+			
 			current_buffer = net_buffer;
 			command_end_index += suffix_length;
 			//Move rest of the commands to the front
@@ -133,6 +190,11 @@ void *process_client_thread(void *arg)
 		delete command_end_index;
 	}
 }
+
+struct args {
+    int client_socket;
+    sockaddr_in client_addr;
+};
 
 int create_server()
 {
@@ -174,31 +236,21 @@ int create_server()
 		}
 		//check if msg is from a fellow tablet server
 
-		if(replica_msg_check(clientaddr)){
-			cout<<"server message detected"<<endl;
-			if(isPrimary){
-				//create holdback queue for each row key range
-				//check for ACKS in the holdback queue
-			}
-			else{
-				//process WRITE requests
-				//process 
-			}
-
+		client_sockets.push_back(client_socket);
+		if(verbose)
+			cerr<<("Connection from %s\n", inet_ntoa(clientaddr.sin_addr));
+		pthread_t thread;
+		struct args *thread_args = (struct args *)malloc(sizeof(struct args));
+		thread_args->client_socket = client_sockets.back();
+		thread_args->client_addr = clientaddr;
+		
+		if(pthread_create(&thread, NULL, process_client_thread, &client_sockets.back()) != 0)
+		{
+			cerr << "Thread creation error!\r\n";
+			return -1;
 		}
-		else{
-			client_sockets.push_back(client_socket);
-			if(verbose)
-				cerr<<("Connection from %s\n", inet_ntoa(clientaddr.sin_addr));
-			pthread_t thread;
-			if(pthread_create(&thread, NULL, process_client_thread, &client_sockets.back()) != 0)
-			{
-				cerr << "Thread creation error!\r\n";
-				return -1;
-			}
-			client_threads.push_back(thread);
-			pthread_detach(thread);
-		}	
+		client_threads.push_back(thread);
+		pthread_detach(thread);	
 	}
 	return 0;
 }

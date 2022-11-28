@@ -8,4 +8,7 @@ message Request{
     required string columnkey = 3;
     optional bytes value1 = 4; // Used only for PUT and CPUT requests
     optional bytes value2 = 5; // Used only for CPUT requests
+    optional string command = 6; //Used for Replication
+    optional string isServer = 7; //If the message is from a server 
+    optional string sender_server_index = 8;
 }

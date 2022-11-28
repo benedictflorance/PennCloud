@@ -33,7 +33,6 @@ const char* shutdown_message = "-ERR Tablet server shutting down\r\n";
 const char* service_ready_message = "+OK Tablet server ready\r\n";
 const char* new_connection_message = "New connection\r\n";
 const char* closing_message = "Connection closed\r\n";
-const char* alive_command = "ALIVE";
 pair<const char*, const char*> type_unset_message = make_pair("-ERR", "Request type not set");
 pair<const char*, const char*>  unrecognized_command_message = make_pair("-ERR", "Unrecognized command");
 pair<const char*, const char*>  param_unset_message = make_pair("-ERR", "Parameter(s) required for this command are not set");
@@ -69,3 +68,11 @@ int socket_to_master;
 std::mutex kvstore_lock;
 string log_file_name;
 string meta_log_file_name;
+
+//global vars for replication
+const char* alive_command = "ALIVE";
+const char* write_command = "WRITE:";
+const char* ack_command= "ACK:";
+const char* grant_command = "GRANT:";
+//map for each primary to store no of acks for each request
+unordered_map<int,unordered_map<string,int> > number_of_acks;

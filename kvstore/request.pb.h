@@ -185,6 +185,9 @@ class Request final :
     kColumnkeyFieldNumber = 3,
     kValue1FieldNumber = 4,
     kValue2FieldNumber = 5,
+    kCommandFieldNumber = 6,
+    kIsServerFieldNumber = 7,
+    kSenderServerIndexFieldNumber = 8,
   };
   // required string type = 1;
   bool has_type() const;
@@ -276,6 +279,60 @@ class Request final :
   std::string* _internal_mutable_value2();
   public:
 
+  // optional string command = 6;
+  bool has_command() const;
+  private:
+  bool _internal_has_command() const;
+  public:
+  void clear_command();
+  const std::string& command() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_command(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_command();
+  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_command();
+  void set_allocated_command(std::string* command);
+  private:
+  const std::string& _internal_command() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_command(const std::string& value);
+  std::string* _internal_mutable_command();
+  public:
+
+  // optional string isServer = 7;
+  bool has_isserver() const;
+  private:
+  bool _internal_has_isserver() const;
+  public:
+  void clear_isserver();
+  const std::string& isserver() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_isserver(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_isserver();
+  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_isserver();
+  void set_allocated_isserver(std::string* isserver);
+  private:
+  const std::string& _internal_isserver() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_isserver(const std::string& value);
+  std::string* _internal_mutable_isserver();
+  public:
+
+  // optional string sender_server_index = 8;
+  bool has_sender_server_index() const;
+  private:
+  bool _internal_has_sender_server_index() const;
+  public:
+  void clear_sender_server_index();
+  const std::string& sender_server_index() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_sender_server_index(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_sender_server_index();
+  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_sender_server_index();
+  void set_allocated_sender_server_index(std::string* sender_server_index);
+  private:
+  const std::string& _internal_sender_server_index() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_sender_server_index(const std::string& value);
+  std::string* _internal_mutable_sender_server_index();
+  public:
+
   // @@protoc_insertion_point(class_scope:PennCloud.Request)
  private:
   class _Internal;
@@ -293,6 +350,9 @@ class Request final :
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr columnkey_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr value1_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr value2_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr command_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr isserver_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr sender_server_index_;
   friend struct ::TableStruct_request_2eproto;
 };
 // ===================================================================
@@ -589,6 +649,177 @@ inline void Request::set_allocated_value2(std::string* value2) {
   value2_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value2,
       GetArenaForAllocation());
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.value2)
+}
+
+// optional string command = 6;
+inline bool Request::_internal_has_command() const {
+  bool value = (_has_bits_[0] & 0x00000020u) != 0;
+  return value;
+}
+inline bool Request::has_command() const {
+  return _internal_has_command();
+}
+inline void Request::clear_command() {
+  command_.ClearToEmpty();
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline const std::string& Request::command() const {
+  // @@protoc_insertion_point(field_get:PennCloud.Request.command)
+  return _internal_command();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void Request::set_command(ArgT0&& arg0, ArgT... args) {
+ _has_bits_[0] |= 0x00000020u;
+ command_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:PennCloud.Request.command)
+}
+inline std::string* Request::mutable_command() {
+  // @@protoc_insertion_point(field_mutable:PennCloud.Request.command)
+  return _internal_mutable_command();
+}
+inline const std::string& Request::_internal_command() const {
+  return command_.Get();
+}
+inline void Request::_internal_set_command(const std::string& value) {
+  _has_bits_[0] |= 0x00000020u;
+  command_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
+}
+inline std::string* Request::_internal_mutable_command() {
+  _has_bits_[0] |= 0x00000020u;
+  return command_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
+}
+inline std::string* Request::release_command() {
+  // @@protoc_insertion_point(field_release:PennCloud.Request.command)
+  if (!_internal_has_command()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000020u;
+  return command_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+}
+inline void Request::set_allocated_command(std::string* command) {
+  if (command != nullptr) {
+    _has_bits_[0] |= 0x00000020u;
+  } else {
+    _has_bits_[0] &= ~0x00000020u;
+  }
+  command_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), command,
+      GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.command)
+}
+
+// optional string isServer = 7;
+inline bool Request::_internal_has_isserver() const {
+  bool value = (_has_bits_[0] & 0x00000040u) != 0;
+  return value;
+}
+inline bool Request::has_isserver() const {
+  return _internal_has_isserver();
+}
+inline void Request::clear_isserver() {
+  isserver_.ClearToEmpty();
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline const std::string& Request::isserver() const {
+  // @@protoc_insertion_point(field_get:PennCloud.Request.isServer)
+  return _internal_isserver();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void Request::set_isserver(ArgT0&& arg0, ArgT... args) {
+ _has_bits_[0] |= 0x00000040u;
+ isserver_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:PennCloud.Request.isServer)
+}
+inline std::string* Request::mutable_isserver() {
+  // @@protoc_insertion_point(field_mutable:PennCloud.Request.isServer)
+  return _internal_mutable_isserver();
+}
+inline const std::string& Request::_internal_isserver() const {
+  return isserver_.Get();
+}
+inline void Request::_internal_set_isserver(const std::string& value) {
+  _has_bits_[0] |= 0x00000040u;
+  isserver_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
+}
+inline std::string* Request::_internal_mutable_isserver() {
+  _has_bits_[0] |= 0x00000040u;
+  return isserver_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
+}
+inline std::string* Request::release_isserver() {
+  // @@protoc_insertion_point(field_release:PennCloud.Request.isServer)
+  if (!_internal_has_isserver()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000040u;
+  return isserver_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+}
+inline void Request::set_allocated_isserver(std::string* isserver) {
+  if (isserver != nullptr) {
+    _has_bits_[0] |= 0x00000040u;
+  } else {
+    _has_bits_[0] &= ~0x00000040u;
+  }
+  isserver_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), isserver,
+      GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.isServer)
+}
+
+// optional string sender_server_index = 8;
+inline bool Request::_internal_has_sender_server_index() const {
+  bool value = (_has_bits_[0] & 0x00000080u) != 0;
+  return value;
+}
+inline bool Request::has_sender_server_index() const {
+  return _internal_has_sender_server_index();
+}
+inline void Request::clear_sender_server_index() {
+  sender_server_index_.ClearToEmpty();
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline const std::string& Request::sender_server_index() const {
+  // @@protoc_insertion_point(field_get:PennCloud.Request.sender_server_index)
+  return _internal_sender_server_index();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void Request::set_sender_server_index(ArgT0&& arg0, ArgT... args) {
+ _has_bits_[0] |= 0x00000080u;
+ sender_server_index_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:PennCloud.Request.sender_server_index)
+}
+inline std::string* Request::mutable_sender_server_index() {
+  // @@protoc_insertion_point(field_mutable:PennCloud.Request.sender_server_index)
+  return _internal_mutable_sender_server_index();
+}
+inline const std::string& Request::_internal_sender_server_index() const {
+  return sender_server_index_.Get();
+}
+inline void Request::_internal_set_sender_server_index(const std::string& value) {
+  _has_bits_[0] |= 0x00000080u;
+  sender_server_index_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
+}
+inline std::string* Request::_internal_mutable_sender_server_index() {
+  _has_bits_[0] |= 0x00000080u;
+  return sender_server_index_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
+}
+inline std::string* Request::release_sender_server_index() {
+  // @@protoc_insertion_point(field_release:PennCloud.Request.sender_server_index)
+  if (!_internal_has_sender_server_index()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000080u;
+  return sender_server_index_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+}
+inline void Request::set_allocated_sender_server_index(std::string* sender_server_index) {
+  if (sender_server_index != nullptr) {
+    _has_bits_[0] |= 0x00000080u;
+  } else {
+    _has_bits_[0] &= ~0x00000080u;
+  }
+  sender_server_index_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), sender_server_index,
+      GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.sender_server_index)
 }
 
 #ifdef __GNUC__
