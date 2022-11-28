@@ -50,7 +50,7 @@ void *process_client_thread(void *arg)
 		{
 			int full_command_length = command_end_index + suffix_length - net_buffer;
 			string request_str = string(net_buffer, full_command_length);
-			cout<<net_buffer<<endl;
+			cout<<request_str<<endl;
 			PennCloud::Request request;
 			request.ParseFromString(request_str);
 			PennCloud::Response response;
@@ -72,7 +72,7 @@ void *process_client_thread(void *arg)
 					update_secondary(request_str); //busy wait here
 
 					//process request
-					
+				
 				}
 				else{
 					request_primary(request_str); //busy wait here
@@ -80,8 +80,6 @@ void *process_client_thread(void *arg)
 					//lock the row key
 					update_kv_store(request_str);
 					//unlock the row key
-
-
 
 				}
 				update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
@@ -177,9 +175,14 @@ int create_server()
 		//check if msg is from a fellow tablet server
 
 		if(replica_msg_check(clientaddr)){
+			cout<<"server message detected"<<endl;
 			if(isPrimary){
 				//create holdback queue for each row key range
 				//check for ACKS in the holdback queue
+			}
+			else{
+				//process WRITE requests
+				//process 
 			}
 
 		}
