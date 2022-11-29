@@ -1,4 +1,5 @@
 #include "utils/globalvars.h"
+#include "utils/hash.h"
 #include "utils/config_processor.h"
 #include "request.pb.h"
 #include "response.pb.h"

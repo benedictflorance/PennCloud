@@ -77,6 +77,47 @@ void process_config_file(string config_file)
     }
     curr_ip_addr = string(inet_ntoa(tablet_addresses[curr_server_index].sin_addr)) + ":" + to_string(ntohs(tablet_addresses[curr_server_index].sin_port));
 }
+void initialize_primary_info(string config_file)
+{
+    ifstream config_fstream(config_file);
+    string line;
+    getline(config_fstream, line); // Get <MASTER>
+    getline(config_fstream, line);
+    getline(config_fstream, line); // Get <TABLETS>
+    int index = 0;
+    while(getline(config_fstream, line))
+    {
+        if(line == replicas_header)
+            break;
+    }
+    while(getline(config_fstream, line))
+    {
+        stringstream replica(line);
+        string row_range;
+        getline(replica, row_range, ',');
+        vector<int> server_indices;
+        string index;
+        while(getline(replica, index, ','))
+            server_indices.push_back(stoi(index));
+        int start, end;
+        int hyphen_index = row_range.find("-");
+        start = row_range[0];
+        end  = row_range[2];
+        rkey_to_primary[toKey(start, end)] = server_indices[0];
+        tablet_server_group[toKey(start, end)] = server_indices;
+        if(server_indices[0] == curr_server_index)
+            isPrimary = true;
+        if(verbose)
+        {
+            cout<<"Rowkey range "<<(char) start<<" to "<<(char) end<<" has the key as "<<toKey(start, end)
+                <<" and primary server "<<rkey_to_primary[toKey(start, end)]<<" and tablet servers :";
+            for(int i = 0; i < tablet_server_group[toKey(start, end)].size(); i++)
+                cout<<tablet_server_group[toKey(start, end)][i]<<" ";
+            cout<<endl;
+        }
+    }
+}
+
 void signal_handler(int arg)
 {
 	/*

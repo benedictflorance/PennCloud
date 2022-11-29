@@ -1,6 +1,7 @@
 #include "utils/command_processor.h"
 #include "utils/tools.h"
 #include "utils/log.h"
+#include "utils/hash.h"
 #include "utils/config_processor.h"
 #include "utils/update_manager.h"
 #include "utils/background_daemons.h"
@@ -212,6 +213,8 @@ int main(int argc, char *argv[])
         exit(-1);
     }
     process_config_file(config_file);
+	initialize_primary_info(config_file);
+
 	load_kvstore_from_disk();
 	//create log file if it doesn't exist
 	create_log_file();
