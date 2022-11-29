@@ -93,24 +93,33 @@ void *process_client_thread(void *arg)
 
 			PennCloud::Request request;
 			request.ParseFromString(request_str);
-			
-			//TO DO - separate out GET requests
 
 			//message from another server
 			if(request.has_command()){
 				//this is the secondary server receiving a WRITE message for replication protocol
 				if(request.command() == "WRITE"){
 					cout<<"received WRITE"<<endl;
+					//obtain lock of the rowkey
+					rowkey_lock[request.rowkey()].lock();
 					//locally update and send an ACK
-					update_kv_store(request_str,client_socket);
+					update_kv_store(request_str);
+					//release lock of the rowkey
+					rowkey_lock[request.rowkey()].unlock();
 				}
 				//this is the primary server receiving request to WRITE
 				else if(request.command() == "REQUEST"){
 					cout<<"received REQUEST"<<endl;
+
+					//obtain lock of the rowkey
+					rowkey_lock[request.rowkey()].lock();
 					//locally update
 					update_kv_store(request_str);
+					//release lock of the rowkey
+					rowkey_lock[request.rowkey()].unlock();
+
 					//ask secondary servers to update
 					update_secondary(request_str);
+
 					//add the msg to holdback queue - TODO
 
 				}
@@ -120,15 +129,15 @@ void *process_client_thread(void *arg)
 					//update holdback queue - TODO
 
 					//count ACKs per request_str
-					//TODO - unique key for each message
 					if(number_of_acks.find(curr_server_index)==number_of_acks.end()
-					|| number_of_acks[curr_server_index].find(request_str)==number_of_acks[curr_server_index].end()){
-						number_of_acks[curr_server_index][request_str]=0;
+					|| number_of_acks[curr_server_index].find(request.timestamp())==number_of_acks[curr_server_index].end()){
+						number_of_acks[curr_server_index][request.timestamp()]=0;
 					}
-					number_of_acks[curr_server_index][request_str]++;
-					cout<<"Number of ACKs received: " << number_of_acks[curr_server_index][request_str]<<endl;
+					number_of_acks[curr_server_index][request.timestamp()]++;
+					cout<<"Number of ACKs received: " << number_of_acks[curr_server_index][request.timestamp()]<<endl;
+
 					//if message received from all secondaries
-					if(number_of_acks[curr_server_index][request_str] == 2){
+					if(number_of_acks[curr_server_index][request.timestamp()] == 2){
 						// own message, process
 						cout<<"Process Message"<<endl;
 						if(request.sender_server_index()==to_string(curr_server_index)){
@@ -150,12 +159,32 @@ void *process_client_thread(void *arg)
 			//request from client
 			else{
 				cout<<"Request from Client"<<endl;
+
+				//if it is a get request, simply process it
+				if (strcasecmp(request.type().c_str(), "GET") == 0){
+					process_request(request_str,client_socket);
+				}
 				request.set_sender_server_index(to_string(curr_server_index));
+				request.set_timestamp(get_time());
+				cout<<request.timestamp()<<endl;
 				string new_request_str;
 				request.SerializeToString(&new_request_str);
 				if(isPrimary){
+					// //create rowkey lock if it doesn't exist
+					// if(rowkey_lock.find(request.rowkey())==rowkey_lock.end()){
+					// 	mutex lockrowkey;
+					// 	rowkeymaplock.lock();
+					// 	rowkey_lock.insert({request.rowkey(), lockrowkey});	
+					// 	rowkeymaplock.unlock();
+					// }
+
+					//obtain lock of the rowkey
+					rowkey_lock[request.rowkey()].lock();
 					//locally update
-					update_kv_store(new_request_str);
+					update_kv_store(request_str);
+					//release lock of the rowkey
+					rowkey_lock[request.rowkey()].unlock();
+
 					//ask secondary servers to update
 					update_secondary(new_request_str);
 
@@ -192,11 +221,6 @@ void *process_client_thread(void *arg)
 		delete command_end_index;
 	}
 }
-
-struct args {
-    int client_socket;
-    sockaddr_in client_addr;
-};
 
 int create_server()
 {
@@ -242,9 +266,6 @@ int create_server()
 		if(verbose)
 			cerr<<("Connection from %s\n", inet_ntoa(clientaddr.sin_addr));
 		pthread_t thread;
-		struct args *thread_args = (struct args *)malloc(sizeof(struct args));
-		thread_args->client_socket = client_sockets.back();
-		thread_args->client_addr = clientaddr;
 		
 		if(pthread_create(&thread, NULL, process_client_thread, &client_sockets.back()) != 0)
 		{

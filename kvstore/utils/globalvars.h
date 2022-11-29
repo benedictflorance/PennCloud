@@ -22,8 +22,12 @@
 #include <sstream>
 #include <thread>
 #include <filesystem>
+// #include <boost/uuid/uuid.hpp>            // uuid class
+// #include <boost/uuid/uuid_generators.hpp> // generators
+// #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 #include "../request.pb.h"
 #include "../response.pb.h"
+
 namespace fs = std::filesystem;
 using namespace std;
 
@@ -76,3 +80,5 @@ const char* ack_command= "ACK:";
 const char* grant_command = "GRANT:";
 //map for each primary to store no of acks for each request
 unordered_map<int,unordered_map<string,int> > number_of_acks;
+mutex rowkeymaplock;
+unordered_map<string,mutex> rowkey_lock;

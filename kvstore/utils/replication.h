@@ -48,6 +48,12 @@ bool replica_msg_check(sockaddr_in clientaddr){
     return false;
 }
 
+std::string get_time(){
+    using namespace std::chrono;
+    auto now = time_point_cast<milliseconds>(system_clock::now());
+    return date::format("%T", now);
+}
+
 vector<int> find_my_replica_group(string request_str){
     PennCloud::Request request;
     request.ParseFromString(request_str);

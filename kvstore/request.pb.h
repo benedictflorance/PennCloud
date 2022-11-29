@@ -188,6 +188,7 @@ class Request final :
     kCommandFieldNumber = 6,
     kIsServerFieldNumber = 7,
     kSenderServerIndexFieldNumber = 8,
+    kTimestampFieldNumber = 9,
   };
   // required string type = 1;
   bool has_type() const;
@@ -333,6 +334,24 @@ class Request final :
   std::string* _internal_mutable_sender_server_index();
   public:
 
+  // optional string timestamp = 9;
+  bool has_timestamp() const;
+  private:
+  bool _internal_has_timestamp() const;
+  public:
+  void clear_timestamp();
+  const std::string& timestamp() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_timestamp(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_timestamp();
+  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_timestamp();
+  void set_allocated_timestamp(std::string* timestamp);
+  private:
+  const std::string& _internal_timestamp() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_timestamp(const std::string& value);
+  std::string* _internal_mutable_timestamp();
+  public:
+
   // @@protoc_insertion_point(class_scope:PennCloud.Request)
  private:
   class _Internal;
@@ -353,6 +372,7 @@ class Request final :
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr command_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr isserver_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr sender_server_index_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr timestamp_;
   friend struct ::TableStruct_request_2eproto;
 };
 // ===================================================================
@@ -820,6 +840,63 @@ inline void Request::set_allocated_sender_server_index(std::string* sender_serve
   sender_server_index_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), sender_server_index,
       GetArenaForAllocation());
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.sender_server_index)
+}
+
+// optional string timestamp = 9;
+inline bool Request::_internal_has_timestamp() const {
+  bool value = (_has_bits_[0] & 0x00000100u) != 0;
+  return value;
+}
+inline bool Request::has_timestamp() const {
+  return _internal_has_timestamp();
+}
+inline void Request::clear_timestamp() {
+  timestamp_.ClearToEmpty();
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline const std::string& Request::timestamp() const {
+  // @@protoc_insertion_point(field_get:PennCloud.Request.timestamp)
+  return _internal_timestamp();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void Request::set_timestamp(ArgT0&& arg0, ArgT... args) {
+ _has_bits_[0] |= 0x00000100u;
+ timestamp_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:PennCloud.Request.timestamp)
+}
+inline std::string* Request::mutable_timestamp() {
+  // @@protoc_insertion_point(field_mutable:PennCloud.Request.timestamp)
+  return _internal_mutable_timestamp();
+}
+inline const std::string& Request::_internal_timestamp() const {
+  return timestamp_.Get();
+}
+inline void Request::_internal_set_timestamp(const std::string& value) {
+  _has_bits_[0] |= 0x00000100u;
+  timestamp_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
+}
+inline std::string* Request::_internal_mutable_timestamp() {
+  _has_bits_[0] |= 0x00000100u;
+  return timestamp_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
+}
+inline std::string* Request::release_timestamp() {
+  // @@protoc_insertion_point(field_release:PennCloud.Request.timestamp)
+  if (!_internal_has_timestamp()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000100u;
+  return timestamp_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+}
+inline void Request::set_allocated_timestamp(std::string* timestamp) {
+  if (timestamp != nullptr) {
+    _has_bits_[0] |= 0x00000100u;
+  } else {
+    _has_bits_[0] &= ~0x00000100u;
+  }
+  timestamp_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), timestamp,
+      GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.timestamp)
 }
 
 #ifdef __GNUC__
