@@ -23,7 +23,10 @@ constexpr Request::Request(
   , rowkey_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
   , columnkey_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
   , value1_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , value2_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
+  , value2_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , command_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , isserver_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , sender_server_index_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
 struct RequestDefaultTypeInternal {
   constexpr RequestDefaultTypeInternal()
     : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
@@ -49,14 +52,20 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_request_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::PennCloud::Request, columnkey_),
   PROTOBUF_FIELD_OFFSET(::PennCloud::Request, value1_),
   PROTOBUF_FIELD_OFFSET(::PennCloud::Request, value2_),
+  PROTOBUF_FIELD_OFFSET(::PennCloud::Request, command_),
+  PROTOBUF_FIELD_OFFSET(::PennCloud::Request, isserver_),
+  PROTOBUF_FIELD_OFFSET(::PennCloud::Request, sender_server_index_),
   0,
   1,
   2,
   3,
   4,
+  5,
+  6,
+  7,
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 10, sizeof(::PennCloud::Request)},
+  { 0, 13, sizeof(::PennCloud::Request)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -64,13 +73,15 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 };
 
 const char descriptor_table_protodef_request_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\rrequest.proto\022\tPennCloud\"Z\n\007Request\022\014\n"
-  "\004type\030\001 \002(\t\022\016\n\006rowkey\030\002 \002(\t\022\021\n\tcolumnkey"
-  "\030\003 \002(\t\022\016\n\006value1\030\004 \001(\014\022\016\n\006value2\030\005 \001(\014"
+  "\n\rrequest.proto\022\tPennCloud\"\232\001\n\007Request\022\014"
+  "\n\004type\030\001 \002(\t\022\016\n\006rowkey\030\002 \002(\t\022\021\n\tcolumnke"
+  "y\030\003 \002(\t\022\016\n\006value1\030\004 \001(\014\022\016\n\006value2\030\005 \001(\014\022"
+  "\017\n\007command\030\006 \001(\t\022\020\n\010isServer\030\007 \001(\t\022\033\n\023se"
+  "nder_server_index\030\010 \001(\t"
   ;
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_request_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_request_2eproto = {
-  false, false, 118, descriptor_table_protodef_request_2eproto, "request.proto", 
+  false, false, 183, descriptor_table_protodef_request_2eproto, "request.proto", 
   &descriptor_table_request_2eproto_once, nullptr, 0, 1,
   schemas, file_default_instances, TableStruct_request_2eproto::offsets,
   file_level_metadata_request_2eproto, file_level_enum_descriptors_request_2eproto, file_level_service_descriptors_request_2eproto,
@@ -102,6 +113,15 @@ class Request::_Internal {
   }
   static void set_has_value2(HasBits* has_bits) {
     (*has_bits)[0] |= 16u;
+  }
+  static void set_has_command(HasBits* has_bits) {
+    (*has_bits)[0] |= 32u;
+  }
+  static void set_has_isserver(HasBits* has_bits) {
+    (*has_bits)[0] |= 64u;
+  }
+  static void set_has_sender_server_index(HasBits* has_bits) {
+    (*has_bits)[0] |= 128u;
   }
   static bool MissingRequiredFields(const HasBits& has_bits) {
     return ((has_bits[0] & 0x00000007) ^ 0x00000007) != 0;
@@ -143,6 +163,21 @@ Request::Request(const Request& from)
     value2_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_value2(), 
       GetArenaForAllocation());
   }
+  command_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (from._internal_has_command()) {
+    command_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_command(), 
+      GetArenaForAllocation());
+  }
+  isserver_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (from._internal_has_isserver()) {
+    isserver_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_isserver(), 
+      GetArenaForAllocation());
+  }
+  sender_server_index_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (from._internal_has_sender_server_index()) {
+    sender_server_index_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_sender_server_index(), 
+      GetArenaForAllocation());
+  }
   // @@protoc_insertion_point(copy_constructor:PennCloud.Request)
 }
 
@@ -152,6 +187,9 @@ rowkey_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlrea
 columnkey_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 value1_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 value2_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+command_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+isserver_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+sender_server_index_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 Request::~Request() {
@@ -167,6 +205,9 @@ void Request::SharedDtor() {
   columnkey_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   value1_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   value2_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  command_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  isserver_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  sender_server_index_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void Request::ArenaDtor(void* object) {
@@ -186,7 +227,7 @@ void Request::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x0000001fu) {
+  if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
       type_.ClearNonDefaultToEmpty();
     }
@@ -201,6 +242,15 @@ void Request::Clear() {
     }
     if (cached_has_bits & 0x00000010u) {
       value2_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000020u) {
+      command_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000040u) {
+      isserver_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000080u) {
+      sender_server_index_.ClearNonDefaultToEmpty();
     }
   }
   _has_bits_.Clear();
@@ -260,6 +310,39 @@ const char* Request::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
           auto str = _internal_mutable_value2();
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional string command = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 50)) {
+          auto str = _internal_mutable_command();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          #ifndef NDEBUG
+          ::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "PennCloud.Request.command");
+          #endif  // !NDEBUG
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional string isServer = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          auto str = _internal_mutable_isserver();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          #ifndef NDEBUG
+          ::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "PennCloud.Request.isServer");
+          #endif  // !NDEBUG
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // optional string sender_server_index = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 66)) {
+          auto str = _internal_mutable_sender_server_index();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          #ifndef NDEBUG
+          ::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "PennCloud.Request.sender_server_index");
+          #endif  // !NDEBUG
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -336,6 +419,36 @@ failure:
         5, this->_internal_value2(), target);
   }
 
+  // optional string command = 6;
+  if (cached_has_bits & 0x00000020u) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->_internal_command().data(), static_cast<int>(this->_internal_command().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
+      "PennCloud.Request.command");
+    target = stream->WriteStringMaybeAliased(
+        6, this->_internal_command(), target);
+  }
+
+  // optional string isServer = 7;
+  if (cached_has_bits & 0x00000040u) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->_internal_isserver().data(), static_cast<int>(this->_internal_isserver().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
+      "PennCloud.Request.isServer");
+    target = stream->WriteStringMaybeAliased(
+        7, this->_internal_isserver(), target);
+  }
+
+  // optional string sender_server_index = 8;
+  if (cached_has_bits & 0x00000080u) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->_internal_sender_server_index().data(), static_cast<int>(this->_internal_sender_server_index().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
+      "PennCloud.Request.sender_server_index");
+    target = stream->WriteStringMaybeAliased(
+        8, this->_internal_sender_server_index(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -399,7 +512,7 @@ size_t Request::ByteSizeLong() const {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000018u) {
+  if (cached_has_bits & 0x000000f8u) {
     // optional bytes value1 = 4;
     if (cached_has_bits & 0x00000008u) {
       total_size += 1 +
@@ -412,6 +525,27 @@ size_t Request::ByteSizeLong() const {
       total_size += 1 +
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
           this->_internal_value2());
+    }
+
+    // optional string command = 6;
+    if (cached_has_bits & 0x00000020u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+          this->_internal_command());
+    }
+
+    // optional string isServer = 7;
+    if (cached_has_bits & 0x00000040u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+          this->_internal_isserver());
+    }
+
+    // optional string sender_server_index = 8;
+    if (cached_has_bits & 0x00000080u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+          this->_internal_sender_server_index());
     }
 
   }
@@ -447,7 +581,7 @@ void Request::MergeFrom(const Request& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 0x0000001fu) {
+  if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
       _internal_set_type(from._internal_type());
     }
@@ -462,6 +596,15 @@ void Request::MergeFrom(const Request& from) {
     }
     if (cached_has_bits & 0x00000010u) {
       _internal_set_value2(from._internal_value2());
+    }
+    if (cached_has_bits & 0x00000020u) {
+      _internal_set_command(from._internal_command());
+    }
+    if (cached_has_bits & 0x00000040u) {
+      _internal_set_isserver(from._internal_isserver());
+    }
+    if (cached_has_bits & 0x00000080u) {
+      _internal_set_sender_server_index(from._internal_sender_server_index());
     }
   }
 }
@@ -513,6 +656,21 @@ void Request::InternalSwap(Request* other) {
       &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
       &value2_, GetArenaForAllocation(),
       &other->value2_, other->GetArenaForAllocation()
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &command_, GetArenaForAllocation(),
+      &other->command_, other->GetArenaForAllocation()
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &isserver_, GetArenaForAllocation(),
+      &other->isserver_, other->GetArenaForAllocation()
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &sender_server_index_, GetArenaForAllocation(),
+      &other->sender_server_index_, other->GetArenaForAllocation()
   );
 }
 

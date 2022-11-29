@@ -30,10 +30,10 @@ using namespace std;
 // Message constants
 const char* invalid_ip_message = "-ERR Invalid IP/port argument. Please adhere to <IP Address>:<Port Number>\r\n";
 const char* shutdown_message = "-ERR Tablet server shutting down\r\n";
-const char* service_ready_message = "+OK Tablet server ready\r\n";
 const char* new_connection_message = "New connection\r\n";
 const char* closing_message = "Connection closed\r\n";
 const char* alive_command = "ALIVE";
+pair<const char*, const char*> service_ready_message = make_pair("+OK", "Tablet server ready");
 pair<const char*, const char*> type_unset_message = make_pair("-ERR", "Request type not set");
 pair<const char*, const char*>  unrecognized_command_message = make_pair("-ERR", "Unrecognized command");
 pair<const char*, const char*>  param_unset_message = make_pair("-ERR", "Parameter(s) required for this command are not set");

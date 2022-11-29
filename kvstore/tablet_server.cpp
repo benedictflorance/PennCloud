@@ -20,7 +20,13 @@ void create_log_file(){
 void *process_client_thread(void *arg)
 {	
 	int client_socket = *(int*) arg;
-	write(client_socket, service_ready_message, strlen(service_ready_message));
+	string response_str;
+	PennCloud::Response response;
+	response.set_status(service_ready_message.first);
+	response.set_description(service_ready_message.second);
+	response.SerializeToString(&response_str);								
+	write(client_socket, response_str.c_str(), strlen(response_str.c_str()));
+
 	if(verbose)
 	{
 		// [N] New connection (where N is the file descriptor of the connection);
