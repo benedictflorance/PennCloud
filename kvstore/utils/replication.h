@@ -102,8 +102,7 @@ void update_kv_store(string request_str, int client_socket = -1){
         if(connect(sockfd, (struct sockaddr*)& tablet_addresses[rkey_to_primary[unique_key]], 
         sizeof(tablet_addresses[rkey_to_primary[unique_key]]))<0) 
             cerr<<"Connect Failed: "<<errno<<endl;
-        
-        //request_str = "ACK:" + request_str + "\r\n";
+
         request.set_command("ACK");
         string ack_request_str;
         request.SerializeToString(&ack_request_str);
@@ -132,12 +131,40 @@ void update_secondary(string request_str){
                 return;
             }
             connect(sockfd, (struct sockaddr*)& tablet_addresses[my_tablet_server_group[i]], sizeof(tablet_addresses[my_tablet_server_group[i]]));
-            //request_str += "\r\n";
-            //request_str = "WRITE:" + request_str;
+
             write_request_str += write_request_str + "\r\n";
             cout<<"Sending WRITE"<<endl;
             write(sockfd, write_request_str.c_str(), strlen(write_request_str.c_str()));
             //close(sockfd);
+        } 
+    }
+}
+
+//grant request to the owner secondary
+void grant_secondary(string request_str){
+    PennCloud::Request request;
+    request.ParseFromString(request_str);
+    request.set_command("GRANT");
+    string write_request_str;
+    request.SerializeToString(&write_request_str);
+
+    pair<int,int> my_rkey_range = find_rowkey_range(request_str);
+    vector<int> my_tablet_server_group = tablet_server_group[toKey(my_rkey_range.first, my_rkey_range.second)];
+    for(int i = 0; i < my_tablet_server_group.size(); i++){
+        if(to_string(my_tablet_server_group[i])==request.sender_server_index()){
+            int sockfd = socket(PF_INET, SOCK_STREAM, 0);
+            if (sockfd < 0) {
+                if(verbose)
+                    cerr<<"Unable to create socket for Replication"<<endl;
+                return;
+            }
+            connect(sockfd, (struct sockaddr*)& tablet_addresses[my_tablet_server_group[i]], sizeof(tablet_addresses[my_tablet_server_group[i]]));
+
+            write_request_str += write_request_str + "\r\n";
+            cout<<"Sending GRANT"<<endl;
+            write(sockfd, write_request_str.c_str(), strlen(write_request_str.c_str()));
+            //close(sockfd);
+            break;
         } 
     }
 }

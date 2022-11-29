@@ -78,8 +78,7 @@ void *process_client_thread(void *arg)
 	{	
 		char *command_end_index;
 		int client_shutdown = read(client_socket, current_buffer, BUFFER_SIZE-strlen(net_buffer));
-		//if(shutdown_flag || client_shutdown == 0)
-		if(shutdown_flag)
+		if(shutdown_flag || client_shutdown == 0)
 		{
 			if(verbose)
 					cerr<<"["<<client_socket<<"] "<<closing_message<<endl;
@@ -89,12 +88,13 @@ void *process_client_thread(void *arg)
 		}
 		while((command_end_index = strstr(net_buffer, "\r\n")) != NULL)
 		{
-
 			int full_command_length = command_end_index + suffix_length - net_buffer;
 			string request_str = string(net_buffer, full_command_length);
 
 			PennCloud::Request request;
 			request.ParseFromString(request_str);
+			
+			//TO DO - separate out GET requests
 
 			//message from another server
 			if(request.has_command()){
@@ -117,47 +117,46 @@ void *process_client_thread(void *arg)
 				//this is the primary server, receiving an ACK message about a request
 				else if(request.command() == "ACK"){
 					cout<<"received ACK"<<endl;
-					//update holdback queue
+					//update holdback queue - TODO
 
 					//count ACKs per request_str
+					//TODO - unique key for each message
+					if(number_of_acks.find(curr_server_index)==number_of_acks.end()
+					|| number_of_acks[curr_server_index].find(request_str)==number_of_acks[curr_server_index].end()){
+						number_of_acks[curr_server_index][request_str]=0;
+					}
+					number_of_acks[curr_server_index][request_str]++;
+					//if message received from all secondaries
+					if(number_of_acks[curr_server_index][request_str] == 2){
+						// own message, process
+						if(request.sender_server_index()==to_string(curr_server_index)){
+							process_request(request_str,client_socket);
 
-					//process request
-
+						}
+						//else GRANT
+						else{
+							grant_secondary(request_str);
+						}
+					}
 				}
 				//this is a secondary server, request was granted by the primary and can now be processed
 				else if(request.command() == "GRANT"){
+					cout<<"received GRANT"<<endl;
 					//process request
 					process_request(request_str,client_socket);
 				}
 			}
-			// //this is the secondary server receiving a WRITE message for replication protocol
-			// if(request_str.find(write_command)!=string::npos){
-			// 	cout<<"received WRITE"<<endl;
-			// 	request_str = request_str.substr(6);
-			// 	update_kv_store(request_str,client_socket);
-			// }
-			// //this is the primary server, receiving an ACK message about a request
-			// else if(request_str.find(ack_command)!=string::npos){
-			// 	cout<<"received ACK"<<endl;
-				
-			// 	//update holdback queue
-
-			// 	//count ACKs per request_str
-			// 	//process request
-			// }
-			// //this is a secondary server, request was granted by the primary and can now be processed
-			// else if(request_str.find(grant_command)!=string::npos){
-			// 	request_str = request_str.substr(6);
-			// }
 			//request from client
 			else{
 				cout<<"Request from Client"<<endl;
+				request.set_sender_server_index(to_string(curr_server_index));
 				if(isPrimary){
 					//locally update
 					update_kv_store(request_str);
 					//ask secondary servers to update
 					update_secondary(request_str);
-					//add the msg to holdback queue
+
+					//add the msg to holdback queue - TODO
 				}
 				else{
 					//request primary for permission
