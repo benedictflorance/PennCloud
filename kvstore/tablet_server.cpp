@@ -1,7 +1,8 @@
+#include "utils/globalvars.h"
+#include "utils/hash.h"
 #include "utils/command_processor.h"
 #include "utils/tools.h"
 #include "utils/log.h"
-#include "utils/hash.h"
 #include "utils/config_processor.h"
 #include "utils/update_manager.h"
 #include "utils/background_daemons.h"
@@ -21,18 +22,10 @@ void create_log_file(){
 void *process_client_thread(void *arg)
 {	
 	int client_socket = *(int*) arg;
-	string response_str;
-	PennCloud::Response response;
-	response.set_status(service_ready_message.first);
-	response.set_description(service_ready_message.second);
-	response.SerializeToString(&response_str);								
-	write(client_socket, response_str.c_str(), strlen(response_str.c_str()));
-
 	if(verbose)
 	{
 		// [N] New connection (where N is the file descriptor of the connection);
 		cerr<<"["<<client_socket<<"] "<<new_connection_message<<endl;
-		cerr<<"["<<client_socket<<"] "<<"S: "<<service_ready_message<<endl;
 	}
 
 	char net_buffer[BUFFER_SIZE];
@@ -59,6 +52,7 @@ void *process_client_thread(void *arg)
 			request.ParseFromString(request_str);
 			PennCloud::Response response;
 			string response_str;
+			bool doNotSendResponse = false;
 			if(!request.has_type())
 			{
 				response.set_status(type_unset_message.first);
@@ -79,20 +73,29 @@ void *process_client_thread(void *arg)
 				update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
 				process_delete_request(request, response);
 			}
+			else if ((strcasecmp(request.type().c_str(), "CHECKPOINT") == 0) && !isPrimary){
+				thread sec_checkpoint_thread(checkpoint_kvstore_secondary);
+				sec_checkpoint_thread.detach();
+				doNotSendResponse = true;
+			}
 			else
 			{
 				response.set_status(unrecognized_command_message.first);
 				response.set_description(unrecognized_command_message.second);
 			}		
-			response.SerializeToString(&response_str);								
-			write(client_socket, response_str.c_str(), strlen(response_str.c_str()));
+			if(!doNotSendResponse)
+			{
+				response.SerializeToString(&response_str);								
+				write(client_socket, response_str.c_str(), strlen(response_str.c_str()));
+			}
 			if(verbose)
 				{
 					// [N] C: <text> (where <text> is a command received from the client and N is as above);
 					cerr<<"["<<client_socket<<"] "<<"Client received a request type of "<<request.type()<<" a rowkey of "<<request.rowkey()<<" a columnkey of "<<request.columnkey()<<" a value1 of "<<request.value1()
-						<<" a value2 of "<<request.value2()<<endl; 
+						<<" a value2 of "<<request.value2()<<" command of "<<request.command()<<" Is server? "<<request.isserver()<<" and a sender server index of "<<request.sender_server_index()<<endl; 
 					// [N] S: <text> (where <text> is a response sent by the server, and N is as above);
-					cerr<<"["<<client_socket<<"] "<<"Server sent a response status of  "<<response.status()<<" response description of "<<response.description()<<" response value of "<<response.value()<<endl;
+					if(!doNotSendResponse)
+						cerr<<"["<<client_socket<<"] "<<"Server sent a response status of  "<<response.status()<<" response description of "<<response.description()<<" response value of "<<response.value()<<endl;
 				}
 			current_buffer = net_buffer;
 			command_end_index += suffix_length;
@@ -131,13 +134,13 @@ int create_server()
 	// Create a socket file descriptor
 	if((server_socket = socket(PF_INET, SOCK_STREAM, 0)) < 0)
 	{
-		cerr << "Socket creation error!\r\n";
-		return -1;
+			cerr << "Socket creation error!\r\n";
+			return -1;
 	}
-	if (::bind(server_socket, (struct sockaddr*)& tablet_addresses[curr_server_index], sizeof(tablet_addresses[curr_server_index])) < 0) 
+	if (::bind(server_socket, (struct sockaddr*)& tablet_addresses[curr_server_index], sizeof(tablet_addresses[curr_server_index])) < 0) 	
 	{
-		cerr << "Binding error!\r\n";
-		return -1;
+	cerr << "Binding error!\r\n";
+	return -1;
 	}
 	if (listen(server_socket, 100) < 0) {
 		cerr << "Listen error!\r\n";
@@ -146,7 +149,12 @@ int create_server()
 
 	//create a thread for sending heartbeats to the master
 	thread send_heartbeats(send_heartbeat);
-	thread checkpoint_thread(checkpoint_kvstore);
+	send_heartbeats.detach();
+	if(isPrimary)
+	{
+		thread checkpoint_thread(checkpoint_kvstore_primary);
+		checkpoint_thread.detach();
+	}
 
 	while(true)
 	{
@@ -214,7 +222,6 @@ int main(int argc, char *argv[])
     }
     process_config_file(config_file);
 	initialize_primary_info(config_file);
-
 	load_kvstore_from_disk();
 	//create log file if it doesn't exist
 	create_log_file();

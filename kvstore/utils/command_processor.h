@@ -1,4 +1,3 @@
-#include "globalvars.h"
 void process_get_request(PennCloud::Request &request, PennCloud::Response &response);
 void process_put_request(PennCloud::Request &request, PennCloud::Response &response);
 void process_cput_request(PennCloud::Request &request, PennCloud::Response &response);
@@ -9,7 +8,8 @@ bool is_rowkey_accepted(string rowkey)
     int start_letter = rowkey[0];
     for(int i = 0; i < rowkey_range.size(); i++)
     {
-        if(rowkey[0] >= rowkey_range[i].first && rowkey[0] <= rowkey_range[i].second)
+        if(rowkey[0] >= toRowKeyRange(rowkey_range[i]).first && 
+            rowkey[0] <= toRowKeyRange(rowkey_range[i]).second)
             return true;
     }
     return false;

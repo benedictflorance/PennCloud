@@ -207,7 +207,7 @@ class Request final :
   std::string* _internal_mutable_type();
   public:
 
-  // required string rowkey = 2;
+  // optional string rowkey = 2;
   bool has_rowkey() const;
   private:
   bool _internal_has_rowkey() const;
@@ -225,7 +225,7 @@ class Request final :
   std::string* _internal_mutable_rowkey();
   public:
 
-  // required string columnkey = 3;
+  // optional string columnkey = 3;
   bool has_columnkey() const;
   private:
   bool _internal_has_columnkey() const;
@@ -337,9 +337,6 @@ class Request final :
  private:
   class _Internal;
 
-  // helper for ByteSizeLong()
-  size_t RequiredFieldsByteSizeFallback() const;
-
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -423,7 +420,7 @@ inline void Request::set_allocated_type(std::string* type) {
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.type)
 }
 
-// required string rowkey = 2;
+// optional string rowkey = 2;
 inline bool Request::_internal_has_rowkey() const {
   bool value = (_has_bits_[0] & 0x00000002u) != 0;
   return value;
@@ -480,7 +477,7 @@ inline void Request::set_allocated_rowkey(std::string* rowkey) {
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.rowkey)
 }
 
-// required string columnkey = 3;
+// optional string columnkey = 3;
 inline bool Request::_internal_has_columnkey() const {
   bool value = (_has_bits_[0] & 0x00000004u) != 0;
   return value;
