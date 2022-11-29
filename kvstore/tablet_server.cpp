@@ -126,12 +126,13 @@ void *process_client_thread(void *arg)
 						number_of_acks[curr_server_index][request_str]=0;
 					}
 					number_of_acks[curr_server_index][request_str]++;
+					cout<<"Number of ACKs received: " << number_of_acks[curr_server_index][request_str]<<endl;
 					//if message received from all secondaries
 					if(number_of_acks[curr_server_index][request_str] == 2){
 						// own message, process
+						cout<<"Process Message"<<endl;
 						if(request.sender_server_index()==to_string(curr_server_index)){
 							process_request(request_str,client_socket);
-
 						}
 						//else GRANT
 						else{
@@ -150,17 +151,19 @@ void *process_client_thread(void *arg)
 			else{
 				cout<<"Request from Client"<<endl;
 				request.set_sender_server_index(to_string(curr_server_index));
+				string new_request_str;
+				request.SerializeToString(&new_request_str);
 				if(isPrimary){
 					//locally update
-					update_kv_store(request_str);
+					update_kv_store(new_request_str);
 					//ask secondary servers to update
-					update_secondary(request_str);
+					update_secondary(new_request_str);
 
 					//add the msg to holdback queue - TODO
 				}
 				else{
 					//request primary for permission
-					request_primary(request_str);
+					request_primary(new_request_str);
 				}
 			}
 			

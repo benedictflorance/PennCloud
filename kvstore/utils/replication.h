@@ -98,7 +98,6 @@ void update_kv_store(string request_str, int client_socket = -1){
         }
         pair<int,int> my_rkey_range = find_rowkey_range(request_str);
         int unique_key = toKey(my_rkey_range.first, my_rkey_range.second);
-        cout<<rkey_to_primary[unique_key]<<endl;
         if(connect(sockfd, (struct sockaddr*)& tablet_addresses[rkey_to_primary[unique_key]], 
         sizeof(tablet_addresses[rkey_to_primary[unique_key]]))<0) 
             cerr<<"Connect Failed: "<<errno<<endl;
@@ -130,7 +129,8 @@ void update_secondary(string request_str){
                     cerr<<"Unable to create socket for Replication"<<endl;
                 return;
             }
-            connect(sockfd, (struct sockaddr*)& tablet_addresses[my_tablet_server_group[i]], sizeof(tablet_addresses[my_tablet_server_group[i]]));
+            if(connect(sockfd, (struct sockaddr*)& tablet_addresses[my_tablet_server_group[i]], sizeof(tablet_addresses[my_tablet_server_group[i]]))<0)
+                cerr<<"Connect Failed: "<<errno<<endl;
 
             write_request_str += write_request_str + "\r\n";
             cout<<"Sending WRITE"<<endl;
@@ -158,7 +158,8 @@ void grant_secondary(string request_str){
                     cerr<<"Unable to create socket for Replication"<<endl;
                 return;
             }
-            connect(sockfd, (struct sockaddr*)& tablet_addresses[my_tablet_server_group[i]], sizeof(tablet_addresses[my_tablet_server_group[i]]));
+            if(connect(sockfd, (struct sockaddr*)& tablet_addresses[my_tablet_server_group[i]], sizeof(tablet_addresses[my_tablet_server_group[i]]))<0)
+                cerr<<"Connect Failed: "<<errno<<endl;
 
             write_request_str += write_request_str + "\r\n";
             cout<<"Sending GRANT"<<endl;
