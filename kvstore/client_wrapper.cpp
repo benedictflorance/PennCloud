@@ -25,16 +25,19 @@ pair<string, string> KVstore::send_request(int sockfd, string type, string rkey,
     request.set_type(type);
     request.set_rowkey(rkey);
     request.set_columnkey(ckey);
-    request.set_value1(value1);
-    request.set_value2(value2);
+    if(type == "PUT" || type == "CPUT")
+    {
+        request.set_value1(value1);
+    }
+    if(type == "CPUT")
+    {
+        request.set_value2(value2);;
+    }
     request.SerializeToString(&request_str);
     request_str += "\r\n";
-    cout<<request_str<<endl;
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
-    cout<<response_buffer<<endl;
-    cout<<"Value is "<<response.value()<<" and status is "<<response.status()<<endl;
     pair<string, string> response_str = make_pair(response.value(), response.status());
     return response_str;
 }
@@ -126,5 +129,5 @@ int main()
     response_str = kv_test.process_kvstore_request("DELETE", "10hanbang", "password");
     cout<<response_str.first<<" "<<response_str.second<<endl;
     response_str = kv_test.process_kvstore_request("GET", "10hanbang", "password");
-
+    cout<<response_str.first<<" "<<response_str.second<<endl;
 }
