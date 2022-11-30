@@ -24,7 +24,7 @@ void send_requests(int &sockfd)
     char response_buffer[BUFFER_SIZE];
     PennCloud::Request request;
     PennCloud::Response response;
-    //Test invalid rowkey
+    // Test invalid rowkey
     request.set_type("GET");
     request.set_rowkey("benedict");
     request.set_columnkey("password");
@@ -35,7 +35,7 @@ void send_requests(int &sockfd)
     response.ParseFromString(response_buffer);
     clear_keys(request, response, request_str, response_buffer);
 
-    // // Test valid rowkey
+    // Test valid rowkey but doesn't exist
     request.set_type("GET");
     request.set_rowkey("0benedict");
     request.set_columnkey("password");
@@ -58,7 +58,7 @@ void send_requests(int &sockfd)
     response.ParseFromString(response_buffer);
     clear_keys(request, response, request_str, response_buffer);
 
-    // Test valid rowkey
+    // Test valid rowkey but invalid colkey
     request.set_type("GET");
     request.set_rowkey("0benedict");
     request.set_columnkey("passwords");
@@ -131,6 +131,18 @@ void send_requests(int &sockfd)
     // Test PUT
     request.set_type("PUT");
     request.set_rowkey("25benny"); 
+    request.set_columnkey("cookie");
+    request.set_value1("ML>>>Systems");
+    request.SerializeToString(&request_str);
+    request_str += "\r\n";
+    write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
+    while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
+    response.ParseFromString(response_buffer);
+    clear_keys(request, response, request_str, response_buffer);
+
+    // Test PUT
+    request.set_type("PUT");
+    request.set_rowkey("45benny"); 
     request.set_columnkey("cookie");
     request.set_value1("ML>>>Systems");
     request.SerializeToString(&request_str);

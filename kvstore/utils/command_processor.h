@@ -1,4 +1,3 @@
-#include "globalvars.h"
 void create_nonexistent_mutex(string rowkey);
 void process_get_request(PennCloud::Request &request, PennCloud::Response &response);
 void process_put_request(PennCloud::Request &request, PennCloud::Response &response);
@@ -10,7 +9,8 @@ bool is_rowkey_accepted(string rowkey)
     int start_letter = rowkey[0];
     for(int i = 0; i < rowkey_range.size(); i++)
     {
-        if(rowkey[0] >= rowkey_range[i].first && rowkey[0] <= rowkey_range[i].second)
+        if(rowkey[0] >= toRowKeyRange(rowkey_range[i]).first && 
+            rowkey[0] <= toRowKeyRange(rowkey_range[i]).second)
             return true;
     }
     return false;
@@ -29,7 +29,7 @@ void process_get_request(PennCloud::Request &request, PennCloud::Response &respo
     }
     else
     {
-        kvstore_lock.lock();
+        rowkey_lock[request.rowkey()].lock();
         if(kv_store.find(request.rowkey()) != kv_store.end())
         {
             if(kv_store[request.rowkey()].find(request.columnkey()) != kv_store[request.rowkey()].end())
@@ -48,7 +48,7 @@ void process_get_request(PennCloud::Request &request, PennCloud::Response &respo
             response.set_status(key_inexistence_message.first);
             response.set_description(key_inexistence_message.second);
         }
-        kvstore_lock.unlock();
+        rowkey_lock[request.rowkey()].unlock();
     }
 }
 void create_nonexistent_mutex(string rowkey)

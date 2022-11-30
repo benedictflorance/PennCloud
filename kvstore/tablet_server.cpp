@@ -1,7 +1,8 @@
+#include "utils/globalvars.h"
+#include "utils/hash.h"
 #include "utils/command_processor.h"
 #include "utils/tools.h"
 #include "utils/log.h"
-#include "utils/hash.h"
 #include "utils/config_processor.h"
 #include "utils/update_manager.h"
 #include "utils/background_daemons.h"
@@ -9,6 +10,7 @@
 
 void *process_client_thread(void *arg);
 int create_server();
+void process_request(string request_str, int client_socket);
 
 void create_log_file(){
 	log_file_name = log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
@@ -123,9 +125,9 @@ void *process_client_thread(void *arg)
 					int key;
 					for(int i = 0; i < rowkey_range.size(); i++)
 					{
-						if(start_letter >= rowkey_range[i].first && start_letter <= rowkey_range[i].second)
+						if(start_letter >= toRowKeyRange(rowkey_range[i]).first && start_letter <= toRowKeyRange(rowkey_range[i]).second)
 						{
-							key = toKey(rowkey_range[i].first, rowkey_range[i].second);
+							key = rowkey_range[i];
 						}
 					}
 					if(number_of_acks[request.uniqueid()] == tablet_server_group[key].size() - 1){
@@ -145,6 +147,11 @@ void *process_client_thread(void *arg)
 					cout<<"received GRANT"<<endl;
 					//process request
 					process_request(request_str, req_client_sock_map[request.uniqueid()]);
+				}
+				//this is a secondary server, CHECKPOINT command is sent by the primary
+				else if ((strcasecmp(request.type().c_str(), "CHECKPOINT") == 0)){
+					thread sec_checkpoint_thread(checkpoint_kvstore_secondary);
+					sec_checkpoint_thread.detach();
 				}
 			}
 			//request from client
@@ -233,13 +240,13 @@ int create_server()
 	// Create a socket file descriptor
 	if((server_socket = socket(PF_INET, SOCK_STREAM, 0)) < 0)
 	{
-		cerr << "Socket creation error!\r\n";
-		return -1;
+			cerr << "Socket creation error!\r\n";
+			return -1;
 	}
-	if (::bind(server_socket, (struct sockaddr*)& tablet_addresses[curr_server_index], sizeof(tablet_addresses[curr_server_index])) < 0) 
+	if (::bind(server_socket, (struct sockaddr*)& tablet_addresses[curr_server_index], sizeof(tablet_addresses[curr_server_index])) < 0) 	
 	{
-		cerr << "Binding error!\r\n";
-		return -1;
+	cerr << "Binding error!\r\n";
+	return -1;
 	}
 	if (listen(server_socket, 100) < 0) {
 		cerr << "Listen error!\r\n";
@@ -248,7 +255,12 @@ int create_server()
 
 	//create a thread for sending heartbeats to the master
 	thread send_heartbeats(send_heartbeat);
-	thread checkpoint_thread(checkpoint_kvstore);
+	send_heartbeats.detach();
+	if(isPrimary)
+	{
+		thread checkpoint_thread(checkpoint_kvstore_primary);
+		checkpoint_thread.detach();
+	}
 
 	while(true)
 	{
@@ -319,7 +331,6 @@ int main(int argc, char *argv[])
     }
     process_config_file(config_file);
 	initialize_primary_info(config_file);
-
 	load_kvstore_from_disk();
 	//create log file if it doesn't exist
 	create_log_file();

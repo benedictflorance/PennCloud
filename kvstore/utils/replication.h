@@ -44,8 +44,8 @@ vector<int> find_my_replica_group(string request_str){
     int start_letter = request.rowkey()[0];
     vector<int> my_tablet_server_group;
     for(int i = 0; i < rowkey_range.size(); i++){
-        if(start_letter >= rowkey_range[i].first && start_letter <= rowkey_range[i].second){
-            my_tablet_server_group = tablet_server_group[toKey(rowkey_range[i].first, rowkey_range[i].second)];
+        if(start_letter >= toRowKeyRange(rowkey_range[i]).first && start_letter <= toRowKeyRange(rowkey_range[i]).second){
+            my_tablet_server_group = tablet_server_group[toKey(toRowKeyRange(rowkey_range[i]).first, toRowKeyRange(rowkey_range[i]).second)];
             break;
         }    
     }
@@ -58,9 +58,9 @@ pair<int,int> find_rowkey_range(string request_str){
     int start_letter = request.rowkey()[0];
     pair<int,int> rkey_range;
     for(int i = 0; i < rowkey_range.size(); i++){
-        if(start_letter >= rowkey_range[i].first && start_letter <= rowkey_range[i].second){
-            rkey_range.first = rowkey_range[i].first;
-            rkey_range.second = rowkey_range[i].second;
+        if(start_letter >= toRowKeyRange(rowkey_range[i]).first && start_letter <= toRowKeyRange(rowkey_range[i]).second){
+            rkey_range.first = toRowKeyRange(rowkey_range[i]).first;
+            rkey_range.second = toRowKeyRange(rowkey_range[i]).second;
             //break;
         }    
     }
