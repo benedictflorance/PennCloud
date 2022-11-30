@@ -25,7 +25,7 @@ void send_requests(int &sockfd)
     PennCloud::Request request;
     PennCloud::Response response;
     //reading new connection
-    while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
+    //while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     //Test invalid rowkey
     // request.set_type("GET");
     // request.set_rowkey("benedict");

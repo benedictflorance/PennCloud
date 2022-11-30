@@ -80,5 +80,9 @@ const char* ack_command= "ACK:";
 const char* grant_command = "GRANT:";
 //map for each primary to store no of acks for each request
 unordered_map<int,unordered_map<string,int> > number_of_acks;
+unordered_map<string, int> req_client_sock_map;
 mutex rowkeymaplock;
 unordered_map<string,mutex> rowkey_lock;
+unordered_map<string, int> rowkey_version;
+unordered_map<string, mutex> rowkey_version_lock;
+const int NO_OF_SECONDARIES = 2;

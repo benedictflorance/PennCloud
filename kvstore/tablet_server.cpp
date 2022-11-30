@@ -62,7 +62,7 @@ void process_request(string request_str, int client_socket){
 void *process_client_thread(void *arg)
 {	
 	int client_socket = *(int*) arg;
-	write(client_socket, service_ready_message, strlen(service_ready_message));
+	// write(client_socket, service_ready_message, strlen(service_ready_message));
 	if(verbose)
 	{
 		// [N] New connection (where N is the file descriptor of the connection);
@@ -110,6 +110,8 @@ void *process_client_thread(void *arg)
 				else if(request.command() == "REQUEST"){
 					cout<<"received REQUEST"<<endl;
 
+					//rowkey_version_lock[request.rowkey()].lock();
+
 					//obtain lock of the rowkey
 					rowkey_lock[request.rowkey()].lock();
 					//locally update
@@ -137,11 +139,11 @@ void *process_client_thread(void *arg)
 					cout<<"Number of ACKs received: " << number_of_acks[curr_server_index][request.timestamp()]<<endl;
 
 					//if message received from all secondaries
-					if(number_of_acks[curr_server_index][request.timestamp()] == 2){
+					if(number_of_acks[curr_server_index][request.timestamp()] == NO_OF_SECONDARIES){
 						// own message, process
 						cout<<"Process Message"<<endl;
 						if(request.sender_server_index()==to_string(curr_server_index)){
-							process_request(request_str,client_socket);
+							process_request(request_str,req_client_sock_map[request.timestamp()]);
 						}
 						//else GRANT
 						else{
@@ -153,20 +155,24 @@ void *process_client_thread(void *arg)
 				else if(request.command() == "GRANT"){
 					cout<<"received GRANT"<<endl;
 					//process request
-					process_request(request_str,client_socket);
+					process_request(request_str,req_client_sock_map[request.timestamp()]);
 				}
 			}
 			//request from client
 			else{
 				cout<<"Request from Client"<<endl;
 
+
 				//if it is a get request, simply process it
 				if (strcasecmp(request.type().c_str(), "GET") == 0){
 					process_request(request_str,client_socket);
 				}
 				request.set_sender_server_index(to_string(curr_server_index));
+				//TO DO - make it more unique
 				request.set_timestamp(get_time());
+				req_client_sock_map[request.timestamp()] = client_socket;
 				cout<<request.timestamp()<<endl;
+				cout<<req_client_sock_map[request.timestamp()];
 				string new_request_str;
 				request.SerializeToString(&new_request_str);
 				if(isPrimary){
