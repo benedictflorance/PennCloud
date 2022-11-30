@@ -130,7 +130,7 @@ void send_requests(int &sockfd)
 
     // Test PUT
     request.set_type("PUT");
-    request.set_rowkey("0benny"); // TODO: removing 0 leads to an error, find why?
+    request.set_rowkey("25benny"); 
     request.set_columnkey("cookie");
     request.set_value1("ML>>>Systems");
     request.SerializeToString(&request_str);
@@ -142,7 +142,7 @@ void send_requests(int &sockfd)
 
     // Test delete 
     request.set_type("DELETE");
-    request.set_rowkey("0benny");
+    request.set_rowkey("25benny");
     request.set_columnkey("cookie");
     request.SerializeToString(&request_str);
     request_str += "\r\n";
@@ -153,7 +153,7 @@ void send_requests(int &sockfd)
 
     // Test valid rowkey
     request.set_type("GET");
-    request.set_rowkey("0benny");
+    request.set_rowkey("25benny");
     request.set_columnkey("cookie");
     request.SerializeToString(&request_str);
     request_str += "\r\n";

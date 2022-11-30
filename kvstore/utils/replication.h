@@ -107,7 +107,7 @@ string update_kv_store(string request_str, int client_socket){
         request.set_isserver("true");
         string ack_request_str;
         request.SerializeToString(&ack_request_str);
-        ack_request_str += ack_request_str + "\r\n";
+        ack_request_str += "\r\n";
         cout<<"Sending ACK"<<endl;
         write(sockfd, ack_request_str.c_str(), strlen(ack_request_str.c_str()));
         close(sockfd);
@@ -122,7 +122,7 @@ void update_secondary(string request_str){
     request.set_isserver("true");
     string write_request_str;
     request.SerializeToString(&write_request_str);
-
+    cout<<"Write String: "<<write_request_str<<endl;
     pair<int,int> my_rkey_range = find_rowkey_range(request_str);
     vector<int> my_tablet_server_group = tablet_server_group[toKey(my_rkey_range.first, my_rkey_range.second)];
     for(int i = 0; i < my_tablet_server_group.size(); i++){
@@ -139,7 +139,7 @@ void update_secondary(string request_str){
                 close(sockfd);
                 continue;
             }
-            write_request_str += write_request_str + "\r\n";
+            write_request_str +=  "\r\n";
             cout<<"Sending WRITE"<<endl;
             write(sockfd, write_request_str.c_str(), strlen(write_request_str.c_str()));
             close(sockfd);
@@ -173,7 +173,7 @@ void grant_secondary(string request_str){
                 continue;
             }
 
-            write_request_str += write_request_str + "\r\n";
+            write_request_str += "\r\n";
             cout<<"Sending GRANT"<<endl;
             write(sockfd, write_request_str.c_str(), strlen(write_request_str.c_str()));
             close(sockfd);
@@ -207,7 +207,7 @@ void request_primary(string request_str){
     request.set_isserver("true");   
     string req_request_str;
     request.SerializeToString(&req_request_str);
-    req_request_str += req_request_str + "\r\n";
+    req_request_str += "\r\n";
     cout<<"Sending REQUEST"<<endl;
     write(sockfd, req_request_str.c_str(), strlen(req_request_str.c_str()));
     close(sockfd);

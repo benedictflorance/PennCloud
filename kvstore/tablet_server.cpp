@@ -154,25 +154,40 @@ void *process_client_thread(void *arg)
 					(strcasecmp(request.type().c_str(), "CPUT") == 0) ||
 					(strcasecmp(request.type().c_str(), "DELETE") == 0))
 				{
-					request.set_sender_server_index(to_string(curr_server_index));
-					//TO DO - make it more unique
 					request.set_uniqueid(get_time() + to_string(rand()));
 					req_client_sock_map[request.uniqueid()] = client_socket;
-					string new_request_str;
-					
-					if(isPrimary){
-						//locally update
-						string preprocessed_response = update_kv_store(request_str);
-						request.set_preprocessed_response(preprocessed_response);
-						request.SerializeToString(&new_request_str);
-						//ask secondary servers to update
-						update_secondary(new_request_str);
-						//add the msg to holdback queue - TODO
+					if(is_rowkey_accepted(request.rowkey()))
+					{
+						request.set_sender_server_index(to_string(curr_server_index));
+						//TO DO - make it more unique
+						string new_request_str;
+						
+						if(isPrimary){
+							//locally update
+							string preprocessed_response = update_kv_store(request_str);
+							request.set_preprocessed_response(preprocessed_response);
+							request.SerializeToString(&new_request_str);
+							//ask secondary servers to update
+							update_secondary(new_request_str);
+							//add the msg to holdback queue - TODO
+						}
+						else{
+							//request primary for permission
+							request.SerializeToString(&new_request_str);
+							request_primary(new_request_str);
+						}
 					}
-					else{
-						//request primary for permission
+					else
+					{
+						PennCloud::Response response;
+						response.set_status(invalid_rowkey_message.first);
+        				response.set_description(invalid_rowkey_message.second);
+						string preprocessed_response;
+						response.SerializeToString(&preprocessed_response);
+						request.set_preprocessed_response(preprocessed_response);
+						string new_request_str;
 						request.SerializeToString(&new_request_str);
-						request_primary(new_request_str);
+						process_request(new_request_str, req_client_sock_map[request.uniqueid()]);
 					}
 				}
 				else
