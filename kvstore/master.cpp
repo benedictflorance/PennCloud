@@ -213,7 +213,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
             int tablet_servers_size = row_key_tablet_server.size();
             //generate a random index from the list of servers
             int index = (int)(rand() % (tablet_servers_size));
-            string tablet_address = tablet_addresses[row_key_tablet_server[index]] + crlf;
+            string tablet_address = tablet_addresses[row_key_tablet_server[index]];
             if(v){
                 fprintf(stderr, "[%d] Generated Index Is: %d", comm_fd,index);
                 fprintf(stderr, "[%d] Selected Tablet Server Is: %s", comm_fd,tablet_address.c_str());
@@ -348,8 +348,8 @@ void createServer(){
     }
 
     // write the greeting
-    char greeting[] = "+OK Master Server ready (Author: Namita Shukla / nashukla) \r\n";
-    do_write(fd, greeting, sizeof(greeting) - 1);
+    // char greeting[] = "+OK Master Server ready (Author: Namita Shukla / nashukla) \r\n";
+    // do_write(fd, greeting, sizeof(greeting) - 1);
 
     if(v)
         fprintf(stderr, "Creating handler for frontend\n");

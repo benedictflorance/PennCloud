@@ -26,12 +26,12 @@ void send_requests(int &sockfd)
     PennCloud::Response response;
     // while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     // Test invalid rowkey
-    // request.set_type("GET");
-    // request.set_rowkey("benedict");
-    // request.set_columnkey("password");
-    // request.SerializeToString(&request_str);
-    // request_str += "\r\n";
-    // write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
+    request.set_type("GET");
+    request.set_rowkey("benedict");
+    request.set_columnkey("password");
+    request.SerializeToString(&request_str);
+    request_str += "\r\n";
+    write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
     clear_keys(request, response, request_str, response_buffer);

@@ -22,17 +22,11 @@ void *process_client_thread(void *arg)
 {	
 	int client_socket = *(int*) arg;
 	string response_str;
-	PennCloud::Response response;
-	response.set_status(service_ready_message.first);
-	response.set_description(service_ready_message.second);
-	response.SerializeToString(&response_str);								
-	write(client_socket, response_str.c_str(), strlen(response_str.c_str()));
 
 	if(verbose)
 	{
 		// [N] New connection (where N is the file descriptor of the connection);
 		cerr<<"["<<client_socket<<"] "<<new_connection_message<<endl;
-		cerr<<"["<<client_socket<<"] "<<"S: "<<service_ready_message<<endl;
 	}
 
 	char net_buffer[BUFFER_SIZE];
