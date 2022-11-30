@@ -188,7 +188,8 @@ class Request final :
     kCommandFieldNumber = 6,
     kIsServerFieldNumber = 7,
     kSenderServerIndexFieldNumber = 8,
-    kTimestampFieldNumber = 9,
+    kUniqueidFieldNumber = 9,
+    kPreprocessedResponseFieldNumber = 10,
   };
   // required string type = 1;
   bool has_type() const;
@@ -334,22 +335,40 @@ class Request final :
   std::string* _internal_mutable_sender_server_index();
   public:
 
-  // optional string timestamp = 9;
-  bool has_timestamp() const;
+  // optional string uniqueid = 9;
+  bool has_uniqueid() const;
   private:
-  bool _internal_has_timestamp() const;
+  bool _internal_has_uniqueid() const;
   public:
-  void clear_timestamp();
-  const std::string& timestamp() const;
+  void clear_uniqueid();
+  const std::string& uniqueid() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_timestamp(ArgT0&& arg0, ArgT... args);
-  std::string* mutable_timestamp();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_timestamp();
-  void set_allocated_timestamp(std::string* timestamp);
+  void set_uniqueid(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_uniqueid();
+  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_uniqueid();
+  void set_allocated_uniqueid(std::string* uniqueid);
   private:
-  const std::string& _internal_timestamp() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_timestamp(const std::string& value);
-  std::string* _internal_mutable_timestamp();
+  const std::string& _internal_uniqueid() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_uniqueid(const std::string& value);
+  std::string* _internal_mutable_uniqueid();
+  public:
+
+  // optional string preprocessed_response = 10;
+  bool has_preprocessed_response() const;
+  private:
+  bool _internal_has_preprocessed_response() const;
+  public:
+  void clear_preprocessed_response();
+  const std::string& preprocessed_response() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_preprocessed_response(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_preprocessed_response();
+  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_preprocessed_response();
+  void set_allocated_preprocessed_response(std::string* preprocessed_response);
+  private:
+  const std::string& _internal_preprocessed_response() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_preprocessed_response(const std::string& value);
+  std::string* _internal_mutable_preprocessed_response();
   public:
 
   // @@protoc_insertion_point(class_scope:PennCloud.Request)
@@ -372,7 +391,8 @@ class Request final :
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr command_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr isserver_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr sender_server_index_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr timestamp_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr uniqueid_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr preprocessed_response_;
   friend struct ::TableStruct_request_2eproto;
 };
 // ===================================================================
@@ -842,61 +862,118 @@ inline void Request::set_allocated_sender_server_index(std::string* sender_serve
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.sender_server_index)
 }
 
-// optional string timestamp = 9;
-inline bool Request::_internal_has_timestamp() const {
+// optional string uniqueid = 9;
+inline bool Request::_internal_has_uniqueid() const {
   bool value = (_has_bits_[0] & 0x00000100u) != 0;
   return value;
 }
-inline bool Request::has_timestamp() const {
-  return _internal_has_timestamp();
+inline bool Request::has_uniqueid() const {
+  return _internal_has_uniqueid();
 }
-inline void Request::clear_timestamp() {
-  timestamp_.ClearToEmpty();
+inline void Request::clear_uniqueid() {
+  uniqueid_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000100u;
 }
-inline const std::string& Request::timestamp() const {
-  // @@protoc_insertion_point(field_get:PennCloud.Request.timestamp)
-  return _internal_timestamp();
+inline const std::string& Request::uniqueid() const {
+  // @@protoc_insertion_point(field_get:PennCloud.Request.uniqueid)
+  return _internal_uniqueid();
 }
 template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
-void Request::set_timestamp(ArgT0&& arg0, ArgT... args) {
+void Request::set_uniqueid(ArgT0&& arg0, ArgT... args) {
  _has_bits_[0] |= 0x00000100u;
- timestamp_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:PennCloud.Request.timestamp)
+ uniqueid_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:PennCloud.Request.uniqueid)
 }
-inline std::string* Request::mutable_timestamp() {
-  // @@protoc_insertion_point(field_mutable:PennCloud.Request.timestamp)
-  return _internal_mutable_timestamp();
+inline std::string* Request::mutable_uniqueid() {
+  // @@protoc_insertion_point(field_mutable:PennCloud.Request.uniqueid)
+  return _internal_mutable_uniqueid();
 }
-inline const std::string& Request::_internal_timestamp() const {
-  return timestamp_.Get();
+inline const std::string& Request::_internal_uniqueid() const {
+  return uniqueid_.Get();
 }
-inline void Request::_internal_set_timestamp(const std::string& value) {
+inline void Request::_internal_set_uniqueid(const std::string& value) {
   _has_bits_[0] |= 0x00000100u;
-  timestamp_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
+  uniqueid_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
 }
-inline std::string* Request::_internal_mutable_timestamp() {
+inline std::string* Request::_internal_mutable_uniqueid() {
   _has_bits_[0] |= 0x00000100u;
-  return timestamp_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
+  return uniqueid_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
 }
-inline std::string* Request::release_timestamp() {
-  // @@protoc_insertion_point(field_release:PennCloud.Request.timestamp)
-  if (!_internal_has_timestamp()) {
+inline std::string* Request::release_uniqueid() {
+  // @@protoc_insertion_point(field_release:PennCloud.Request.uniqueid)
+  if (!_internal_has_uniqueid()) {
     return nullptr;
   }
   _has_bits_[0] &= ~0x00000100u;
-  return timestamp_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+  return uniqueid_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
 }
-inline void Request::set_allocated_timestamp(std::string* timestamp) {
-  if (timestamp != nullptr) {
+inline void Request::set_allocated_uniqueid(std::string* uniqueid) {
+  if (uniqueid != nullptr) {
     _has_bits_[0] |= 0x00000100u;
   } else {
     _has_bits_[0] &= ~0x00000100u;
   }
-  timestamp_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), timestamp,
+  uniqueid_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), uniqueid,
       GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.timestamp)
+  // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.uniqueid)
+}
+
+// optional string preprocessed_response = 10;
+inline bool Request::_internal_has_preprocessed_response() const {
+  bool value = (_has_bits_[0] & 0x00000200u) != 0;
+  return value;
+}
+inline bool Request::has_preprocessed_response() const {
+  return _internal_has_preprocessed_response();
+}
+inline void Request::clear_preprocessed_response() {
+  preprocessed_response_.ClearToEmpty();
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline const std::string& Request::preprocessed_response() const {
+  // @@protoc_insertion_point(field_get:PennCloud.Request.preprocessed_response)
+  return _internal_preprocessed_response();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void Request::set_preprocessed_response(ArgT0&& arg0, ArgT... args) {
+ _has_bits_[0] |= 0x00000200u;
+ preprocessed_response_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:PennCloud.Request.preprocessed_response)
+}
+inline std::string* Request::mutable_preprocessed_response() {
+  // @@protoc_insertion_point(field_mutable:PennCloud.Request.preprocessed_response)
+  return _internal_mutable_preprocessed_response();
+}
+inline const std::string& Request::_internal_preprocessed_response() const {
+  return preprocessed_response_.Get();
+}
+inline void Request::_internal_set_preprocessed_response(const std::string& value) {
+  _has_bits_[0] |= 0x00000200u;
+  preprocessed_response_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
+}
+inline std::string* Request::_internal_mutable_preprocessed_response() {
+  _has_bits_[0] |= 0x00000200u;
+  return preprocessed_response_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
+}
+inline std::string* Request::release_preprocessed_response() {
+  // @@protoc_insertion_point(field_release:PennCloud.Request.preprocessed_response)
+  if (!_internal_has_preprocessed_response()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000200u;
+  return preprocessed_response_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+}
+inline void Request::set_allocated_preprocessed_response(std::string* preprocessed_response) {
+  if (preprocessed_response != nullptr) {
+    _has_bits_[0] |= 0x00000200u;
+  } else {
+    _has_bits_[0] &= ~0x00000200u;
+  }
+  preprocessed_response_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), preprocessed_response,
+      GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.preprocessed_response)
 }
 
 #ifdef __GNUC__

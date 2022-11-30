@@ -22,9 +22,7 @@
 #include <sstream>
 #include <thread>
 #include <filesystem>
-// #include <boost/uuid/uuid.hpp>            // uuid class
-// #include <boost/uuid/uuid_generators.hpp> // generators
-// #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
+#include <sys/time.h>
 #include "../request.pb.h"
 #include "../response.pb.h"
 
@@ -79,10 +77,9 @@ const char* write_command = "WRITE:";
 const char* ack_command= "ACK:";
 const char* grant_command = "GRANT:";
 //map for each primary to store no of acks for each request
-unordered_map<int,unordered_map<string,int> > number_of_acks;
+unordered_map<string,int> number_of_acks;
 unordered_map<string, int> req_client_sock_map;
 mutex rowkeymaplock;
-unordered_map<string,mutex> rowkey_lock;
+map<string, mutex> rowkey_lock;
 unordered_map<string, int> rowkey_version;
-unordered_map<string, mutex> rowkey_version_lock;
-const int NO_OF_SECONDARIES = 2;
+map<string, mutex> rowkey_version_lock;

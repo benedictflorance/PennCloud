@@ -27,27 +27,23 @@ void process_request(string request_str, int client_socket){
 	if(!request.has_type()){
 		response.set_status(type_unset_message.first);
 		response.set_description(type_unset_message.second);
+		response.SerializeToString(&response_str);
 	}
 	else if (strcasecmp(request.type().c_str(), "GET") == 0){
 		process_get_request(request, response);
+		response.SerializeToString(&response_str);
 	}
-	else if (strcasecmp(request.type().c_str(), "PUT") == 0){
-		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
-		process_put_request(request, response);
-	}
-	else if (strcasecmp(request.type().c_str(), "CPUT") == 0){
-		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
-		process_cput_request(request, response);
-	}
-	else if (strcasecmp(request.type().c_str(), "DELETE") == 0){
-		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
-		process_delete_request(request, response);
+	else if((strcasecmp(request.type().c_str(), "PUT") == 0) || 
+					(strcasecmp(request.type().c_str(), "CPUT") == 0) ||
+					(strcasecmp(request.type().c_str(), "DELETE") == 0))
+	{
+		response_str = request.preprocessed_response();
 	}
 	else{
 		response.set_status(unrecognized_command_message.first);
 		response.set_description(unrecognized_command_message.second);
-	}		
-	response.SerializeToString(&response_str);								
+		response.SerializeToString(&response_str);
+	}										
 	write(client_socket, response_str.c_str(), strlen(response_str.c_str()));
 	if(verbose)
 	{
@@ -62,12 +58,10 @@ void process_request(string request_str, int client_socket){
 void *process_client_thread(void *arg)
 {	
 	int client_socket = *(int*) arg;
-	// write(client_socket, service_ready_message, strlen(service_ready_message));
 	if(verbose)
 	{
 		// [N] New connection (where N is the file descriptor of the connection);
 		cerr<<"["<<client_socket<<"] "<<new_connection_message<<endl;
-		cerr<<"["<<client_socket<<"] "<<"S: "<<service_ready_message<<endl;
 	}
 
 	char net_buffer[BUFFER_SIZE];
@@ -95,55 +89,50 @@ void *process_client_thread(void *arg)
 			request.ParseFromString(request_str);
 
 			//message from another server
-			if(request.has_command()){
+			if(request.isserver() == "true"){
 				//this is the secondary server receiving a WRITE message for replication protocol
 				if(request.command() == "WRITE"){
 					cout<<"received WRITE"<<endl;
-					//obtain lock of the rowkey
-					rowkey_lock[request.rowkey()].lock();
 					//locally update and send an ACK
 					update_kv_store(request_str);
-					//release lock of the rowkey
-					rowkey_lock[request.rowkey()].unlock();
 				}
 				//this is the primary server receiving request to WRITE
 				else if(request.command() == "REQUEST"){
-					cout<<"received REQUEST"<<endl;
-
-					//rowkey_version_lock[request.rowkey()].lock();
-
-					//obtain lock of the rowkey
-					rowkey_lock[request.rowkey()].lock();
 					//locally update
-					update_kv_store(request_str);
-					//release lock of the rowkey
-					rowkey_lock[request.rowkey()].unlock();
-
+					string response_str = update_kv_store(request_str);
+					request.set_preprocessed_response(response_str);
+					string new_request_str;
+					request.SerializeToString(&new_request_str);
 					//ask secondary servers to update
-					update_secondary(request_str);
-
+					update_secondary(new_request_str);
 					//add the msg to holdback queue - TODO
-
 				}
 				//this is the primary server, receiving an ACK message about a request
 				else if(request.command() == "ACK"){
 					cout<<"received ACK"<<endl;
 					//update holdback queue - TODO
-
 					//count ACKs per request_str
-					if(number_of_acks.find(curr_server_index)==number_of_acks.end()
-					|| number_of_acks[curr_server_index].find(request.timestamp())==number_of_acks[curr_server_index].end()){
-						number_of_acks[curr_server_index][request.timestamp()]=0;
+					//TODO: eliminate curr_server_index
+					if(number_of_acks.find(request.uniqueid()) == number_of_acks.end()){
+						number_of_acks[request.uniqueid()]=0;
 					}
-					number_of_acks[curr_server_index][request.timestamp()]++;
-					cout<<"Number of ACKs received: " << number_of_acks[curr_server_index][request.timestamp()]<<endl;
-
+					number_of_acks[request.uniqueid()]++;
+					cout<<"Number of ACKs received: " << number_of_acks[request.uniqueid()]<<endl;
 					//if message received from all secondaries
-					if(number_of_acks[curr_server_index][request.timestamp()] == NO_OF_SECONDARIES){
+					int num_of_secondaries, start_letter = request.rowkey()[0];
+					int key;
+					for(int i = 0; i < rowkey_range.size(); i++)
+					{
+						if(start_letter >= rowkey_range[i].first && start_letter <= rowkey_range[i].second)
+						{
+							key = toKey(rowkey_range[i].first, rowkey_range[i].second);
+						}
+					}
+					if(number_of_acks[request.uniqueid()] == tablet_server_group[key].size() - 1){
 						// own message, process
 						cout<<"Process Message"<<endl;
-						if(request.sender_server_index()==to_string(curr_server_index)){
-							process_request(request_str,req_client_sock_map[request.timestamp()]);
+						if(request.sender_server_index() == to_string(curr_server_index)){
+							process_request(request_str, req_client_sock_map[request.uniqueid()]);
 						}
 						//else GRANT
 						else{
@@ -155,50 +144,40 @@ void *process_client_thread(void *arg)
 				else if(request.command() == "GRANT"){
 					cout<<"received GRANT"<<endl;
 					//process request
-					process_request(request_str,req_client_sock_map[request.timestamp()]);
+					process_request(request_str, req_client_sock_map[request.uniqueid()]);
 				}
 			}
 			//request from client
 			else{
 				cout<<"Request from Client"<<endl;
-
-
-				//if it is a get request, simply process it
-				if (strcasecmp(request.type().c_str(), "GET") == 0){
-					process_request(request_str,client_socket);
+				if((strcasecmp(request.type().c_str(), "PUT") == 0) || 
+					(strcasecmp(request.type().c_str(), "CPUT") == 0) ||
+					(strcasecmp(request.type().c_str(), "DELETE") == 0))
+				{
+					request.set_sender_server_index(to_string(curr_server_index));
+					//TO DO - make it more unique
+					request.set_uniqueid(get_time() + to_string(rand()));
+					req_client_sock_map[request.uniqueid()] = client_socket;
+					string new_request_str;
+					
+					if(isPrimary){
+						//locally update
+						string preprocessed_response = update_kv_store(request_str);
+						request.set_preprocessed_response(preprocessed_response);
+						request.SerializeToString(&new_request_str);
+						//ask secondary servers to update
+						update_secondary(new_request_str);
+						//add the msg to holdback queue - TODO
+					}
+					else{
+						//request primary for permission
+						request.SerializeToString(&new_request_str);
+						request_primary(new_request_str);
+					}
 				}
-				request.set_sender_server_index(to_string(curr_server_index));
-				//TO DO - make it more unique
-				request.set_timestamp(get_time());
-				req_client_sock_map[request.timestamp()] = client_socket;
-				cout<<request.timestamp()<<endl;
-				cout<<req_client_sock_map[request.timestamp()];
-				string new_request_str;
-				request.SerializeToString(&new_request_str);
-				if(isPrimary){
-					// //create rowkey lock if it doesn't exist
-					// if(rowkey_lock.find(request.rowkey())==rowkey_lock.end()){
-					// 	mutex lockrowkey;
-					// 	rowkeymaplock.lock();
-					// 	rowkey_lock.insert({request.rowkey(), lockrowkey});	
-					// 	rowkeymaplock.unlock();
-					// }
-
-					//obtain lock of the rowkey
-					rowkey_lock[request.rowkey()].lock();
-					//locally update
-					update_kv_store(request_str);
-					//release lock of the rowkey
-					rowkey_lock[request.rowkey()].unlock();
-
-					//ask secondary servers to update
-					update_secondary(new_request_str);
-
-					//add the msg to holdback queue - TODO
-				}
-				else{
-					//request primary for permission
-					request_primary(new_request_str);
+				else
+				{
+					process_request(request_str, client_socket);
 				}
 			}
 			

@@ -1,37 +1,11 @@
-class ReplicationMessage{
-    public:
-    string request_str;
-    int server_index;
-
-    std::ostream& serialize(std::ostream &out);
-    std::istream& deserialize(std::istream &in);
-};
-
-std::ostream& ReplicationMessage::serialize(std::ostream &out) {
-    out<< request_str.length();
-    out << ',';// seperator
-    out << request_str ;
-    out << ',';// seperator
-    out << server_index ;
-    return out;
-}
-std::istream& ReplicationMessage::deserialize(std::istream &in) {
-    if (in) {
-        int len=0;
-        char comma;
-        in >> len;
-        in >> comma; //read in the seperator
-        if (in && len) {
-            std::vector<char> tmp(len);
-            in.read(tmp.data() , len); //deserialize characters of string
-            request_str.assign(tmp.data(), len);
-        }
-        in >> comma;
-        in >> server_index;
-    }
-    return in;
-}
-
+bool replica_msg_check(sockaddr_in clientaddr);
+string get_time();
+vector<int> find_my_replica_group(string request_str);
+pair<int,int> find_rowkey_range(string request_str);
+string update_kv_store(string request_str, int client_socket = -1);
+void update_secondary(string request_str);
+void grant_secondary(string request_str);
+void request_primary(string request_str);
 bool replica_msg_check(sockaddr_in clientaddr){
     char ip[INET_ADDRSTRLEN];
     uint16_t port;
@@ -48,11 +22,21 @@ bool replica_msg_check(sockaddr_in clientaddr){
     return false;
 }
 
-std::string get_time(){
-    using namespace std::chrono;
-    auto now = time_point_cast<milliseconds>(system_clock::now());
-    return date::format("%T", now);
+string get_time()
+{
+    string time_str;
+    struct timeval val;
+    struct timezone zone;
+    struct tm *time;
+    gettimeofday(&val, &zone);
+    time = localtime(&val.tv_sec);
+    char buffer[25];
+    sprintf(buffer, "%02d:%02d:%02d:%06ld", time->tm_hour, time->tm_min, time->tm_sec, val.tv_usec/1000);
+    string server_idx_str = to_string(curr_server_index);
+    time_str = string(buffer) = string(buffer) + " " + "S" + server_idx_str; 
+    return time_str;
 }
+
 
 vector<int> find_my_replica_group(string request_str){
     PennCloud::Request request;
@@ -83,16 +67,24 @@ pair<int,int> find_rowkey_range(string request_str){
     return rkey_range;
 }
 
-void update_kv_store(string request_str, int client_socket = -1){
+string update_kv_store(string request_str, int client_socket){
     PennCloud::Request request;
     request.ParseFromString(request_str);
-    if(kv_store.find(request.rowkey()) != kv_store.end()){
-        kv_store[request.rowkey()][request.columnkey()] = request.value1();              
-    }
-    else{
-        kv_store[request.rowkey()] = unordered_map<string, string>();
-        kv_store[request.rowkey()][request.columnkey()] = request.value1();
-    }
+    PennCloud::Response response;
+    string response_str;
+    if (strcasecmp(request.type().c_str(), "PUT") == 0){
+		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
+		process_put_request(request, response);
+	}
+	else if (strcasecmp(request.type().c_str(), "CPUT") == 0){
+		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
+		process_cput_request(request, response);
+	}
+	else if (strcasecmp(request.type().c_str(), "DELETE") == 0){
+		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
+		process_delete_request(request, response);
+	}
+    response.SerializeToString(&response_str);
     if(!isPrimary){
         //send an ACK
         cout<<"Sending an ACK to primary"<<endl;
@@ -100,28 +92,34 @@ void update_kv_store(string request_str, int client_socket = -1){
         if (sockfd < 0) {
             if(verbose)
                 cerr<<"Unable to create socket for Replication"<<endl;
-                return;
+                exit(-1);
         }
         pair<int,int> my_rkey_range = find_rowkey_range(request_str);
         int unique_key = toKey(my_rkey_range.first, my_rkey_range.second);
         if(connect(sockfd, (struct sockaddr*)& tablet_addresses[rkey_to_primary[unique_key]], 
-        sizeof(tablet_addresses[rkey_to_primary[unique_key]]))<0) 
+        sizeof(tablet_addresses[rkey_to_primary[unique_key]]))<0)
+        { 
             cerr<<"Connect Failed: "<<errno<<endl;
-
+            close(sockfd);
+            return response_str;
+        }
         request.set_command("ACK");
+        request.set_isserver("true");
         string ack_request_str;
         request.SerializeToString(&ack_request_str);
         ack_request_str += ack_request_str + "\r\n";
         cout<<"Sending ACK"<<endl;
         write(sockfd, ack_request_str.c_str(), strlen(ack_request_str.c_str()));
-        //close(sockfd);
+        close(sockfd);
     }
+    return response_str;
 }
 
 void update_secondary(string request_str){
     PennCloud::Request request;
     request.ParseFromString(request_str);
     request.set_command("WRITE");
+    request.set_isserver("true");
     string write_request_str;
     request.SerializeToString(&write_request_str);
 
@@ -136,12 +134,15 @@ void update_secondary(string request_str){
                 return;
             }
             if(connect(sockfd, (struct sockaddr*)& tablet_addresses[my_tablet_server_group[i]], sizeof(tablet_addresses[my_tablet_server_group[i]]))<0)
+            {
                 cerr<<"Connect Failed: "<<errno<<endl;
-
+                close(sockfd);
+                continue;
+            }
             write_request_str += write_request_str + "\r\n";
             cout<<"Sending WRITE"<<endl;
             write(sockfd, write_request_str.c_str(), strlen(write_request_str.c_str()));
-            //close(sockfd);
+            close(sockfd);
         } 
     }
 }
@@ -151,6 +152,7 @@ void grant_secondary(string request_str){
     PennCloud::Request request;
     request.ParseFromString(request_str);
     request.set_command("GRANT");
+    request.set_isserver("true");
     string write_request_str;
     request.SerializeToString(&write_request_str);
 
@@ -165,12 +167,16 @@ void grant_secondary(string request_str){
                 return;
             }
             if(connect(sockfd, (struct sockaddr*)& tablet_addresses[my_tablet_server_group[i]], sizeof(tablet_addresses[my_tablet_server_group[i]]))<0)
+            {    
                 cerr<<"Connect Failed: "<<errno<<endl;
+                close(sockfd);
+                continue;
+            }
 
             write_request_str += write_request_str + "\r\n";
             cout<<"Sending GRANT"<<endl;
             write(sockfd, write_request_str.c_str(), strlen(write_request_str.c_str()));
-            //close(sockfd);
+            close(sockfd);
             break;
         } 
     }
@@ -193,13 +199,16 @@ void request_primary(string request_str){
     cout<<rkey_to_primary[unique_key]<<endl;
     if(connect(sockfd, (struct sockaddr*)& tablet_addresses[rkey_to_primary[unique_key]], 
     sizeof(tablet_addresses[rkey_to_primary[unique_key]]))<0) 
+    {
         cerr<<"Connect Failed: "<<errno<<endl;
-    
+        return;
+    }
     request.set_command("REQUEST");
+    request.set_isserver("true");   
     string req_request_str;
     request.SerializeToString(&req_request_str);
     req_request_str += req_request_str + "\r\n";
     cout<<"Sending REQUEST"<<endl;
     write(sockfd, req_request_str.c_str(), strlen(req_request_str.c_str()));
-    //close(sockfd);
+    close(sockfd);
 }

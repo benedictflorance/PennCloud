@@ -11,5 +11,6 @@ message Request{
     optional string command = 6; //Used for Replication
     optional string isServer = 7; //If the message is from a server 
     optional string sender_server_index = 8;
-    optional string timestamp = 9;
+    optional string uniqueid = 9;
+    optional string preprocessed_response = 10;
 }
