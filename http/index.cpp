@@ -10,22 +10,52 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-static void index_page(http::Response &resp) {
+static std::unique_ptr<std::istream> index_page(http::Response &resp) {
+	http::Session &session = resp.get_session();
+
+	if (session.get_username().empty()) {
+		resp.resp_headers.emplace("Content-Type", "text/html");
+		return std::make_unique<std::ifstream>("static/login.html");
+	}
+
 	resp.resp_headers.emplace("Content-Type", "text/html");
-	resp.resp_body = std::make_unique<std::ifstream>("static/index.html");
-}
-
-static void dynamic_content(http::Response &resp) {
-	static int counter = 0;
-
 	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
-
-	*ss << "You visited this page " << ++counter << " times.";
-
-	resp.resp_body = std::move(ss);
+	*ss << "Welcome, " << session.get_username() << "!";
+	*ss << R"(<br /><a href="/logout">Logout</a>)";
+	return ss;
 }
 
-static void handle(int client) {
+static std::unique_ptr<std::istream> login(http::Response &resp) {
+	const std::unordered_map<std::string, std::string> form = resp.parse_www_form();
+	std::string username, password;
+	{
+		const auto it = form.find("username");
+		if (it == form.end() || it->second.empty()) {
+			throw http::Exception(http::Status::BAD_REQUEST, "Missing username");
+		}
+		username = std::move(it->second);
+	}
+
+	{
+		const auto it = form.find("password");
+		if (it == form.end() || it->second.empty()) {
+			throw http::Exception(http::Status::BAD_REQUEST, "Missing password");
+		}
+		password = std::move(it->second);
+	}
+
+	http::Session &session = resp.get_session();
+
+	if (username == "admin" && password == "admin") {
+		session.set_username(username);
+		resp.resp_headers.emplace("Location", "/");
+		resp.status = http::Status::FOUND;
+		return nullptr;
+	}
+	throw http::Exception(http::Status::FORBIDDEN, "Invalid username or password");
+}
+
+static void handle(const int client) {
 	try {
 		http::handle_socket(client);
 	} catch (const std::exception &e) {
@@ -35,7 +65,13 @@ static void handle(int client) {
 
 int main() {
 	http::register_handler("/", http::Method::GET, index_page);
-	http::register_handler("/dynamic", http::Method::GET, dynamic_content);
+	http::register_handler("/login", http::Method::POST, login);
+	http::register_handler("/logout", http::Method::GET, [](http::Response &resp) {
+		resp.get_session().set_username("");
+		resp.resp_headers.emplace("Location", "/");
+		resp.status = http::Status::FOUND;
+		return nullptr;
+	});
 
 	const int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == -1) {
