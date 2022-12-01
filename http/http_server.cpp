@@ -11,6 +11,8 @@
 #include <ext/stdio_filebuf.h>
 #include <sys/socket.h>
 
+#include "../kvstore/client_wrapper.h"
+
 namespace http {
 std::unordered_map<std::string_view, std::unordered_map<Method, HandlerFunc>> handlers;
 
@@ -251,8 +253,11 @@ std::unordered_map<std::string, std::string> Response::parse_www_form() {
 
 const std::string &Session::get_username() const { return username; }
 void Session::set_username(const std::string &username) {
-	std::cout << session_id << ' ' << username << std::endl;
-	// TODO: store in big table
+	if (username.empty()) {
+		kvstore.dele("ACCOUNT", session_id);
+	} else {
+		kvstore.put("ACCOUNT", session_id, username);
+	}
 	this->username = username;
 }
 

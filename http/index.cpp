@@ -10,6 +10,8 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
+#include "../kvstore/client_wrapper.h"
+
 static std::unique_ptr<std::istream> index_page(http::Response &resp) {
 	http::Session &session = resp.get_session();
 
@@ -46,7 +48,7 @@ static std::unique_ptr<std::istream> login(http::Response &resp) {
 
 	http::Session &session = resp.get_session();
 
-	if (username == "admin" && password == "admin") {
+	if (kvstore.get("ACCOUNT", username) == password) {
 		session.set_username(username);
 		resp.resp_headers.emplace("Location", "/");
 		resp.status = http::Status::FOUND;
