@@ -7,11 +7,20 @@ string master_ip_str = "127.0.0.1:8000";
 
 class KVstore
 {
-    public:
+    private:
     unordered_map<string, sockaddr_in> rkey_to_storage_cache;
     pair<string, string> send_request(int sockfd, string type, string rkey, string ckey, string value1, string value2);
     pair<string, string> contact_tablet_server(string type, string rkey, string ckey, string value1, string value2);
     pair<string, string> process_kvstore_request(string type, string rkey, string ckey, string value1="", string value2 = "");
+    public:
+    string get(string rkey, string ckey) {
+        return process_kvstore_request("get", rkey, ckey).first;
+    }
+    void put(string rkey, string ckey, string value) {
+        process_kvstore_request("put", rkey, ckey, value);
+    }
+    bool del(string rkey, string ckey);
+    bool cput(string rkey, string ckey, string value1, string value2);
 };
 
 pair<string, string> KVstore::send_request(int sockfd, string type, string rkey, string ckey, string value1, string value2)
