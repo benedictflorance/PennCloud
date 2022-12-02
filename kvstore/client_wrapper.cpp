@@ -1,5 +1,7 @@
 #include "client_wrapper.h"
 
+KVstore kvstore;
+
 std::string master_ip_str = "127.0.0.1:8000"; 
 const int BUFFER_SIZE = 50000;
 const char* invalid_ip_message = "-ERR Invalid IP/port argument. Please adhere to <IP Address>:<Port Number>\r\n";
