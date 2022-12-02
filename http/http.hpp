@@ -52,12 +52,14 @@ struct Response {
 	const std::string_view path;
 	const Headers req_headers;
 	std::istream &req_body;
-
+	std::unordered_map<std::string, std::string> params;
 	Status status = Status::OK;
 	Headers resp_headers;
 
 	Session &get_session();
+	std::unordered_map<std::string, std::string> get_params();
 	std::unordered_map<std::string, std::string> parse_www_form();
+	std::unordered_map<std::string, std::string> parse_file_upload();
 };
 
 struct Exception : public std::exception {

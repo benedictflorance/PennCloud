@@ -1,6 +1,4 @@
-TARGETS = tablet_server tablet_client master client_wrapper
+all: server
 
-all: $(TARGETS)
-
-storage: index.cpp 
-	g++ $< -I../protobuf-21.9/src -lpthread -lprotobuf -std=c++17 -g -o $@
+storage: index.cpp ../kvstore/client_wrapper.o ../kvstore/request.pb.cc ../kvstore/response.pb.cc ../http_server/http_server.cpp
+	clang++ -std=c++17 -Wall -lpthread -lprotobuf -o web_server $^
