@@ -9,9 +9,6 @@
 #include <fcntl.h>
 #include "request.pb.h"
 #include "response.pb.h"
-std::string master_ip_str = "127.0.0.1:8000"; 
-const int BUFFER_SIZE = 50000;
-const char* invalid_ip_message = "-ERR Invalid IP/port argument. Please adhere to <IP Address>:<Port Number>\r\n";
 
 class KVstore
 {
@@ -27,3 +24,5 @@ class KVstore
         bool cput(std::string rkey, std::string ckey, std::string value1, std::string value2);
         bool dele(std::string rkey, std::string ckey);
 };
+
+extern KVstore kvstore;

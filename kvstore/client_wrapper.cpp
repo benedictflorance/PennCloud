@@ -1,5 +1,9 @@
 #include "client_wrapper.h"
 
+std::string master_ip_str = "127.0.0.1:8000"; 
+const int BUFFER_SIZE = 50000;
+const char* invalid_ip_message = "-ERR Invalid IP/port argument. Please adhere to <IP Address>:<Port Number>\r\n";
+
 sockaddr_in KVstore::get_address(std::string socket_address)
 {
     int colon_index = socket_address.find(":");
@@ -159,7 +163,7 @@ bool KVstore::dele(std::string rkey, std::string ckey)
 }
 
 // Sample Test
-int test()
+void test()
 {
 
     KVstore kv_test;
