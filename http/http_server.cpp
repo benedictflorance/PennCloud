@@ -163,6 +163,13 @@ std::pair<Session &, bool> Session::get_session(const std::string &cookie) {
 		return std::make_pair(std::ref(it->second), true);
 	}
 
+	const std::string username = kvstore.get("SESSION", cookie);
+	if (!username.empty()) {
+		Session s(cookie);
+		s.username = username;
+		return std::make_pair(std::ref(session.emplace(cookie, std::move(s)).first->second), true);
+	}
+
 	// TODO: retrieve from big table
 	return std::make_pair(
 		std::ref(session.emplace(std::piecewise_construct, std::forward_as_tuple(cookie), std::forward_as_tuple(cookie))
@@ -254,9 +261,9 @@ std::unordered_map<std::string, std::string> Response::parse_www_form() {
 const std::string &Session::get_username() const { return username; }
 void Session::set_username(const std::string &username) {
 	if (username.empty()) {
-		kvstore.dele("ACCOUNT", session_id);
+		kvstore.dele("SESSION", session_id);
 	} else {
-		kvstore.put("ACCOUNT", session_id, username);
+		kvstore.put("SESSION", session_id, username);
 	}
 	this->username = username;
 }
