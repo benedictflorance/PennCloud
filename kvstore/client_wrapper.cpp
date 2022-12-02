@@ -131,10 +131,18 @@ std::string KVstore::get(std::string rkey, std::string ckey)
 }
 void KVstore::put(std::string rkey, std::string ckey, std::string value)
 {
+    if(value==""){
+        dele(rkey, ckey);
+        return;
+    }
     process_kvstore_request("PUT", rkey, ckey, value);
 }
 bool KVstore::cput(std::string rkey, std::string ckey, std::string value1, std::string value2)
 {
+    if(value1==""){
+        put(rkey, ckey, value2);
+        return true;
+    }
     std::pair<std::string, std::string> result = process_kvstore_request("CPUT", rkey, ckey, value1, value2);
     if(result.second == "+OK")
         return true;
@@ -151,19 +159,30 @@ bool KVstore::dele(std::string rkey, std::string ckey)
 }
 
 // Sample Test
-int main()
+int test()
 {
 
     KVstore kv_test;
+    // kv_test.put("10hanbang", "password", "frontend");
+    // std::string response_str = kv_test.get("10hanbang", "password");
+    // std::cout<<response_str<<std::endl;
+    // bool is_success = kv_test.cput("10hanbang", "password", "frontend", "backend");
+    // std::cout<<is_success<<std::endl;
+    // response_str = kv_test.get("10hanbang", "password");
+    // std::cout<<response_str<<std::endl;
+    // is_success = kv_test.dele("10hanbang", "password");
+    // std::cout<<is_success<<std::endl;
+    // response_str = kv_test.get("10hanbang", "password");
+    // std::cout<<response_str<<std::endl;
+
     kv_test.put("10hanbang", "password", "frontend");
     std::string response_str = kv_test.get("10hanbang", "password");
     std::cout<<response_str<<std::endl;
-    bool is_success = kv_test.cput("10hanbang", "password", "frontend", "backend");
+    bool is_success = kv_test.cput("10hanbang", "password", "", "backend");
     std::cout<<is_success<<std::endl;
     response_str = kv_test.get("10hanbang", "password");
     std::cout<<response_str<<std::endl;
-    is_success = kv_test.dele("10hanbang", "password");
-    std::cout<<is_success<<std::endl;
+    kv_test.put("10hanbang", "password","");
     response_str = kv_test.get("10hanbang", "password");
     std::cout<<response_str<<std::endl;
 }
