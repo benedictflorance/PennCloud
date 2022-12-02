@@ -10,6 +10,7 @@ namespace http {
 enum class Method {
 	GET,
 	POST,
+	HEAD,
 };
 
 struct Status : std::string_view {
@@ -32,7 +33,7 @@ struct Status : std::string_view {
 
 class Session {
 	static std::unordered_map<std::string, Session> sessions;
-	
+
 	const std::string session_id;
 	std::string username;
 
@@ -48,8 +49,10 @@ class Session {
 
 typedef std::unordered_multimap<std::string, std::string> Headers;
 struct Response {
-	const Method method;
-	const std::string_view path;
+	Response(const Response &) = delete;
+	Response &operator=(const Response &) = delete;
+
+	const std::string_view params;
 	const Headers req_headers;
 	std::istream &req_body;
 
@@ -57,7 +60,9 @@ struct Response {
 	Headers resp_headers;
 
 	Session &get_session();
+	std::unordered_map<std::string, std::string> get_params();
 	std::unordered_map<std::string, std::string> parse_www_form();
+	std::unordered_map<std::string, std::string> parse_file_upload();
 };
 
 struct Exception : public std::exception {

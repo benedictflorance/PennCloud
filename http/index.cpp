@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "local_test.hpp"
+#include "../kvstore/client_wrapper.h"
 
 static std::unique_ptr<std::istream> index_page(http::Response &resp) {
 	http::Session &session = resp.get_session();
