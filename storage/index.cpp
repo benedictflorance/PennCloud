@@ -1,6 +1,5 @@
 #include "../http/http.hpp"
 #include "../kvstore/client_wrapper.h"
-#include "../local_test.hpp"
 #include <unistd.h>
 
 #include <iostream>
