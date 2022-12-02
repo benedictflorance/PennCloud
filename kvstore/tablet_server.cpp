@@ -13,6 +13,7 @@ void create_log_file(){
 	log_file_name = log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
 	meta_log_file_name = meta_log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
 	create_dir(log_dir);
+	create_dir("checkpoints/");
 	create_dir(meta_log_dir);
 	create_file(log_file_name);
 	create_file(meta_log_file_name);
@@ -208,10 +209,9 @@ int main(int argc, char *argv[])
     }
     process_config_file(config_file);
 	initialize_primary_info(config_file);
-
+	create_log_file();
 	load_kvstore_from_disk();
 	//create log file if it doesn't exist
-	create_log_file();
 	replay_log(log_file_name, meta_log_file_name);
     int isSuccess = create_server();
 	return isSuccess;

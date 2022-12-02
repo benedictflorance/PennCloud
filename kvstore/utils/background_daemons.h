@@ -17,8 +17,8 @@ void send_heartbeat(){
 		this_thread::sleep_for(2s);
 
 		//send ALIVE command at fixed intervals
-		if(verbose)
-			cout<<"Sending Alive message to the master"<<endl;
+		// if(verbose)
+		// 	cout<<"Sending Alive message to the master"<<endl;
 		if(shutdown_flag)
 		{
 			close(socket_to_master);
