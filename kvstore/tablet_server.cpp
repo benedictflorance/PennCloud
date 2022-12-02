@@ -14,6 +14,7 @@ void create_log_file(){
 	meta_log_file_name = meta_log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
 	create_dir(log_dir);
 	create_dir("checkpoints/");
+	create_dir("metadata/");
 	create_dir(meta_log_dir);
 	create_file(log_file_name);
 	create_file(meta_log_file_name);

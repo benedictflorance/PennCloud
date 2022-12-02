@@ -131,7 +131,9 @@ std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string
 }
 std::string KVstore::get(std::string rkey, std::string ckey)
 {
-    return process_kvstore_request("GET", rkey, ckey).first;
+    std::pair<std::string, std::string> result = process_kvstore_request("GET", rkey, ckey);
+    return result.first;
+
 }
 void KVstore::put(std::string rkey, std::string ckey, std::string value)
 {
@@ -143,9 +145,14 @@ void KVstore::put(std::string rkey, std::string ckey, std::string value)
 }
 bool KVstore::cput(std::string rkey, std::string ckey, std::string value1, std::string value2)
 {
-    if(value1==""){
-        put(rkey, ckey, value2);
-        return true;
+    if(value1 == ""){
+        if(get(rkey, ckey) == "")
+        {
+            put(rkey, ckey, value2);
+            return true;
+        }
+        else
+            return false;
     }
     std::pair<std::string, std::string> result = process_kvstore_request("CPUT", rkey, ckey, value1, value2);
     if(result.second == "+OK")
@@ -163,7 +170,7 @@ bool KVstore::dele(std::string rkey, std::string ckey)
 }
 
 // Sample Test
-void test()
+int main()
 {
 
     KVstore kv_test;
@@ -179,14 +186,16 @@ void test()
     // response_str = kv_test.get("10hanbang", "password");
     // std::cout<<response_str<<std::endl;
 
-    kv_test.put("10hanbang", "password", "frontend");
+    kv_test.put("10hanbang", "password", "frontend"); // Expected nothing 
     std::string response_str = kv_test.get("10hanbang", "password");
-    std::cout<<response_str<<std::endl;
+    std::cout<<response_str<<std::endl; // Expected frontend
     bool is_success = kv_test.cput("10hanbang", "password", "", "backend");
-    std::cout<<is_success<<std::endl;
+    std::cout<<is_success<<std::endl; // Expected 0
+    is_success = kv_test.cput("15hanbang", "password", "", "backend");
+    std::cout<<is_success<<std::endl; // Expected 1
     response_str = kv_test.get("10hanbang", "password");
-    std::cout<<response_str<<std::endl;
+    std::cout<<response_str<<std::endl; // Expected frontend
     kv_test.put("10hanbang", "password","");
-    response_str = kv_test.get("10hanbang", "password");
+    response_str = kv_test.get("10hanbang", "password"); // Expected ""
     std::cout<<response_str<<std::endl;
 }
