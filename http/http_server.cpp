@@ -11,7 +11,9 @@
 #include <ext/stdio_filebuf.h>
 #include <sys/socket.h>
 
-#include "../kvstore/client_wrapper.h"
+#include "local_test.hpp"
+
+KVstore kvstore;
 
 namespace http {
 std::unordered_map<std::string_view, std::unordered_map<Method, HandlerFunc>> handlers;
@@ -158,23 +160,21 @@ const Status Status::NOT_FOUND = "404 Not Found";
 const Status Status::HTTP_VERSION_NOT_SUPPORTED = "505 HTTP Version Not Supported";
 
 std::pair<Session &, bool> Session::get_session(const std::string &cookie) {
-	const auto it = session.find(cookie);
-	if (it != session.end()) {
+	const auto it = sessions.find(cookie);
+	if (it != sessions.end()) {
 		return std::make_pair(std::ref(it->second), true);
 	}
 
+	Session &s =
+		sessions.emplace(std::piecewise_construct, std::forward_as_tuple(cookie), std::forward_as_tuple(cookie))
+			.first->second;
+
 	const std::string username = kvstore.get("SESSION", cookie);
 	if (!username.empty()) {
-		Session s(cookie);
 		s.username = username;
-		return std::make_pair(std::ref(session.emplace(cookie, std::move(s)).first->second), true);
+		return std::make_pair(std::ref(s), true);
 	}
-
-	// TODO: retrieve from big table
-	return std::make_pair(
-		std::ref(session.emplace(std::piecewise_construct, std::forward_as_tuple(cookie), std::forward_as_tuple(cookie))
-					 .first->second),
-		false);
+	return std::make_pair(std::ref(s), false);
 }
 
 Session &Response::get_session() {
@@ -260,14 +260,10 @@ std::unordered_map<std::string, std::string> Response::parse_www_form() {
 
 const std::string &Session::get_username() const { return username; }
 void Session::set_username(const std::string &username) {
-	if (username.empty()) {
-		kvstore.dele("SESSION", session_id);
-	} else {
-		kvstore.put("SESSION", session_id, username);
-	}
+	kvstore.put("SESSION", session_id, username);
 	this->username = username;
 }
 
-std::unordered_map<std::string, Session> Session::session;
+std::unordered_map<std::string, Session> Session::sessions;
 
 } // namespace http

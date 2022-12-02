@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "../kvstore/client_wrapper.h"
+#include "local_test.hpp"
 
 static std::unique_ptr<std::istream> index_page(http::Response &resp) {
 	http::Session &session = resp.get_session();
@@ -57,6 +57,34 @@ static std::unique_ptr<std::istream> login(http::Response &resp) {
 	throw http::Exception(http::Status::FORBIDDEN, "Invalid username or password");
 }
 
+static std::unique_ptr<std::istream> register_f(http::Response &resp) {
+	const std::unordered_map<std::string, std::string> form = resp.parse_www_form();
+	std::string username, password;
+	{
+		const auto it = form.find("username");
+		if (it == form.end() || it->second.empty()) {
+			throw http::Exception(http::Status::BAD_REQUEST, "Missing username");
+		}
+		username = std::move(it->second);
+	}
+
+	{
+		const auto it = form.find("password");
+		if (it == form.end() || it->second.empty()) {
+			throw http::Exception(http::Status::BAD_REQUEST, "Missing password");
+		}
+		password = std::move(it->second);
+	}
+
+	if (kvstore.cput("ACCOUNT", username, "", password)) {
+		resp.resp_headers.emplace("Location", "/");
+		resp.status = http::Status::FOUND;
+		return nullptr;
+	}
+
+	throw http::Exception(http::Status::FORBIDDEN, "User already exists");
+}
+
 static void handle(const int client) {
 	try {
 		http::handle_socket(client);
@@ -67,6 +95,11 @@ static void handle(const int client) {
 
 int main() {
 	http::register_handler("/", http::Method::GET, index_page);
+	http::register_handler("/register", http::Method::GET, [](http::Response &resp) {
+		resp.resp_headers.emplace("Content-Type", "text/html");
+		return std::make_unique<std::ifstream>("static/register.html");
+	});
+	http::register_handler("/register", http::Method::POST, register_f);
 	http::register_handler("/login", http::Method::POST, login);
 	http::register_handler("/logout", http::Method::GET, [](http::Response &resp) {
 		resp.get_session().set_username("");

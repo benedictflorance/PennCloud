@@ -31,7 +31,7 @@ struct Status : std::string_view {
 };
 
 class Session {
-	static std::unordered_map<std::string, Session> session;
+	static std::unordered_map<std::string, Session> sessions;
 	
 	const std::string session_id;
 	std::string username;
