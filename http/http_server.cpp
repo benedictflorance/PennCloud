@@ -15,6 +15,8 @@
 
 KVstore kvstore;
 
+
+
 namespace http {
 std::unordered_map<std::string_view, std::unordered_map<Method, HandlerFunc>> handlers;
 
@@ -85,8 +87,29 @@ void handle_socket(const int s) {
 		return;
 	}
 
-	const std::string_view path = sv.substr(space1 + 1, space2 - space1 - 1);
+	const std::string_view path_with_params = sv.substr(space1 + 1, space2 - space1 - 1);
+	std::size_t param_loc = path_with_params.find("?");
+	std::string_view path = path_with_params.substr(0, param_loc);
+	std::unordered_map<std::string, std::string> params;
+	param_loc++;
+	while(param_loc < path_with_params.size()) {
+		const std::size_t eq = path_with_params.find('=', param_loc);
+		if (eq == std::string::npos) {
+			break;
+		}
+		const std::string_view key = path_with_params.substr(param_loc, eq - param_loc);
+		param_loc = eq + 1;
 
+		const std::size_t amp = path_with_params.find('&', param_loc);
+		if (amp == std::string::npos) {
+			params.emplace(std::move(key), path_with_params.substr(param_loc));
+			break;
+		}
+		const std::string_view value = path_with_params.substr(param_loc, amp - param_loc);
+		param_loc = amp + 1;
+
+		params.emplace(std::move(std::string(key.begin(), key.end())), std::move(std::string(value.begin(), value.end())));
+	}
 	const std::string_view version = sv.substr(space2 + 1);
 	if (version != "HTTP/1.1" && version != "HTTP/1.0") {
 		ostream << "HTTP/1.0 " << Status::HTTP_VERSION_NOT_SUPPORTED << "\r\n";
@@ -123,6 +146,7 @@ void handle_socket(const int s) {
 		.path = path,
 		.req_headers = std::move(headers),
 		.req_body = istream,
+		.params = params
 	};
 
 	HandlerFunc handler = not_found_handler;
@@ -158,7 +182,6 @@ const Status Status::BAD_REQUEST = "400 Bad Request";
 const Status Status::FORBIDDEN = "403 Forbidden";
 const Status Status::NOT_FOUND = "404 Not Found";
 const Status Status::HTTP_VERSION_NOT_SUPPORTED = "505 HTTP Version Not Supported";
-
 std::pair<Session &, bool> Session::get_session(const std::string &cookie) {
 	const auto it = sessions.find(cookie);
 	if (it != sessions.end()) {
@@ -213,6 +236,69 @@ no_cookie:
 	resp_headers.emplace("Set-Cookie", "session=" + session_id + "; Max-Age=86400; HttpOnly");
 	return Session::get_session(session_id).first;
 }
+
+std::unordered_map<std::string, std::string> Response::get_params() {
+	return params;
+}
+
+std::unordered_map<std::string, std::string> Response::parse_file_upload() {
+	{
+		const auto it = req_headers.find("content-type");
+		if (it == req_headers.end()) {
+			throw http::Exception(http::Status::BAD_REQUEST, "Content-Type must be  multipart/form-data");
+		}
+	}
+	std::string content_type = req_headers.find("content-type")->second;
+	const std::size_t b = content_type.find('=', 0);
+	const std::string boundary = "--" + content_type.substr(b + 1);
+	const std::size_t boundary_size = boundary.length();
+	std::size_t content_length = 0;
+	{
+		const auto it = req_headers.find("content-length");
+		if (it == req_headers.end()) {
+			throw http::Exception(http::Status::BAD_REQUEST, "missing content-length");
+		}
+		content_length = std::stoul(it->second);
+	}
+
+	std::unordered_map<std::string, std::string> ret;
+	std::vector<std::string> content;
+	std::string multicontent;
+	multicontent.resize(content_length);
+	req_body.read(multicontent.data(), content_length);
+	std::size_t pos = 0;
+	while (pos < multicontent.size()) {
+		const std::size_t bound = multicontent.find(boundary, pos);
+		pos = bound + boundary_size + 2;
+		const std::size_t bound2 = multicontent.find(boundary, pos);
+		if(bound2 == std::string::npos) {
+			content.push_back(multicontent.substr(pos));
+			break;
+		}
+		else {
+			content.push_back(multicontent.substr(pos, bound2 - pos));
+		}
+
+	}
+	for(int i = 0; i < content.size(); i++) {
+		pos = 0;
+		std::size_t eq = content[i].find("filename=", pos);
+		if (eq == std::string::npos) {
+			break;
+		}
+		pos = eq + 1;
+		const std::size_t amp = content[i].find("\r\n", pos);
+		std::string value = content[i].substr(pos + 8, amp - pos);
+		pos = amp + 2;
+		ret.emplace(std::move("filename"), std::move(value));
+		eq = content[i].find("\r\n\r\n", pos);
+		value = content[i].substr(eq + 4);
+		ret.emplace(std::move("content"), std::move(value));
+	}
+
+	return ret;
+}
+
 
 std::unordered_map<std::string, std::string> Response::parse_www_form() {
 	{
