@@ -11,7 +11,7 @@
 #include <ext/stdio_filebuf.h>
 #include <sys/socket.h>
 
-#include "local_test.hpp"
+#include "../kvstore/client_wrapper.h"
 
 KVstore kvstore;
 
