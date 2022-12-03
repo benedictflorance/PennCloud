@@ -11,11 +11,7 @@
 #include <ext/stdio_filebuf.h>
 #include <sys/socket.h>
 
-//#include "../kvstore/client_wrapper.h"
-#include "local_test.hpp"
-KVstore kvstore;
-
-
+#include "../kvstore/client_wrapper.h"
 
 namespace http {
 std::unordered_map<std::string_view, std::unordered_map<Method, HandlerFunc>> handlers;
@@ -29,6 +25,7 @@ static inline std::unique_ptr<std::istream> not_found_handler(Response &resp) { 
 const static std::unordered_map<std::string_view, Method> method_map = {
 	{"GET", Method::GET},
 	{"POST", Method::POST},
+	{"HEAD", Method::HEAD},
 };
 
 void handle_socket(const int s) {
@@ -87,34 +84,16 @@ void handle_socket(const int s) {
 		return;
 	}
 
-	const std::string_view path_with_params = sv.substr(space1 + 1, space2 - space1 - 1);
-	std::size_t param_loc = path_with_params.find("?");
-	std::string_view path = path_with_params.substr(0, param_loc);
-	std::unordered_map<std::string, std::string> params;
-	param_loc++;
-	while(param_loc < path_with_params.size()) {
-		const std::size_t eq = path_with_params.find('=', param_loc);
-		if (eq == std::string::npos) {
-			break;
-		}
-		const std::string_view key = path_with_params.substr(param_loc, eq - param_loc);
-		param_loc = eq + 1;
-
-		const std::size_t amp = path_with_params.find('&', param_loc);
-		if (amp == std::string::npos) {
-			params.emplace(std::move(key), path_with_params.substr(param_loc));
-			break;
-		}
-		const std::string_view value = path_with_params.substr(param_loc, amp - param_loc);
-		param_loc = amp + 1;
-
-		params.emplace(std::move(std::string(key.begin(), key.end())), std::move(std::string(value.begin(), value.end())));
-	}
 	const std::string_view version = sv.substr(space2 + 1);
 	if (version != "HTTP/1.1" && version != "HTTP/1.0") {
 		ostream << "HTTP/1.0 " << Status::HTTP_VERSION_NOT_SUPPORTED << "\r\n";
 		return;
 	}
+
+	const std::string_view path_with_params = sv.substr(space1 + 1, space2 - space1 - 1);
+	const std::size_t question_mark = path_with_params.find('?');
+	const std::string_view path = path_with_params.substr(0, question_mark);
+	const std::string_view params = path_with_params.substr(question_mark + 1);
 
 	std::string line;
 	Headers headers;
@@ -142,17 +121,15 @@ void handle_socket(const int s) {
 	}
 
 	Response response = {
-		.method = method,
-		.path = path,
+		.params = params,
 		.req_headers = std::move(headers),
 		.req_body = istream,
-		.params = params
 	};
 
 	HandlerFunc handler = not_found_handler;
 	const auto &it = handlers.find(path);
 	if (it != handlers.end()) {
-		const auto &it2 = it->second.find(method);
+		const auto &it2 = it->second.find(method == Method::HEAD ? Method::GET : method);
 		if (it2 != it->second.end()) {
 			handler = it2->second;
 		}
@@ -172,7 +149,7 @@ void handle_socket(const int s) {
 	for (const auto &header : response.resp_headers)
 		ostream << header.first << ": " << header.second << "\r\n";
 	ostream << "\r\n";
-	if (resp_body)
+	if (resp_body && method != Method::HEAD)
 		ostream << resp_body->rdbuf();
 }
 
@@ -237,15 +214,39 @@ no_cookie:
 	return Session::get_session(session_id).first;
 }
 
-std::unordered_map<std::string, std::string> Response::get_params() {
-	return params;
+static inline std::unordered_map<std::string, std::string> parse_params(const std::string_view &params) {
+	std::unordered_map<std::string, std::string> ret;
+
+	std::size_t pos = 0;
+	while (pos < params.size()) {
+		const std::size_t eq = params.find('=', pos);
+		if (eq == std::string::npos) {
+			throw http::Exception(http::Status::BAD_REQUEST, "Invalid query format");
+		}
+		const std::string_view key = params.substr(pos, eq - pos);
+		pos = eq + 1;
+
+		const std::size_t amp = params.find('&', pos);
+		if (amp == std::string::npos) {
+			ret.emplace(std::move(key), params.substr(pos));
+			break;
+		}
+		const std::string_view value = params.substr(pos, amp - pos);
+		pos = amp + 1;
+
+		ret.emplace(std::move(key), std::move(value));
+	}
+
+	return ret;
 }
+
+std::unordered_map<std::string, std::string> Response::get_params() { return parse_params(params); }
 
 std::unordered_map<std::string, std::string> Response::parse_file_upload() {
 	{
 		const auto it = req_headers.find("content-type");
 		if (it == req_headers.end()) {
-			throw http::Exception(http::Status::BAD_REQUEST, "Content-Type must be  multipart/form-data");
+			throw http::Exception(http::Status::BAD_REQUEST, "Content-Type must be multipart/form-data");
 		}
 	}
 	std::string content_type = req_headers.find("content-type")->second;
@@ -271,16 +272,14 @@ std::unordered_map<std::string, std::string> Response::parse_file_upload() {
 		const std::size_t bound = multicontent.find(boundary, pos);
 		pos = bound + boundary_size + 2;
 		const std::size_t bound2 = multicontent.find(boundary, pos);
-		if(bound2 == std::string::npos) {
+		if (bound2 == std::string::npos) {
 			content.push_back(multicontent.substr(pos));
 			break;
-		}
-		else {
+		} else {
 			content.push_back(multicontent.substr(pos, bound2 - pos));
 		}
-
 	}
-	for(int i = 0; i < content.size(); i++) {
+	for (int i = 0; i < content.size(); i++) {
 		pos = 0;
 		std::size_t eq = content[i].find("filename=", pos);
 		if (eq == std::string::npos) {
@@ -299,7 +298,6 @@ std::unordered_map<std::string, std::string> Response::parse_file_upload() {
 	return ret;
 }
 
-
 std::unordered_map<std::string, std::string> Response::parse_www_form() {
 	{
 		const auto it = req_headers.find("content-type");
@@ -316,32 +314,10 @@ std::unordered_map<std::string, std::string> Response::parse_www_form() {
 		content_length = std::stoul(it->second);
 	}
 
-	std::unordered_map<std::string, std::string> ret;
 	std::string content;
 	content.resize(content_length);
 	req_body.read(content.data(), content_length);
-
-	std::size_t pos = 0;
-	while (pos < content.size()) {
-		const std::size_t eq = content.find('=', pos);
-		if (eq == std::string::npos) {
-			throw std::runtime_error("Invalid form data");
-		}
-		const std::string key = content.substr(pos, eq - pos);
-		pos = eq + 1;
-
-		const std::size_t amp = content.find('&', pos);
-		if (amp == std::string::npos) {
-			ret.emplace(std::move(key), content.substr(pos));
-			break;
-		}
-		const std::string value = content.substr(pos, amp - pos);
-		pos = amp + 1;
-
-		ret.emplace(std::move(key), std::move(value));
-	}
-
-	return ret;
+	return parse_params(content);
 }
 
 const std::string &Session::get_username() const { return username; }
