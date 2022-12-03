@@ -41,7 +41,7 @@ pair<const char*, const char*>  invalid_rowkey_message = make_pair("-ERR", "This
 pair<const char*, const char*>  key_inexistence_message = make_pair("-ERR", "Row or column key doesn't exist");
 
 // Integer constants
-const int BUFFER_SIZE = 50000;
+const int BUFFER_SIZE = 500000;
 const int suffix_length = strlen("\r\n");
 const string replicas_header = "<REPLICAS>";
 const string checkpt_dir = "checkpoints/";
