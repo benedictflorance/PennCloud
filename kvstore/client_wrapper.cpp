@@ -54,8 +54,9 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::strin
         request.set_value2(value2);;
     }
     request.SerializeToString(&request_str);
+    request_str = request_str.substr(0, request_str.length() - 1);
     request_str += "\r\n";
-    write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
+    write(sockfd, request_str.c_str(), request_str.length());
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
     std::pair<std::string, std::string> response_str = std::make_pair(response.value(), response.status());

@@ -119,11 +119,13 @@ void handle_socket(const int s) {
 
 		headers.emplace(std::move(key), std::move(value));
 	}
+	Headers resp_headers;
 
 	Response response = {
 		.params = params,
-		.req_headers = std::move(headers),
+		.req_headers = headers,
 		.req_body = istream,
+		.resp_headers = resp_headers
 	};
 
 	HandlerFunc handler = not_found_handler;

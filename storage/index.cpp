@@ -1,6 +1,7 @@
 #include "../http/http.hpp"
-#include "../kvstore/client_wrapper.h"
 #include <unistd.h>
+//#include "../http/local_test.hpp"
+#include "../kvstore/client_wrapper.h"
 
 #include <iostream>
 #include <sstream>
@@ -11,8 +12,7 @@
 #include <sys/socket.h>
 #include <vector>
 #include <string.h>
-KVstore store;
-std::string user = "testuser";
+std::string user = "09090";
 const std::string files = "_files"; 
 std::vector<std::string> filelist;
 
@@ -205,11 +205,12 @@ int main() {
 
 	const sockaddr_in addr = {
 		.sin_family = AF_INET,
-		.sin_port = htons(10001),
+		.sin_port = htons(10002),
 		.sin_addr = {.s_addr = INADDR_ANY},
 	};
-	std::string file = kvstore.get(user, file);
-	if(file != "0") filelist = deserial_vector(file);
+	std::string file = "";
+	file = kvstore.get(user, "filename");
+	if(file != "") filelist = deserial_vector(file);
 	if (bind(sock, reinterpret_cast<const sockaddr *>(&addr), sizeof(addr)) == -1) {
 		throw std::system_error(errno, std::generic_category(), "bind");
 	}

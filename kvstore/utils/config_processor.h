@@ -9,6 +9,7 @@ sockaddr_in get_address(string socket_address)
     string port_str = socket_address.substr(colon_index + 1, socket_address.length() - colon_index - 1);
     if(ip_address.empty())
     {
+            std::cout << ip_address << " " << port_str << std::endl;
         cerr<<invalid_ip_message;
         exit(-1);
     }
@@ -36,12 +37,16 @@ void process_config_file(string config_file)
     string line;
     getline(config_fstream, line); // Get <MASTER>
     getline(config_fstream, line);
+    std::size_t pos;
+    pos = line.find("\r"); if (pos != std::string::npos) line.replace(pos, 1, "");
     master_address = get_address(line);
     getline(config_fstream, line); // Get <TABLETS>
     int index = 0;
     while(getline(config_fstream, line))
     {
-        if(line == replicas_header)
+        pos = line.find("\r");
+        if (pos != std::string::npos) line.replace(pos, 1, "");
+        if(line == replicas_header || line == (replicas_header + "\r"))
             break;
         if(index == curr_server_index && verbose)
             cerr<<"Listening on "<<line<<endl;
@@ -50,6 +55,7 @@ void process_config_file(string config_file)
     }
     while(getline(config_fstream, line))
     {
+        pos = line.find("\r"); if (pos != std::string::npos) line.replace(pos, 1, "");
         stringstream replica(line);
         string row_range;
         getline(replica, row_range, ',');
