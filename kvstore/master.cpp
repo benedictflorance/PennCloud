@@ -101,11 +101,14 @@ void process_tablet_file(){
     string line;
     getline(config_fstream, line); // Get <MASTER>
     getline(config_fstream, line);
+    std::size_t pos;
+    pos = line.find("\r"); if (pos != std::string::npos) line.replace(pos, 1, "");
     master_address = line;
     getline(config_fstream, line); // Get <TABLETS>
     int index = 0;
     while(getline(config_fstream, line))
     {
+        pos = line.find("\r"); if (pos != std::string::npos) line.replace(pos, 1, "");
         if(line == "<REPLICAS>")
             break;
         tablet_addresses.push_back(line);
@@ -113,6 +116,7 @@ void process_tablet_file(){
     }
     while(getline(config_fstream, line))
     {
+        pos = line.find("\r"); if (pos != std::string::npos) line.replace(pos, 1, "");
         stringstream replica(line);
         string row_range;
         getline(replica, row_range, ',');
@@ -181,7 +185,6 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
     for (char &c : lower_case){
       c = to_lowercase(c);
     }
-
     if (lower_case.find(req) != string::npos){
       // capture the string before \r\n and extract argument
       string argument(buffer);

@@ -9,6 +9,22 @@
 void *process_client_thread(void *arg);
 int create_server();
 
+char *sstrstr(char *haystack, char *needle, size_t length)
+{
+    size_t needle_length = strlen(needle);
+    size_t i;
+    for (i = 0; i < length; i++) {
+        if (i + needle_length > length) {
+            return NULL;
+        }
+        if (strncmp(&haystack[i], needle, needle_length) == 0) {
+            return &haystack[i];
+        }
+    }
+    return NULL;
+}
+
+
 void create_log_file(){
 	log_file_name = log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
 	meta_log_file_name = meta_log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
@@ -47,9 +63,9 @@ void *process_client_thread(void *arg)
 			close(client_socket);
 			pthread_exit(NULL);
 		}
-		while((command_end_index = strstr(net_buffer, "\r\n")) != NULL)
+		while((command_end_index = sstrstr(net_buffer,"\r\n", client_shutdown + strlen(net_buffer))) != NULL)
 		{
-			int full_command_length = command_end_index + suffix_length - net_buffer;
+			int full_command_length = command_end_index + suffix_length - 1 - net_buffer;
 			string request_str = string(net_buffer, full_command_length);
 			PennCloud::Request request;
 			request.ParseFromString(request_str);

@@ -119,11 +119,13 @@ void handle_socket(const int s) {
 
 		headers.emplace(std::move(key), std::move(value));
 	}
+	Headers resp_headers;
 
 	Response response = {
 		.params = params,
-		.req_headers = std::move(headers),
+		.req_headers = headers,
 		.req_body = istream,
+		.resp_headers = resp_headers
 	};
 
 	HandlerFunc handler = not_found_handler;
@@ -287,7 +289,7 @@ std::unordered_map<std::string, std::string> Response::parse_file_upload() {
 		}
 		pos = eq + 1;
 		const std::size_t amp = content[i].find("\r\n", pos);
-		std::string value = content[i].substr(pos + 8, amp - pos);
+		std::string value = content[i].substr(pos + 8, amp - pos - 8);
 		pos = amp + 2;
 		ret.emplace(std::move("filename"), std::move(value));
 		eq = content[i].find("\r\n\r\n", pos);

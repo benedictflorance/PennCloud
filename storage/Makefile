@@ -1,4 +1,4 @@
 all: server
 
-storage: index.cpp ../kvstore/client_wrapper.o ../kvstore/request.pb.cc ../kvstore/response.pb.cc ../http_server/http_server.cpp
-	clang++ -std=c++17 -Wall -lpthread -lprotobuf -o web_server $^
+storage: index.cpp 
+	g++ $< -g ../kvstore/client_wrapper.cpp  ../http/http_server.cpp  ../kvstore/request.pb.cc ../kvstore/response.pb.cc  -std=c++17 -Wall -lpthread -lprotobuf  -o $@ 

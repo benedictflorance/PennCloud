@@ -1,6 +1,7 @@
 #include "../http/http.hpp"
-#include "../kvstore/client_wrapper.h"
 #include <unistd.h>
+//#include "../http/local_test.hpp"
+#include "../kvstore/client_wrapper.h"
 
 #include <iostream>
 #include <sstream>
@@ -11,8 +12,7 @@
 #include <sys/socket.h>
 #include <vector>
 #include <string.h>
-KVstore store;
-std::string user = "testuser";
+std::string user = "09090";
 const std::string files = "_files"; 
 std::vector<std::string> filelist;
 
@@ -67,7 +67,7 @@ std::string serial_vector(std::vector<std::string> vec) {
 	std::string s = "";
 	for(int i = 0; i < vec.size(); i++) {
 		s += vec[i];
-		s += "\r\n";
+		s += ",,,";
 	}
 	return s;
 }
@@ -76,10 +76,10 @@ std::vector<std::string> deserial_vector(std::string str) {
 std::vector<std::string> ret;
 	std::size_t pos  = 0;
 	while(pos < str.size()) {
-		const std::size_t eq = str.find("\r\n", pos);
+		const std::size_t eq = str.find(",,,", pos);
 		std::string key = str.substr(pos, eq - pos);
 		ret.push_back(key);
-		pos = eq + 2;
+		pos = eq + 3;
 
 	}
 	return ret;
@@ -205,11 +205,12 @@ int main() {
 
 	const sockaddr_in addr = {
 		.sin_family = AF_INET,
-		.sin_port = htons(10001),
+		.sin_port = htons(10002),
 		.sin_addr = {.s_addr = INADDR_ANY},
 	};
-	std::string file = kvstore.get(user, file);
-	if(file != "0") filelist = deserial_vector(file);
+	std::string file = "";
+	file = kvstore.get(user, "filename");
+	if(file != "") filelist = deserial_vector(file);
 	if (bind(sock, reinterpret_cast<const sockaddr *>(&addr), sizeof(addr)) == -1) {
 		throw std::system_error(errno, std::generic_category(), "bind");
 	}
