@@ -82,3 +82,5 @@ mutex rowkeymaplock;
 map<string, mutex> rowkey_lock;
 unordered_map<string, int> rowkey_version;
 map<string, mutex> rowkey_version_lock;
+// Holdback queue: string is rkey, int is seqno and string is request_str
+unordered_map<string, map<int, string>> replica_holdback_queue;

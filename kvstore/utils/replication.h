@@ -109,7 +109,9 @@ string update_kv_store(string request_str, int client_socket){
         request.SerializeToString(&ack_request_str);
         ack_request_str += "\r\n";
         cout<<"Sending ACK"<<endl;
-        write(sockfd, ack_request_str.c_str(), strlen(ack_request_str.c_str()));
+        int return_val = write(sockfd, ack_request_str.c_str(), strlen(ack_request_str.c_str()));
+        if(return_val == -1)
+            cout<<"Failed because it was unable to write"<<endl;
         close(sockfd);
     }
     return response_str;
@@ -141,7 +143,9 @@ void update_secondary(string request_str){
             }
             write_request_str +=  "\r\n";
             cout<<"Sending WRITE"<<endl;
-            write(sockfd, write_request_str.c_str(), strlen(write_request_str.c_str()));
+            int return_val = write(sockfd, write_request_str.c_str(), strlen(write_request_str.c_str()));
+            if(return_val == -1)
+                cout<<"Failed because it was unable to write"<<endl;
             close(sockfd);
         } 
     }
@@ -175,7 +179,9 @@ void grant_secondary(string request_str){
 
             write_request_str += "\r\n";
             cout<<"Sending GRANT"<<endl;
-            write(sockfd, write_request_str.c_str(), strlen(write_request_str.c_str()));
+            int return_val = write(sockfd, write_request_str.c_str(), strlen(write_request_str.c_str()));
+            if(return_val == -1)
+                cout<<"Failed because it was unable to write"<<endl;
             close(sockfd);
             break;
         } 
@@ -209,6 +215,8 @@ void request_primary(string request_str){
     request.SerializeToString(&req_request_str);
     req_request_str += "\r\n";
     cout<<"Sending REQUEST"<<endl;
-    write(sockfd, req_request_str.c_str(), strlen(req_request_str.c_str()));
+    int return_val = write(sockfd, req_request_str.c_str(), strlen(req_request_str.c_str()));
+    if(return_val == -1)
+        cout<<"Failed because it was unable to write"<<endl;
     close(sockfd);
 }

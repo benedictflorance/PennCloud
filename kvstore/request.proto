@@ -13,4 +13,5 @@ message Request{
     optional string sender_server_index = 8;
     optional string uniqueid = 9;
     optional string preprocessed_response = 10;
+    optional string sequence_number = 11;
 }

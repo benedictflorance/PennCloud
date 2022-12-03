@@ -15,6 +15,8 @@ void process_request(string request_str, int client_socket);
 void create_log_file(){
 	log_file_name = log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
 	meta_log_file_name = meta_log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
+	create_dir("checkpoints/");
+	create_dir("metadata/");
 	create_dir(log_dir);
 	create_dir(meta_log_dir);
 	create_file(log_file_name);
@@ -40,6 +42,7 @@ void process_request(string request_str, int client_socket){
 					(strcasecmp(request.type().c_str(), "DELETE") == 0))
 	{
 		response_str = request.preprocessed_response();
+		response.ParseFromString(response_str);
 	}
 	else{
 		response.set_status(unrecognized_command_message.first);
@@ -74,7 +77,7 @@ void *process_client_thread(void *arg)
 	{	
 		char *command_end_index;
 		int client_shutdown = read(client_socket, current_buffer, BUFFER_SIZE-strlen(net_buffer));
-		if(shutdown_flag || client_shutdown == 0)
+		if(shutdown_flag)
 		{
 			if(verbose)
 					cerr<<"["<<client_socket<<"] "<<closing_message<<endl;
@@ -94,13 +97,37 @@ void *process_client_thread(void *arg)
 			if(request.isserver() == "true"){
 				//this is the secondary server receiving a WRITE message for replication protocol
 				if(request.command() == "WRITE"){
-					cout<<"received WRITE"<<endl;
+
+					int expected_seq_no;
+					do{
+					if(rowkey_version.find(request.rowkey()) == rowkey_version.end())
+						expected_seq_no = 1;
+					else
+						expected_seq_no = rowkey_version[request.rowkey()] + 1;
+						cout<<"Expected sequence unmber now is "<<expected_seq_no<<" but current request seq number is "<<request.sequence_number()<<endl;
+					}while(expected_seq_no != stoi(request.sequence_number())); // expected is 3, and request now is 5 (5 just gets added to holdback and does not busy wait), when 3 comes in, it finished [OPTIMIZATION]
 					//locally update and send an ACK
 					update_kv_store(request_str);
+					// Update the last seen sequence number
+					rowkey_version_lock[request.rowkey()].lock();
+					rowkey_version[request.rowkey()] = expected_seq_no;
+					rowkey_version_lock[request.rowkey()].unlock();
 				}
 				//this is the primary server receiving request to WRITE
 				else if(request.command() == "REQUEST"){
 					//locally update
+					rowkey_version_lock[request.rowkey()].lock();
+					// Initialize seq to 0 if it sees rkey for first time, else increment
+					if(rowkey_version.find(request.rowkey()) == rowkey_version.end())
+					{
+						rowkey_version[request.rowkey()] = 1;
+					}
+					else
+					{
+						rowkey_version[request.rowkey()]++;
+					}
+					rowkey_version_lock[request.rowkey()].unlock();
+					request.set_sequence_number(to_string(rowkey_version[request.rowkey()]));
 					string response_str = update_kv_store(request_str);
 					request.set_preprocessed_response(response_str);
 					string new_request_str;
@@ -164,12 +191,24 @@ void *process_client_thread(void *arg)
 					request.set_uniqueid(get_time() + to_string(rand()));
 					req_client_sock_map[request.uniqueid()] = client_socket;
 					if(is_rowkey_accepted(request.rowkey()))
-					{
+					{	
 						request.set_sender_server_index(to_string(curr_server_index));
 						//TO DO - make it more unique
 						string new_request_str;
 						
 						if(isPrimary){
+							rowkey_version_lock[request.rowkey()].lock();
+							// Initialize seq to 0 if it sees rkey for first time, else increment
+							if(rowkey_version.find(request.rowkey()) == rowkey_version.end())
+							{
+								rowkey_version[request.rowkey()] = 1;
+							}
+							else
+							{
+								rowkey_version[request.rowkey()]++;
+							}
+							rowkey_version_lock[request.rowkey()].unlock();
+							request.set_sequence_number(to_string(rowkey_version[request.rowkey()]));
 							//locally update
 							string preprocessed_response = update_kv_store(request_str);
 							request.set_preprocessed_response(preprocessed_response);
@@ -331,9 +370,9 @@ int main(int argc, char *argv[])
     }
     process_config_file(config_file);
 	initialize_primary_info(config_file);
-	load_kvstore_from_disk();
 	//create log file if it doesn't exist
 	create_log_file();
+	load_kvstore_from_disk();
 	replay_log(log_file_name, meta_log_file_name);
     int isSuccess = create_server();
 	return isSuccess;

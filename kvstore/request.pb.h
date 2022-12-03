@@ -190,6 +190,7 @@ class Request final :
     kSenderServerIndexFieldNumber = 8,
     kUniqueidFieldNumber = 9,
     kPreprocessedResponseFieldNumber = 10,
+    kSequenceNumberFieldNumber = 11,
   };
   // required string type = 1;
   bool has_type() const;
@@ -371,6 +372,24 @@ class Request final :
   std::string* _internal_mutable_preprocessed_response();
   public:
 
+  // optional string sequence_number = 11;
+  bool has_sequence_number() const;
+  private:
+  bool _internal_has_sequence_number() const;
+  public:
+  void clear_sequence_number();
+  const std::string& sequence_number() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_sequence_number(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_sequence_number();
+  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_sequence_number();
+  void set_allocated_sequence_number(std::string* sequence_number);
+  private:
+  const std::string& _internal_sequence_number() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_sequence_number(const std::string& value);
+  std::string* _internal_mutable_sequence_number();
+  public:
+
   // @@protoc_insertion_point(class_scope:PennCloud.Request)
  private:
   class _Internal;
@@ -390,6 +409,7 @@ class Request final :
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr sender_server_index_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr uniqueid_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr preprocessed_response_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr sequence_number_;
   friend struct ::TableStruct_request_2eproto;
 };
 // ===================================================================
@@ -971,6 +991,63 @@ inline void Request::set_allocated_preprocessed_response(std::string* preprocess
   preprocessed_response_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), preprocessed_response,
       GetArenaForAllocation());
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.preprocessed_response)
+}
+
+// optional string sequence_number = 11;
+inline bool Request::_internal_has_sequence_number() const {
+  bool value = (_has_bits_[0] & 0x00000400u) != 0;
+  return value;
+}
+inline bool Request::has_sequence_number() const {
+  return _internal_has_sequence_number();
+}
+inline void Request::clear_sequence_number() {
+  sequence_number_.ClearToEmpty();
+  _has_bits_[0] &= ~0x00000400u;
+}
+inline const std::string& Request::sequence_number() const {
+  // @@protoc_insertion_point(field_get:PennCloud.Request.sequence_number)
+  return _internal_sequence_number();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void Request::set_sequence_number(ArgT0&& arg0, ArgT... args) {
+ _has_bits_[0] |= 0x00000400u;
+ sequence_number_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:PennCloud.Request.sequence_number)
+}
+inline std::string* Request::mutable_sequence_number() {
+  // @@protoc_insertion_point(field_mutable:PennCloud.Request.sequence_number)
+  return _internal_mutable_sequence_number();
+}
+inline const std::string& Request::_internal_sequence_number() const {
+  return sequence_number_.Get();
+}
+inline void Request::_internal_set_sequence_number(const std::string& value) {
+  _has_bits_[0] |= 0x00000400u;
+  sequence_number_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArenaForAllocation());
+}
+inline std::string* Request::_internal_mutable_sequence_number() {
+  _has_bits_[0] |= 0x00000400u;
+  return sequence_number_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
+}
+inline std::string* Request::release_sequence_number() {
+  // @@protoc_insertion_point(field_release:PennCloud.Request.sequence_number)
+  if (!_internal_has_sequence_number()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000400u;
+  return sequence_number_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaForAllocation());
+}
+inline void Request::set_allocated_sequence_number(std::string* sequence_number) {
+  if (sequence_number != nullptr) {
+    _has_bits_[0] |= 0x00000400u;
+  } else {
+    _has_bits_[0] &= ~0x00000400u;
+  }
+  sequence_number_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), sequence_number,
+      GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.sequence_number)
 }
 
 #ifdef __GNUC__
