@@ -5,6 +5,7 @@ KVstore kvstore;
 std::string master_ip_str = "127.0.0.1:8000"; 
 const int BUFFER_SIZE = 500000;
 const char* invalid_ip_message = "-ERR Invalid IP/port argument. Please adhere to <IP Address>:<Port Number>\r\n";
+const std::string suffix = "!@#DELIMITER#@!";
 
 sockaddr_in KVstore::get_address(std::string socket_address)
 {
@@ -55,7 +56,7 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::strin
     }
     request.SerializeToString(&request_str);
     //request_str = request_str.substr(0, request_str.length() - 1);
-    request_str += "\r\n";
+    request_str += suffix;
     write(sockfd, request_str.c_str(), request_str.length());
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);

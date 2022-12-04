@@ -30,7 +30,7 @@ void send_requests(int &sockfd)
     request.set_rowkey("benedict");
     request.set_columnkey("password");
     request.SerializeToString(&request_str);
-    request_str += "\r\n";
+    request_str += suffix;
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
@@ -40,7 +40,7 @@ void send_requests(int &sockfd)
     request.set_rowkey("0benedict");
     request.set_columnkey("password");
     request.SerializeToString(&request_str);
-    request_str += "\r\n";
+    request_str += suffix;
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
@@ -51,7 +51,7 @@ void send_requests(int &sockfd)
     request.set_columnkey("password");
     request.set_value1("ML>>>Systems");
     request.SerializeToString(&request_str);
-    request_str += "\r\n";
+    request_str += suffix;
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
@@ -61,7 +61,7 @@ void send_requests(int &sockfd)
     request.set_rowkey("0benedict");
     request.set_columnkey("passwords");
     request.SerializeToString(&request_str);
-    request_str += "\r\n";
+    request_str += suffix;
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
@@ -71,7 +71,7 @@ void send_requests(int &sockfd)
     request.set_rowkey("0benedict");
     request.set_columnkey("password");
     request.SerializeToString(&request_str);
-    request_str += "\r\n";
+    request_str += suffix;
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     // while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     // response.ParseFromString(response_buffer);
@@ -83,7 +83,7 @@ void send_requests(int &sockfd)
     // request.set_value1("ML>>>>Systems");
     // request.set_value2("SelfDrivingIsGOAT");
     // request.SerializeToString(&request_str);
-    // request_str += "\r\n";
+    // request_str += suffix;
     // write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
@@ -93,7 +93,7 @@ void send_requests(int &sockfd)
     request.set_rowkey("0benedict");
     request.set_columnkey("password");
     request.SerializeToString(&request_str);
-    request_str += "\r\n";
+    request_str += suffix;
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
@@ -105,7 +105,7 @@ void send_requests(int &sockfd)
     request.set_value1("ML>>>Systems");
     request.set_value2("SelfDrivingIsGOAT");
     request.SerializeToString(&request_str);
-    request_str += "\r\n";
+    request_str += suffix;
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
@@ -115,7 +115,7 @@ void send_requests(int &sockfd)
     request.set_rowkey("0benedict");
     request.set_columnkey("password");
     request.SerializeToString(&request_str);
-    request_str += "\r\n";
+    request_str += suffix;
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
@@ -125,7 +125,7 @@ void send_requests(int &sockfd)
     // request.set_rowkey("0benedict");
     // request.set_columnkey("password");
     // request.SerializeToString(&request_str);
-    // request_str += "\r\n";
+    // request_str += suffix;
     // write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     // while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     // response.ParseFromString(response_buffer);
@@ -135,7 +135,7 @@ void send_requests(int &sockfd)
     // request.set_rowkey("0benedict");
     // request.set_columnkey("password");
     // request.SerializeToString(&request_str);
-    // request_str += "\r\n";
+    // request_str += suffix;
     // write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     // while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     // response.ParseFromString(response_buffer);
@@ -146,7 +146,7 @@ void send_requests(int &sockfd)
     request.set_columnkey("cookie");
     request.set_value1("ML>>>Systems");
     request.SerializeToString(&request_str);
-    request_str += "\r\n";
+    request_str += suffix;
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
@@ -156,7 +156,7 @@ void send_requests(int &sockfd)
     request.set_columnkey("email");
     request.set_value1("mailmelogcrashcheck@sherlock.com");
     request.SerializeToString(&request_str);
-    request_str += "\r\n";
+    request_str += suffix;
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
