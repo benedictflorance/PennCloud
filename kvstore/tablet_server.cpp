@@ -24,7 +24,18 @@ char *sstrstr(char *haystack, char *needle, size_t length)
     return NULL;
 }
 
-
+// function for reading
+bool do_read(int fd, char *buf, int len){
+  int rcvd = 0;
+  while (rcvd < len)
+  {
+    int n = read(fd, &buf[rcvd], len - rcvd);
+    if (n < 0)
+      return false;
+    rcvd += n;
+  }
+  return true;
+}
 void create_log_file(){
 	log_file_name = log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
 	meta_log_file_name = meta_log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
@@ -47,15 +58,11 @@ void *process_client_thread(void *arg)
 		cerr<<"["<<client_socket<<"] "<<new_connection_message<<endl;
 	}
 
-	char net_buffer[BUFFER_SIZE];
-	memset(net_buffer, 0, sizeof(net_buffer));
-	char* current_buffer = net_buffer;
-
+	char length_buffer[BUFFER_SIZE];
+	char request_buffer[BUFFER_SIZE];
 	while(true)
 	{	
-		char *command_end_index;
-		int client_shutdown = read(client_socket, current_buffer, BUFFER_SIZE-strlen(net_buffer));
-		if(shutdown_flag || client_shutdown == 0)
+		if(shutdown_flag)
 		{
 			if(verbose)
 					cerr<<"["<<client_socket<<"] "<<closing_message<<endl;
@@ -63,72 +70,53 @@ void *process_client_thread(void *arg)
 			close(client_socket);
 			pthread_exit(NULL);
 		}
-		while((command_end_index = sstrstr(net_buffer, "!@#DELIMITER#@!", client_shutdown + strlen(net_buffer))) != NULL)
+		// memset(length_buffer, 0, sizeof(length_buffer));
+		// memset(request_buffer, 0, sizeof(request_buffer));
+		do_read(client_socket, length_buffer, 10);
+		int request_length = stoi(string(length_buffer));
+		cout<<"Request length is "<<request_length<<endl;
+		do_read(client_socket, request_buffer, request_length);
+		cout<<"Current buffer length "<<strlen(request_buffer)<<endl;
+		string request_str = string(request_buffer);
+		PennCloud::Request request;
+		request.ParseFromString(request_str);
+		PennCloud::Response response;
+		string response_str;
+		if(!request.has_type())
 		{
-			int full_command_length = command_end_index + suffix_length - 1 - net_buffer;
-			string request_str = string(net_buffer, full_command_length);
-			PennCloud::Request request;
-			request.ParseFromString(request_str);
-			PennCloud::Response response;
-			string response_str;
-			if(!request.has_type())
-			{
-				response.set_status(type_unset_message.first);
-				response.set_description(type_unset_message.second);
-			}
-			else if (strcasecmp(request.type().c_str(), "GET") == 0){
-				process_get_request(request, response);
-			}
-			else if (strcasecmp(request.type().c_str(), "PUT") == 0){
-				update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
-				process_put_request(request, response);
-			}
-			else if (strcasecmp(request.type().c_str(), "CPUT") == 0){
-				update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
-				process_cput_request(request, response);
-			}
-			else if (strcasecmp(request.type().c_str(), "DELETE") == 0){
-				update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
-				process_delete_request(request, response);
-			}
-			else
-			{
-				response.set_status(unrecognized_command_message.first);
-				response.set_description(unrecognized_command_message.second);
-			}		
-			response.SerializeToString(&response_str);								
-			write(client_socket, response_str.c_str(), strlen(response_str.c_str()));
-			if(verbose)
-				{
-					// [N] C: <text> (where <text> is a command received from the client and N is as above);
-					cerr<<"["<<client_socket<<"] "<<"Client received a request type of "<<request.type()<<" a rowkey of "<<request.rowkey()<<" a columnkey of "<<request.columnkey()<<" a value1 of "<<request.value1().length()
-						<<" a value2 of "<<request.value2().length()<<endl; 
-					// [N] S: <text> (where <text> is a response sent by the server, and N is as above);
-					cerr<<"["<<client_socket<<"] "<<"Server sent a response status of  "<<response.status()<<" response description of "<<response.description()<<" response value of "<<response.value().length()<<endl;
-				}
-			current_buffer = net_buffer;
-			command_end_index += suffix_length;
-			//Move rest of the commands to the front
-			while(*command_end_index != NULL)
-			{
-				*current_buffer = *command_end_index;
-				*command_end_index = '\0';
-				current_buffer++;
-				command_end_index++;
-			}
-			//Clear rest of the buffer
-			while(*current_buffer != '\0')
-			{
-				*current_buffer = '\0';
-				current_buffer++;
-			}
+			response.set_status(type_unset_message.first);
+			response.set_description(type_unset_message.second);
 		}
-		// Start from the beginning (since we could've potentially moved commands if there were multiple commands)
-		// There's only one command now!
-		current_buffer = net_buffer;
-		while(*current_buffer != NULL)
-			current_buffer++;
-		delete command_end_index;
+		else if (strcasecmp(request.type().c_str(), "GET") == 0){
+			process_get_request(request, response);
+		}
+		else if (strcasecmp(request.type().c_str(), "PUT") == 0){
+			update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
+			process_put_request(request, response);
+		}
+		else if (strcasecmp(request.type().c_str(), "CPUT") == 0){
+			update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
+			process_cput_request(request, response);
+		}
+		else if (strcasecmp(request.type().c_str(), "DELETE") == 0){
+			update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
+			process_delete_request(request, response);
+		}
+		else
+		{
+			response.set_status(unrecognized_command_message.first);
+			response.set_description(unrecognized_command_message.second);
+		}		
+		response.SerializeToString(&response_str);								
+		write(client_socket, response_str.c_str(), strlen(response_str.c_str()));
+		if(verbose)
+			{
+				// [N] C: <text> (where <text> is a command received from the client and N is as above);
+				cerr<<"["<<client_socket<<"] "<<"Client received a request type of "<<request.type()<<" a rowkey of "<<request.rowkey()<<" a columnkey of "<<request.columnkey()<<" a value1 of "<<request.value1().length()
+					<<" a value2 of "<<request.value2().length()<<endl; 
+				// [N] S: <text> (where <text> is a response sent by the server, and N is as above);
+				cerr<<"["<<client_socket<<"] "<<"Server sent a response status of  "<<response.status()<<" response description of "<<response.description()<<" response value of "<<response.value().length()<<endl;
+			}
 	}
 }
 

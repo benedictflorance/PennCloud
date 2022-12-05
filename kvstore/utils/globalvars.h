@@ -42,8 +42,6 @@ pair<const char*, const char*>  key_inexistence_message = make_pair("-ERR", "Row
 
 // Integer constants
 const int BUFFER_SIZE = 1000000; 
-const int suffix_length = strlen("!@#DELIMITER#@!");
-string suffix = "!@#DELIMITER#@!";
 const string replicas_header = "<REPLICAS>";
 const string checkpt_dir = "checkpoints/";
 const string checkpt_meta_dir = "metadata/";

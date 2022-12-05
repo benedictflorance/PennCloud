@@ -5,7 +5,6 @@ KVstore kvstore;
 std::string master_ip_str = "127.0.0.1:8000"; 
 const int BUFFER_SIZE = 1000000;
 const char* invalid_ip_message = "-ERR Invalid IP/port argument. Please adhere to <IP Address>:<Port Number>\r\n";
-const std::string suffix = "!@#DELIMITER#@!";
 
 sockaddr_in KVstore::get_address(std::string socket_address)
 {
@@ -34,7 +33,17 @@ sockaddr_in KVstore::get_address(std::string socket_address)
     inet_pton(AF_INET, ip_address.c_str(), &(servaddr.sin_addr));
     return servaddr;
 }
-
+bool do_write(int fd, char *buf, int len){
+  int sent = 0;
+  while (sent < len)
+  {
+    int n = write(fd, &buf[sent], len - sent);
+    if (n < 0)
+      return false;
+    sent += n;
+  }
+  return true;
+}
 std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::string type, std::string rkey, std::string ckey, std::string value1, std::string value2)
 {
     std::string request_str;
@@ -55,9 +64,12 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::strin
         request.set_value2(value2);;
     }
     request.SerializeToString(&request_str);
-    //request_str = request_str.substr(0, request_str.length() - 1);
-    request_str += suffix;
-    write(sockfd, request_str.c_str(), request_str.length());
+
+    char req_length[11];
+    snprintf (req_length, 11, "%10d", request_str.length()); 
+    std::string message = std::string(req_length) + request_str;
+    std::cout<<"Message length is "<<std::string(req_length)<<std::endl;
+    do_write(sockfd, message.data(), message.length());
     std::cout<<"Sending a tablet server request type of "<<request.type()<<" a rowkey of "<<request.rowkey()<<" a columnkey of "<<request.columnkey()<<" a value1 of "<<request.value1().length()
 						<<" a value2 of "<<request.value2().length()<<std::endl; 
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
@@ -180,7 +192,6 @@ bool KVstore::dele(std::string rkey, std::string ckey)
 // Sample Test
 void test()
 {
-
     KVstore kv_test;
     // kv_test.put("10hanbang", "password", "frontend");
     // std::string response_str = kv_test.get("10hanbang", "password");

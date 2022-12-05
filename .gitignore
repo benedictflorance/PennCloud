@@ -10,3 +10,7 @@ metadata/
 log/
 metadata_log/
 client_wrapper
+storage
+index
+web_server
+libkvstore.a

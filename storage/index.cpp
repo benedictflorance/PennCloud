@@ -2,7 +2,6 @@
 #include <unistd.h>
 //#include "../http/local_test.hpp"
 #include "../kvstore/client_wrapper.h"
-
 #include <iostream>
 #include <sstream>
 #include <thread>
@@ -93,7 +92,6 @@ static std::unique_ptr<std::istream> index_page(http::Response &resp) {
 		resp.resp_headers.emplace("Content-Type", "text/html");
 		return std::make_unique<std::ifstream>("static/login.html");
 	}
-
 	resp.resp_headers.emplace("Content-Type", "text/html");
 	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
 	std::ifstream file( "static/upload.html" );
@@ -108,9 +106,9 @@ static std::unique_ptr<std::istream> index_page(http::Response &resp) {
         *ss << file.rdbuf();
         file.close();
     }
-
 	return ss;
 }
+
 
 static std::unique_ptr<std::istream> test(http::Response &resp) {
 	http::Session &session = resp.get_session();
@@ -126,7 +124,6 @@ static std::unique_ptr<std::istream> test(http::Response &resp) {
 	*ss << R"(<br /><a href="/logout">Logout</a>)";
 	return ss;
 }
-
 
 
 

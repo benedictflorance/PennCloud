@@ -4,7 +4,7 @@
 #include "request.pb.h"
 #include "response.pb.h"
 
-void clear_keys(PennCloud::Request &request, PennCloud::Response &response, string &request_str, char* response_buffer)
+void clear_keys(PennCloud::Request &request, PennCloud::Response &response, string &request_str, char* response_buffer, char* req_length)
 {
     cout<<"Response has a status of "<<response.status()<<" description of "<<response.description()<<" a value of "<<response.value()<<endl;
     request.clear_type();
@@ -16,88 +16,96 @@ void clear_keys(PennCloud::Request &request, PennCloud::Response &response, stri
     response.clear_description();
     request_str.clear();
     memset(response_buffer, 0, sizeof(response_buffer));
+    memset(req_length, 0, sizeof(req_length));
 }
 void send_requests(int &sockfd)
 {
     string request_str;
     string response_str;
     char response_buffer[BUFFER_SIZE];
+    char req_length[11];
     PennCloud::Request request;
     PennCloud::Response response;
-    // while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     // Test invalid rowkey
     request.set_type("GET");
     request.set_rowkey("benedict");
     request.set_columnkey("password");
     request.SerializeToString(&request_str);
-    request_str += suffix;
-    write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
+    snprintf (req_length, 11, "%10d", request_str.length()); 
+    write(sockfd, string(req_length).c_str(), string(req_length).length());        
+    write(sockfd, request_str.c_str(), strlen(request_str.c_str()));    
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
-    clear_keys(request, response, request_str, response_buffer);
+    clear_keys(request, response, request_str, response_buffer, req_length);
     // Test valid rowkey
     request.set_type("GET");
     request.set_rowkey("0benedict");
     request.set_columnkey("password");
     request.SerializeToString(&request_str);
-    request_str += suffix;
+    snprintf (req_length, 11, "%10d", request_str.length()); 
+    write(sockfd, string(req_length).c_str(), string(req_length).length());
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
-    clear_keys(request, response, request_str, response_buffer);
+    clear_keys(request, response, request_str, response_buffer, req_length);
     // Test PUT
     request.set_type("PUT");
     request.set_rowkey("0benedict");
     request.set_columnkey("password");
     request.set_value1("ML>>>Systems");
     request.SerializeToString(&request_str);
-    request_str += suffix;
+    snprintf (req_length, 11, "%10d", request_str.length()); 
+    write(sockfd, string(req_length).c_str(), string(req_length).length());
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
-    clear_keys(request, response, request_str, response_buffer);
+    clear_keys(request, response, request_str, response_buffer, req_length);
     // Test valid rowkey
     request.set_type("GET");
     request.set_rowkey("0benedict");
     request.set_columnkey("passwords");
     request.SerializeToString(&request_str);
-    request_str += suffix;
+    snprintf (req_length, 11, "%10d", request_str.length()); 
+    write(sockfd, string(req_length).c_str(), string(req_length).length());
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
-    clear_keys(request, response, request_str, response_buffer);
+    clear_keys(request, response, request_str, response_buffer, req_length);
     // Test valid rowkey
     request.set_type("GET");
     request.set_rowkey("0benedict");
     request.set_columnkey("password");
     request.SerializeToString(&request_str);
-    request_str += suffix;
+    snprintf (req_length, 11, "%10d", request_str.length()); 
+    write(sockfd, string(req_length).c_str(), string(req_length).length());
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
-    // while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
-    // response.ParseFromString(response_buffer);
-    // clear_keys(request, response, request_str, response_buffer);
+    while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
+    response.ParseFromString(response_buffer);
+    clear_keys(request, response, request_str, response_buffer, req_length);
     // Test CPUT invalid condition
-    // request.set_type("CPUT");
-    // request.set_rowkey("0benedict");
-    // request.set_columnkey("password");
-    // request.set_value1("ML>>>>Systems");
-    // request.set_value2("SelfDrivingIsGOAT");
-    // request.SerializeToString(&request_str);
-    // request_str += suffix;
-    // write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
+    request.set_type("CPUT");
+    request.set_rowkey("0benedict");
+    request.set_columnkey("password");
+    request.set_value1("ML>>>>Systems");
+    request.set_value2("SelfDrivingIsGOAT");
+    request.SerializeToString(&request_str);
+    snprintf (req_length, 11, "%10d", request_str.length()); 
+    write(sockfd, string(req_length).c_str(), string(req_length).length());
+    write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
-    clear_keys(request, response, request_str, response_buffer);
+    clear_keys(request, response, request_str, response_buffer, req_length);
     // Test valid rowkey
     request.set_type("GET");
     request.set_rowkey("0benedict");
     request.set_columnkey("password");
     request.SerializeToString(&request_str);
-    request_str += suffix;
+    snprintf (req_length, 11, "%10d", request_str.length()); 
+    write(sockfd, string(req_length).c_str(), string(req_length).length());    
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
-    clear_keys(request, response, request_str, response_buffer);
+    clear_keys(request, response, request_str, response_buffer, req_length);
     // Test CPUT valid condition
     request.set_type("CPUT");
     request.set_rowkey("0benedict");
@@ -105,63 +113,69 @@ void send_requests(int &sockfd)
     request.set_value1("ML>>>Systems");
     request.set_value2("SelfDrivingIsGOAT");
     request.SerializeToString(&request_str);
-    request_str += suffix;
+    snprintf (req_length, 11, "%10d", request_str.length()); 
+    write(sockfd, string(req_length).c_str(), string(req_length).length());    
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
-    clear_keys(request, response, request_str, response_buffer);
+    clear_keys(request, response, request_str, response_buffer, req_length);
     // Test valid rowkey
     request.set_type("GET");
     request.set_rowkey("0benedict");
     request.set_columnkey("password");
     request.SerializeToString(&request_str);
-    request_str += suffix;
+    snprintf (req_length, 11, "%10d", request_str.length()); 
+    write(sockfd, string(req_length).c_str(), string(req_length).length());        
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
-    clear_keys(request, response, request_str, response_buffer);
+    clear_keys(request, response, request_str, response_buffer, req_length);
     // Test delete 
-    // request.set_type("DELETE");
-    // request.set_rowkey("0benedict");
-    // request.set_columnkey("password");
-    // request.SerializeToString(&request_str);
-    // request_str += suffix;
-    // write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
-    // while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
-    // response.ParseFromString(response_buffer);
-    // clear_keys(request, response, request_str, response_buffer);
-    // Test valid rowkey
-    // request.set_type("GET");
-    // request.set_rowkey("0benedict");
-    // request.set_columnkey("password");
-    // request.SerializeToString(&request_str);
-    // request_str += suffix;
-    // write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
-    // while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
-    // response.ParseFromString(response_buffer);
-    // clear_keys(request, response, request_str, response_buffer);
+    request.set_type("DELETE");
+    request.set_rowkey("0benedict");
+    request.set_columnkey("password");
+    request.SerializeToString(&request_str);
+    snprintf (req_length, 11, "%10d", request_str.length()); 
+    write(sockfd, string(req_length).c_str(), string(req_length).length());        
+    write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
+    while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
+    response.ParseFromString(response_buffer);
+    clear_keys(request, response, request_str, response_buffer, req_length);
+    //Test valid rowkey
+    request.set_type("GET");
+    request.set_rowkey("0benedict");
+    request.set_columnkey("password");
+    request.SerializeToString(&request_str);
+    snprintf (req_length, 11, "%10d", request_str.length()); 
+    write(sockfd, string(req_length).c_str(), string(req_length).length());        
+    write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
+    while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
+    response.ParseFromString(response_buffer);
+    clear_keys(request, response, request_str, response_buffer, req_length);
     // Test PUT
     request.set_type("PUT");
     request.set_rowkey("benny");
     request.set_columnkey("cookie");
     request.set_value1("ML>>>Systems");
     request.SerializeToString(&request_str);
-    request_str += suffix;
+    snprintf (req_length, 11, "%10d", request_str.length()); 
+    write(sockfd, string(req_length).c_str(), string(req_length).length());        
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
-    clear_keys(request, response, request_str, response_buffer);
+    clear_keys(request, response, request_str, response_buffer, req_length);
+    // Test PUT
     request.set_type("PUT");
     request.set_rowkey("15benny");
     request.set_columnkey("email");
     request.set_value1("mailmelogcrashcheck@sherlock.com");
     request.SerializeToString(&request_str);
-    request_str += suffix;
+    snprintf (req_length, 11, "%10d", request_str.length()); 
+    write(sockfd, string(req_length).c_str(), string(req_length).length());        
     write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
-    clear_keys(request, response, request_str, response_buffer);
-
+    clear_keys(request, response, request_str, response_buffer, req_length);
 }
 int create_client()
 {
