@@ -3,7 +3,7 @@
 KVstore kvstore;
 
 std::string master_ip_str = "127.0.0.1:8000"; 
-const int BUFFER_SIZE = 500000;
+const int BUFFER_SIZE = 1000000;
 const char* invalid_ip_message = "-ERR Invalid IP/port argument. Please adhere to <IP Address>:<Port Number>\r\n";
 const std::string suffix = "!@#DELIMITER#@!";
 
@@ -58,8 +58,11 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::strin
     //request_str = request_str.substr(0, request_str.length() - 1);
     request_str += suffix;
     write(sockfd, request_str.c_str(), request_str.length());
+    std::cout<<"Sending a tablet server request type of "<<request.type()<<" a rowkey of "<<request.rowkey()<<" a columnkey of "<<request.columnkey()<<" a value1 of "<<request.value1().length()
+						<<" a value2 of "<<request.value2().length()<<std::endl; 
     while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
     response.ParseFromString(response_buffer);
+    std::cout<<"Received a status of "<<response.status()<<" description of "<<response.description()<<" value of size "<<response.value().length()<<std::endl;
     std::pair<std::string, std::string> response_str = std::make_pair(response.value(), response.status());
     return response_str;
 }
@@ -88,6 +91,7 @@ std::pair<std::string, std::string> KVstore::contact_tablet_server(std::string t
 // clear cache every 2 minutes
 std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string type, std::string rkey, std::string ckey, std::string value1, std::string value2)
 {
+    std::cout<<"Sent a request of type "<<type<<" rowkey "<<rkey<<" columnkey "<<ckey<<" value1 size "<<value1.length()<<" value2 size "<<value2.length()<<std::endl;
     bool is_crash = false;
     std::pair<std::string, std::string> response_str;
     do
@@ -174,7 +178,7 @@ bool KVstore::dele(std::string rkey, std::string ckey)
 }
 
 // Sample Test
-int main()
+void test()
 {
 
     KVstore kv_test;

@@ -63,7 +63,7 @@ void *process_client_thread(void *arg)
 			close(client_socket);
 			pthread_exit(NULL);
 		}
-		while((command_end_index = sstrstr(net_buffer,"\r\n", client_shutdown + strlen(net_buffer))) != NULL)
+		while((command_end_index = sstrstr(net_buffer, "!@#DELIMITER#@!", client_shutdown + strlen(net_buffer))) != NULL)
 		{
 			int full_command_length = command_end_index + suffix_length - 1 - net_buffer;
 			string request_str = string(net_buffer, full_command_length);
@@ -101,10 +101,10 @@ void *process_client_thread(void *arg)
 			if(verbose)
 				{
 					// [N] C: <text> (where <text> is a command received from the client and N is as above);
-					cerr<<"["<<client_socket<<"] "<<"Client received a request type of "<<request.type()<<" a rowkey of "<<request.rowkey()<<" a columnkey of "<<request.columnkey()<<" a value1 of "<<request.value1()
-						<<" a value2 of "<<request.value2()<<endl; 
+					cerr<<"["<<client_socket<<"] "<<"Client received a request type of "<<request.type()<<" a rowkey of "<<request.rowkey()<<" a columnkey of "<<request.columnkey()<<" a value1 of "<<request.value1().length()
+						<<" a value2 of "<<request.value2().length()<<endl; 
 					// [N] S: <text> (where <text> is a response sent by the server, and N is as above);
-					cerr<<"["<<client_socket<<"] "<<"Server sent a response status of  "<<response.status()<<" response description of "<<response.description()<<" response value of "<<response.value()<<endl;
+					cerr<<"["<<client_socket<<"] "<<"Server sent a response status of  "<<response.status()<<" response description of "<<response.description()<<" response value of "<<response.value().length()<<endl;
 				}
 			current_buffer = net_buffer;
 			command_end_index += suffix_length;

@@ -35,7 +35,7 @@ void checkpoint_kvstore()
 {
 	while(true){
 		auto t = UpdateManager::start();
-		this_thread::sleep_for(60s);
+		this_thread::sleep_for(500s);
         time_t timeInSec;
         time(&timeInSec);
 		string time_string = to_string((long long) timeInSec);
