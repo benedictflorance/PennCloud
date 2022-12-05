@@ -37,7 +37,11 @@ void replay_log(string file_name, string metadata_file){
         cout<<"Replaying log"<<endl;
 
     string line;
-    char req_char[BUFFER_SIZE], rkey_char[BUFFER_SIZE], ckey_char[BUFFER_SIZE], value1_char[BUFFER_SIZE], value2_char[BUFFER_SIZE];
+    char *req_char = new char[RKEY_BUFFER_SIZE];
+    char *rkey_char = new char[RKEY_BUFFER_SIZE];
+    char *ckey_char = new char[CKEY_BUFFER_SIZE];
+    char *value1_char = new char[BUFFER_SIZE];
+    char *value2_char = new char[BUFFER_SIZE];
     while(getline(meta_file,line)){
         stringstream meta(line); 
         string req_start_str, req_size_str, rkey_start_str, rkey_size_str, ckey_start_str, ckey_size_str,
@@ -88,6 +92,11 @@ void replay_log(string file_name, string metadata_file){
         
         process_request(request, rowk, colk, v1, v2);
     }
+    delete req_char;
+    delete rkey_char;
+    delete ckey_char;
+    delete value1_char;
+    delete value2_char;
 }
 
 void process_request(string req, string rowk, string colk, string v1, string v2){

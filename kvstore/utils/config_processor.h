@@ -173,7 +173,9 @@ void load_kvstore_from_disk()
         fstream checkpt_file(check_filename, ios::in);
         fstream meta_file(meta_filename, ios::in);
         string line;
-        char rkey_char[BUFFER_SIZE], ckey_char[BUFFER_SIZE], value_char[BUFFER_SIZE];
+        char *rkey_char = new char[RKEY_BUFFER_SIZE];
+        char *ckey_char = new char[CKEY_BUFFER_SIZE];
+        char *value_char = new char[BUFFER_SIZE];
         int count = 0;
         while(getline(meta_file, line))
         {
@@ -212,6 +214,9 @@ void load_kvstore_from_disk()
                 kv_store[rkey][ckey] = value;   
             }
         }
+        delete rkey_char;
+        delete ckey_char;
+        delete value_char;
         if(verbose)
             cerr<<"Checkpoint loaded into memory with "<<count<<" k-v pairs"<<endl;
     }

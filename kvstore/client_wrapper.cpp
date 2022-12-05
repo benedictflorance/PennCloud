@@ -3,7 +3,7 @@
 KVstore kvstore;
 
 std::string master_ip_str = "127.0.0.1:8000"; 
-const int BUFFER_SIZE = 10000000;
+const int BUFFER_SIZE = 15000000;
 const int LENGTH_BUFFER_SIZE = 20; 
 const char* invalid_ip_message = "-ERR Invalid IP/port argument. Please adhere to <IP Address>:<Port Number>\r\n";
 
@@ -43,8 +43,6 @@ bool do_read(int fd, char *buf, int len){
     if (n < 0)
       return false;
     rcvd += n;
-    if(rcvd > 0)
-        std::cout<<rcvd<<std::endl;
   }
   return true;
 }
@@ -85,12 +83,10 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::strin
     char req_length[11];
     snprintf (req_length, 11, "%10d", request_str.length()); 
     std::string message = std::string(req_length) + request_str;
-    std::cout<<"Message length is "<<std::string(req_length)<<std::endl;
     do_write(sockfd, message.data(), message.length());
     std::cout<<"Sending a tablet server request type of "<<request.type()<<" a rowkey of "<<request.rowkey()<<" a columnkey of "<<request.columnkey()<<" a value1 of "<<request.value1().length()
 						<<" a value2 of "<<request.value2().length()<<std::endl; 
     do_read(sockfd, length_buffer, 10);
-    std::cout<<"Received length of "<<length_buffer<<std::endl;
 	int request_length = std::stoi(std::string(length_buffer, 10));
     do_read(sockfd, response_buffer, request_length);
     std::string response_buffer_str = std::string(response_buffer, request_length);
@@ -125,7 +121,6 @@ std::pair<std::string, std::string> KVstore::contact_tablet_server(std::string t
 // clear cache every 2 minutes
 std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string type, std::string rkey, std::string ckey, std::string value1, std::string value2)
 {
-    std::cout<<"Sent a request of type "<<type<<" rowkey "<<rkey<<" columnkey "<<ckey<<" value1 size "<<value1.length()<<" value2 size "<<value2.length()<<std::endl;
     bool is_crash = false;
     std::pair<std::string, std::string> response_str;
     do

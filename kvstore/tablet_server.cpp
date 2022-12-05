@@ -33,8 +33,6 @@ bool do_read(int fd, char *buf, int len){
     if (n < 0)
       return false;
     rcvd += n;
-	if(rcvd > 0)
-		cout<<rcvd<<endl;
   }
   return true;
 }
@@ -70,7 +68,7 @@ void *process_client_thread(void *arg)
 		cerr<<"["<<client_socket<<"] "<<new_connection_message<<endl;
 	}
 	char length_buffer[LENGTH_BUFFER_SIZE];
-	char *request_buffer = new char[TEST_BUFFER];
+	char *request_buffer = new char[BUFFER_SIZE];
 	while(true)
 	{	
 		if(shutdown_flag)
@@ -120,7 +118,6 @@ void *process_client_thread(void *arg)
 		char req_length[11];
 		snprintf (req_length, 11, "%10d", response_str.length()); 
     	std::string message = std::string(req_length) + response_str;
-		cout<<"Sending "<<message.length()<<endl;
 		do_write(client_socket, message.data(), message.length());
 		if(verbose)
 			{
@@ -230,10 +227,9 @@ int main(int argc, char *argv[])
     process_config_file(config_file);
 	initialize_primary_info(config_file);
 	create_log_file();
-	// load_kvstore_from_disk();
+	load_kvstore_from_disk();
 	//create log file if it doesn't exist
-	// TODO fix
-	// replay_log(log_file_name, meta_log_file_name);
+	replay_log(log_file_name, meta_log_file_name);
     int isSuccess = create_server();
 	return isSuccess;
 }
