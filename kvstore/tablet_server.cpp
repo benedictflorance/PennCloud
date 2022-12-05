@@ -33,6 +33,19 @@ bool do_read(int fd, char *buf, int len){
     if (n < 0)
       return false;
     rcvd += n;
+	if(rcvd > 0)
+		cout<<rcvd<<endl;
+  }
+  return true;
+}
+bool do_write(int fd, char *buf, int len){
+  int sent = 0;
+  while (sent < len)
+  {
+    int n = write(fd, &buf[sent], len - sent);
+    if (n < 0)
+      return false;
+    sent += n;
   }
   return true;
 }
@@ -46,7 +59,6 @@ void create_log_file(){
 	create_file(log_file_name);
 	create_file(meta_log_file_name);
 }
-
 void *process_client_thread(void *arg)
 {	
 	int client_socket = *(int*) arg;
@@ -57,9 +69,8 @@ void *process_client_thread(void *arg)
 		// [N] New connection (where N is the file descriptor of the connection);
 		cerr<<"["<<client_socket<<"] "<<new_connection_message<<endl;
 	}
-
-	char length_buffer[BUFFER_SIZE];
-	char request_buffer[BUFFER_SIZE];
+	char length_buffer[LENGTH_BUFFER_SIZE];
+	char *request_buffer = new char[TEST_BUFFER];
 	while(true)
 	{	
 		if(shutdown_flag)
@@ -70,14 +81,12 @@ void *process_client_thread(void *arg)
 			close(client_socket);
 			pthread_exit(NULL);
 		}
-		// memset(length_buffer, 0, sizeof(length_buffer));
-		// memset(request_buffer, 0, sizeof(request_buffer));
+		memset(length_buffer, 0, sizeof(length_buffer));
+		memset(request_buffer, 0, sizeof(request_buffer));
 		do_read(client_socket, length_buffer, 10);
-		int request_length = stoi(string(length_buffer));
-		cout<<"Request length is "<<request_length<<endl;
+		int request_length = stoi(string(length_buffer, 10));
 		do_read(client_socket, request_buffer, request_length);
-		cout<<"Current buffer length "<<strlen(request_buffer)<<endl;
-		string request_str = string(request_buffer);
+		string request_str = string(request_buffer, request_length);
 		PennCloud::Request request;
 		request.ParseFromString(request_str);
 		PennCloud::Response response;
@@ -107,8 +116,12 @@ void *process_client_thread(void *arg)
 			response.set_status(unrecognized_command_message.first);
 			response.set_description(unrecognized_command_message.second);
 		}		
-		response.SerializeToString(&response_str);								
-		write(client_socket, response_str.c_str(), strlen(response_str.c_str()));
+		response.SerializeToString(&response_str);	
+		char req_length[11];
+		snprintf (req_length, 11, "%10d", response_str.length()); 
+    	std::string message = std::string(req_length) + response_str;
+		cout<<"Sending "<<message.length()<<endl;
+		do_write(client_socket, message.data(), message.length());
 		if(verbose)
 			{
 				// [N] C: <text> (where <text> is a command received from the client and N is as above);
@@ -118,6 +131,8 @@ void *process_client_thread(void *arg)
 				cerr<<"["<<client_socket<<"] "<<"Server sent a response status of  "<<response.status()<<" response description of "<<response.description()<<" response value of "<<response.value().length()<<endl;
 			}
 	}
+	delete request_buffer;
+
 }
 
 int create_server()
@@ -215,9 +230,10 @@ int main(int argc, char *argv[])
     process_config_file(config_file);
 	initialize_primary_info(config_file);
 	create_log_file();
-	load_kvstore_from_disk();
+	// load_kvstore_from_disk();
 	//create log file if it doesn't exist
-	replay_log(log_file_name, meta_log_file_name);
+	// TODO fix
+	// replay_log(log_file_name, meta_log_file_name);
     int isSuccess = create_server();
 	return isSuccess;
 }

@@ -5,17 +5,15 @@
 #include <iostream>
 #include <sstream>
 #include <thread>
-
 #include <ext/stdio_filebuf.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <vector>
 #include <string.h>
+
 std::string user = "09090";
 const std::string files = "_files"; 
 std::vector<std::string> filelist;
-
-
 std::string urlEncode(std::string str){
     std::string new_str = "";
     char c;
@@ -84,7 +82,6 @@ std::vector<std::string> ret;
 	return ret;
 }
 
-
 static std::unique_ptr<std::istream> index_page(http::Response &resp) {
 	http::Session &session = resp.get_session();
 	session.set_username(user);
@@ -109,7 +106,6 @@ static std::unique_ptr<std::istream> index_page(http::Response &resp) {
 	return ss;
 }
 
-
 static std::unique_ptr<std::istream> test(http::Response &resp) {
 	http::Session &session = resp.get_session();
 	session.set_username(user);
@@ -124,8 +120,6 @@ static std::unique_ptr<std::istream> test(http::Response &resp) {
 	*ss << R"(<br /><a href="/logout">Logout</a>)";
 	return ss;
 }
-
-
 
 static std::unique_ptr<std::istream> post_file(http::Response &resp) {
 	const std::unordered_map<std::string, std::string> form = resp.parse_file_upload();

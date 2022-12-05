@@ -3,7 +3,8 @@
 KVstore kvstore;
 
 std::string master_ip_str = "127.0.0.1:8000"; 
-const int BUFFER_SIZE = 1000000;
+const int BUFFER_SIZE = 10000000;
+const int LENGTH_BUFFER_SIZE = 20; 
 const char* invalid_ip_message = "-ERR Invalid IP/port argument. Please adhere to <IP Address>:<Port Number>\r\n";
 
 sockaddr_in KVstore::get_address(std::string socket_address)
@@ -33,6 +34,20 @@ sockaddr_in KVstore::get_address(std::string socket_address)
     inet_pton(AF_INET, ip_address.c_str(), &(servaddr.sin_addr));
     return servaddr;
 }
+// function for reading
+bool do_read(int fd, char *buf, int len){
+  int rcvd = 0;
+  while (rcvd < len)
+  {
+    int n = read(fd, &buf[rcvd], len - rcvd);
+    if (n < 0)
+      return false;
+    rcvd += n;
+    if(rcvd > 0)
+        std::cout<<rcvd<<std::endl;
+  }
+  return true;
+}
 bool do_write(int fd, char *buf, int len){
   int sent = 0;
   while (sent < len)
@@ -47,7 +62,9 @@ bool do_write(int fd, char *buf, int len){
 std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::string type, std::string rkey, std::string ckey, std::string value1, std::string value2)
 {
     std::string request_str;
-    char response_buffer[BUFFER_SIZE];
+    char *response_buffer = new char[BUFFER_SIZE];
+    char length_buffer[LENGTH_BUFFER_SIZE];
+	memset(length_buffer, 0, sizeof(length_buffer));
     memset(response_buffer, 0, sizeof(response_buffer));
     PennCloud::Request request;
     PennCloud::Response response;
@@ -72,10 +89,15 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::strin
     do_write(sockfd, message.data(), message.length());
     std::cout<<"Sending a tablet server request type of "<<request.type()<<" a rowkey of "<<request.rowkey()<<" a columnkey of "<<request.columnkey()<<" a value1 of "<<request.value1().length()
 						<<" a value2 of "<<request.value2().length()<<std::endl; 
-    while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
-    response.ParseFromString(response_buffer);
+    do_read(sockfd, length_buffer, 10);
+    std::cout<<"Received length of "<<length_buffer<<std::endl;
+	int request_length = std::stoi(std::string(length_buffer, 10));
+    do_read(sockfd, response_buffer, request_length);
+    std::string response_buffer_str = std::string(response_buffer, request_length);
+    response.ParseFromString(response_buffer_str);
     std::cout<<"Received a status of "<<response.status()<<" description of "<<response.description()<<" value of size "<<response.value().length()<<std::endl;
     std::pair<std::string, std::string> response_str = std::make_pair(response.value(), response.status());
+    delete response_buffer;
     return response_str;
 }
 std::pair<std::string, std::string> KVstore::contact_tablet_server(std::string type, std::string rkey, std::string ckey, std::string value1, std::string value2)
@@ -108,6 +130,7 @@ std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string
     std::pair<std::string, std::string> response_str;
     do
     {
+
         // if rkey in cache, directly send it to storage server (if storage server cannot be connected, recontact master)
         if(rkey_to_storage_cache.find(rkey) != rkey_to_storage_cache.end())
         {
@@ -127,7 +150,7 @@ std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string
             connect(sockfd, (struct sockaddr*)& master_sock_addr, sizeof(master_sock_addr));
             // Send request here
             std::string rkey_request_msg = "REQ(" + rkey + ")\r\n";
-            char response_buffer[BUFFER_SIZE];
+            char* response_buffer = new char[BUFFER_SIZE];
             write(sockfd, rkey_request_msg.c_str(), strlen(rkey_request_msg.c_str()));
             while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
             std::string tablet_ip_str = std::string(response_buffer);
@@ -135,6 +158,7 @@ std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string
             std::cout<<tablet_ip_str<<std::endl;
             rkey_to_storage_cache[rkey] = get_address(tablet_ip_str);
             response_str = contact_tablet_server(type, rkey, ckey, value1, value2);
+            delete response_buffer;
             close(sockfd);
         }
         // Contact master again if 
