@@ -81,6 +81,7 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::strin
     request.SerializeToString(&request_str);
 
     char req_length[11];
+    memset(req_length, 0, sizeof(req_length));
     snprintf (req_length, 11, "%10d", request_str.length()); 
     std::string message = std::string(req_length) + request_str;
     do_write(sockfd, message.data(), message.length());
@@ -125,7 +126,6 @@ std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string
     std::pair<std::string, std::string> response_str;
     do
     {
-
         // if rkey in cache, directly send it to storage server (if storage server cannot be connected, recontact master)
         if(rkey_to_storage_cache.find(rkey) != rkey_to_storage_cache.end())
         {
@@ -212,28 +212,30 @@ bool KVstore::dele(std::string rkey, std::string ckey)
 void test()
 {
     KVstore kv_test;
-    // kv_test.put("10hanbang", "password", "frontend");
-    // std::string response_str = kv_test.get("10hanbang", "password");
-    // std::cout<<response_str<<std::endl;
-    // bool is_success = kv_test.cput("10hanbang", "password", "frontend", "backend");
-    // std::cout<<is_success<<std::endl;
-    // response_str = kv_test.get("10hanbang", "password");
-    // std::cout<<response_str<<std::endl;
-    // is_success = kv_test.dele("10hanbang", "password");
-    // std::cout<<is_success<<std::endl;
-    // response_str = kv_test.get("10hanbang", "password");
-    // std::cout<<response_str<<std::endl;
+    std::cout<<"Starting test"<<std::endl;
+    kv_test.put("Shanbang", "password", "frontend");
+    std::string response_str = kv_test.get("Shanbang", "password");
 
-    kv_test.put("10hanbang", "password", "frontend"); // Expected nothing 
-    std::string response_str = kv_test.get("10hanbang", "password");
-    std::cout<<response_str<<std::endl; // Expected frontend
-    bool is_success = kv_test.cput("10hanbang", "password", "", "backend");
-    std::cout<<is_success<<std::endl; // Expected 0
-    is_success = kv_test.cput("15hanbang", "password", "", "backend");
-    std::cout<<is_success<<std::endl; // Expected 1
-    response_str = kv_test.get("10hanbang", "password");
-    std::cout<<response_str<<std::endl; // Expected frontend
-    kv_test.put("10hanbang", "password","");
-    response_str = kv_test.get("10hanbang", "password"); // Expected ""
     std::cout<<response_str<<std::endl;
+    bool is_success = kv_test.cput("Shanbang", "password", "frontend", "backend");
+    std::cout<<is_success<<std::endl;
+
+    response_str = kv_test.get("Shanbang", "password");
+    std::cout<<response_str<<std::endl;
+    is_success = kv_test.dele("Shanbang", "password");
+    std::cout<<is_success<<std::endl;
+    response_str = kv_test.get("Shanbang", "password");
+    std::cout<<response_str<<std::endl;
+    kv_test.put("Shanbang", "password", "frontend"); // Expected nothing 
+    response_str = kv_test.get("Shanbang", "password");
+    std::cout<<response_str<<std::endl; // Expected frontend
+    // is_success = kv_test.cput("Shanbang", "password", "", "backend");
+    // std::cout<<is_success<<std::endl; // Expected 0
+    // is_success = kv_test.cput("15hanbang", "password", "", "backend");
+    // std::cout<<is_success<<std::endl; // Expected 1
+    // response_str = kv_test.get("Shanbang", "password");
+    // std::cout<<response_str<<std::endl; // Expected frontend
+    // kv_test.put("Shanbang", "password","");
+    // response_str = kv_test.get("Shanbang", "password"); // Expected ""
+    // std::cout<<response_str<<std::endl;
 }

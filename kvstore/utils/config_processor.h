@@ -69,15 +69,15 @@ void process_config_file(string config_file)
             int hyphen_index = row_range.find("-");
             start = row_range[0];
             end  = row_range[2];
-            rowkey_range.push_back(make_pair(start, end));
+            rowkey_range.push_back(toKey(start, end));
         }
     }
     if(verbose)
     {
         cerr<<"This server accepts requests for rowkey ranges: ";
-        for(auto pair : rowkey_range)
+        for(auto range : rowkey_range)
         {
-            cerr<<(char) pair.first<<"-"<<(char) pair.second<<" ";
+            cerr<<(char) toRowKeyRange(range).first<<"-"<<(char) toRowKeyRange(range).second<<" ";
         }
         cerr<<endl;
     }
@@ -149,14 +149,18 @@ void signal_handler(int arg)
 void load_kvstore_from_disk()
 {
     string latest_checkpt = "";
+    int max_version = -1;
     for (const auto & entry : fs::directory_iterator(checkpt_dir))
     {
         string filename = entry.path().generic_string();
         if(filename.find(curr_ip_addr) != string::npos)
         {
-            if(latest_checkpt == "" || filename > latest_checkpt)
+            string version_str = filename.substr(filename.find_last_of('_') + 1);
+            int file_version = stoi(version_str);
+            if(latest_checkpt == "" || file_version > max_version)
             {
                 latest_checkpt = filename;
+                max_version = file_version;
             }
         }
     }

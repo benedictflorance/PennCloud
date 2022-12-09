@@ -22,8 +22,10 @@
 #include <sstream>
 #include <thread>
 #include <filesystem>
+#include <sys/time.h>
 #include "../request.pb.h"
 #include "../response.pb.h"
+
 namespace fs = std::filesystem;
 using namespace std;
 
@@ -32,7 +34,6 @@ const char* invalid_ip_message = "-ERR Invalid IP/port argument. Please adhere t
 const char* shutdown_message = "-ERR Tablet server shutting down\r\n";
 const char* new_connection_message = "New connection\r\n";
 const char* closing_message = "Connection closed\r\n";
-const char* alive_command = "ALIVE";
 pair<const char*, const char*> service_ready_message = make_pair("+OK", "Tablet server ready");
 pair<const char*, const char*> type_unset_message = make_pair("-ERR", "Request type not set");
 pair<const char*, const char*>  unrecognized_command_message = make_pair("-ERR", "Unrecognized command");
@@ -57,11 +58,11 @@ bool verbose = false;
 volatile bool shutdown_flag = false;
 string config_file;
 int curr_server_index;
+int server_socket;
 vector<sockaddr_in> tablet_addresses;
 string curr_ip_addr;
-vector<pair<int, int>> rowkey_range;
+vector<int> rowkey_range;
 sockaddr_in master_address;
-int server_socket;
 vector<int> client_sockets;
 vector<pthread_t> client_threads;
 unordered_map<string, unordered_map<string, string> > kv_store;
@@ -69,6 +70,20 @@ unordered_map<int, int> rkey_to_primary;
 unordered_map<int, vector<int> > tablet_server_group;
 bool isPrimary = false;
 int socket_to_master;
-std::mutex kvstore_lock;
 string log_file_name;
 string meta_log_file_name;
+
+//global vars for replication
+const char* alive_command = "ALIVE";
+const char* write_command = "WRITE:";
+const char* ack_command= "ACK:";
+const char* grant_command = "GRANT:";
+//map for each primary to store no of acks for each request
+unordered_map<string,int> number_of_acks;
+unordered_map<string, int> req_client_sock_map;
+mutex rowkeymaplock;
+map<string, mutex> rowkey_lock;
+unordered_map<string, int> rowkey_version;
+map<string, mutex> rowkey_version_lock;
+// Holdback queue: string is rkey, int is seqno and string is request_str
+unordered_map<string, map<int, string>> replica_holdback_queue;

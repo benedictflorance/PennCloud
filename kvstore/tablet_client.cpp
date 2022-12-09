@@ -154,7 +154,7 @@ void send_requests(int &sockfd)
     clear_keys(request, response, request_str, response_buffer, req_length);
     // Test PUT
     request.set_type("PUT");
-    request.set_rowkey("benny");
+    request.set_rowkey("25benny"); 
     request.set_columnkey("cookie");
     request.set_value1("ML>>>Systems");
     request.SerializeToString(&request_str);
@@ -166,9 +166,20 @@ void send_requests(int &sockfd)
     clear_keys(request, response, request_str, response_buffer, req_length);
     // Test PUT
     request.set_type("PUT");
-    request.set_rowkey("15benny");
-    request.set_columnkey("email");
-    request.set_value1("mailmelogcrashcheck@sherlock.com");
+    request.set_rowkey("45benny"); 
+    request.set_columnkey("cookie");
+    request.set_value1("ML>>>Systems");
+    request.SerializeToString(&request_str);
+    request_str += "\r\n";
+    write(sockfd, request_str.c_str(), strlen(request_str.c_str()));
+    while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
+    response.ParseFromString(response_buffer);
+    clear_keys(request, response, request_str, response_buffer, req_length);
+
+    // Test delete 
+    request.set_type("DELETE");
+    request.set_rowkey("25benny");
+    request.set_columnkey("cookie");
     request.SerializeToString(&request_str);
     snprintf (req_length, 11, "%10d", request_str.length()); 
     write(sockfd, string(req_length).c_str(), string(req_length).length());        

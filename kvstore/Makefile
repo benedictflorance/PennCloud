@@ -3,10 +3,10 @@ TARGETS = tablet_server tablet_client master libkvstore.a
 all: $(TARGETS)
 
 tablet_server: tablet_server.cpp request.pb.cc response.pb.cc utils/*
-	g++ $< request.pb.cc response.pb.cc -lpthread -lprotobuf -std=c++17 -g -o $@
+	g++ $< request.pb.cc response.pb.cc -lpthread -w -lprotobuf -std=c++17 -g -o $@
 
 tablet_client: tablet_client.cpp request.pb.cc response.pb.cc utils/*
-	g++ $< request.pb.cc response.pb.cc -lpthread -lprotobuf -std=c++17 -g -o $@
+	g++ $< request.pb.cc response.pb.cc -lpthread -w -lprotobuf -std=c++17 -g -o $@
 
 client_wrapper.o: client_wrapper.cpp request.pb.cc response.pb.cc 
 	g++ $^ -lpthread -lprotobuf -std=c++17 -g -c

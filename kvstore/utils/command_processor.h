@@ -1,4 +1,4 @@
-#include "globalvars.h"
+void create_nonexistent_mutex(string rowkey);
 void process_get_request(PennCloud::Request &request, PennCloud::Response &response);
 void process_put_request(PennCloud::Request &request, PennCloud::Response &response);
 void process_cput_request(PennCloud::Request &request, PennCloud::Response &response);
@@ -9,7 +9,8 @@ bool is_rowkey_accepted(string rowkey)
     int start_letter = rowkey[0];
     for(int i = 0; i < rowkey_range.size(); i++)
     {
-        if(rowkey[0] >= rowkey_range[i].first && rowkey[0] <= rowkey_range[i].second)
+        if(rowkey[0] >= toRowKeyRange(rowkey_range[i]).first && 
+            rowkey[0] <= toRowKeyRange(rowkey_range[i]).second)
             return true;
     }
     return false;
@@ -28,7 +29,7 @@ void process_get_request(PennCloud::Request &request, PennCloud::Response &respo
     }
     else
     {
-        kvstore_lock.lock();
+        rowkey_lock[request.rowkey()].lock();
         if(kv_store.find(request.rowkey()) != kv_store.end())
         {
             if(kv_store[request.rowkey()].find(request.columnkey()) != kv_store[request.rowkey()].end())
@@ -47,7 +48,20 @@ void process_get_request(PennCloud::Request &request, PennCloud::Response &respo
             response.set_status(key_inexistence_message.first);
             response.set_description(key_inexistence_message.second);
         }
-        kvstore_lock.unlock();
+        rowkey_lock[request.rowkey()].unlock();
+    }
+}
+void create_nonexistent_mutex(string rowkey)
+{
+    //create rowkey lock if it doesn't exist
+    if(rowkey_lock.find(rowkey) == rowkey_lock.end()){
+    	mutex lockrowkey;
+    	rowkeymaplock.lock();
+        // just use the operator[] - it will create the value using its default constructor and 
+        // return a reference to it. Or it will just find and return a reference to the already 
+        // existing item without creating a new one.
+    	//rowkey_lock.insert({rowkey, lockrowkey});
+    	rowkeymaplock.unlock();
     }
 }
 void process_put_request(PennCloud::Request &request, PennCloud::Response &response)
@@ -64,7 +78,8 @@ void process_put_request(PennCloud::Request &request, PennCloud::Response &respo
     }
     else
     {
-        kvstore_lock.lock();
+        //create_nonexistent_mutex(request.rowkey());
+        rowkey_lock[request.rowkey()].lock();
         if(kv_store.find(request.rowkey()) != kv_store.end())
         {
             kv_store[request.rowkey()][request.columnkey()] = request.value1();              
@@ -76,7 +91,7 @@ void process_put_request(PennCloud::Request &request, PennCloud::Response &respo
             kv_store[request.rowkey()][request.columnkey()] = request.value1();   
             response.set_status("+OK");
         }
-        kvstore_lock.unlock();
+        rowkey_lock[request.rowkey()].unlock();
     }
 }
 void process_cput_request(PennCloud::Request &request, PennCloud::Response &response)
@@ -93,7 +108,8 @@ void process_cput_request(PennCloud::Request &request, PennCloud::Response &resp
     }
     else
     {
-        kvstore_lock.lock();
+        //create_nonexistent_mutex(request.rowkey());
+        rowkey_lock[request.rowkey()].lock();
         if(kv_store.find(request.rowkey()) != kv_store.end())
         {
             if(kv_store[request.rowkey()].find(request.columnkey()) != kv_store[request.rowkey()].end())
@@ -113,7 +129,7 @@ void process_cput_request(PennCloud::Request &request, PennCloud::Response &resp
             response.set_status(key_inexistence_message.first);
             response.set_description(key_inexistence_message.second);
         }
-        kvstore_lock.unlock();
+        rowkey_lock[request.rowkey()].unlock();
     }
 }
 void process_delete_request(PennCloud::Request &request, PennCloud::Response &response)
@@ -130,7 +146,8 @@ void process_delete_request(PennCloud::Request &request, PennCloud::Response &re
     }
     else
     {
-        kvstore_lock.lock();
+        //create_nonexistent_mutex(request.rowkey());
+        rowkey_lock[request.rowkey()].lock();
         if(kv_store.find(request.rowkey()) != kv_store.end())
         {
             if(kv_store[request.rowkey()].find(request.columnkey()) != kv_store[request.rowkey()].end())
@@ -149,6 +166,6 @@ void process_delete_request(PennCloud::Request &request, PennCloud::Response &re
             response.set_status(key_inexistence_message.first);
             response.set_description(key_inexistence_message.second);
         }
-        kvstore_lock.unlock();
+        rowkey_lock[request.rowkey()].unlock();
     }
 }
