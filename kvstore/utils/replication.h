@@ -6,6 +6,8 @@ string update_kv_store(string request_str, int client_socket = -1);
 void update_secondary(string request_str);
 void grant_secondary(string request_str);
 void request_primary(string request_str);
+bool  do_write(int fd, char *buf, int len);
+
 bool replica_msg_check(sockaddr_in clientaddr){
     char ip[INET_ADDRSTRLEN];
     uint16_t port;
@@ -22,8 +24,19 @@ bool replica_msg_check(sockaddr_in clientaddr){
     return false;
 }
 
-string get_time()
-{
+bool do_write(int fd, char *buf, int len){
+  int sent = 0;
+  while (sent < len)
+  {
+    int n = write(fd, &buf[sent], len - sent);
+    if (n < 0)
+      return false;
+    sent += n;
+  }
+  return true;
+}
+
+string get_time(){
     string time_str;
     struct timeval val;
     struct timezone zone;
@@ -111,15 +124,10 @@ string update_kv_store(string request_str, int client_socket){
         cout<<"Sending ACK"<<endl;
         //int return_val = write(sockfd, ack_request_str.c_str(), strlen(ack_request_str.c_str()));
         char req_length[11];
-        memset(req_length, 0, sizeof(req_length));
         snprintf (req_length, 11, "%10d", ack_request_str.length()); 
-        int return_val = write(sockfd, string(req_length).c_str(), string(req_length).length());   
-        if(return_val == -1)
-            cout<<"Failed because it was unable to write length while sending ACK"<<endl;     
-        return_val = write(sockfd, ack_request_str.c_str(), strlen(ack_request_str.c_str()));
-        if(return_val == -1)
-            cout<<"Failed because it was unable to write request while sending AKL"<<endl;
-        //close(sockfd);
+        std::string message = std::string(req_length) + ack_request_str;
+        do_write(sockfd, message.data(), message.length());
+        close(sockfd);
     }
     return response_str;
 }
@@ -151,13 +159,10 @@ void update_secondary(string request_str){
             //write_request_str +=  "\r\n";
             cout<<"Sending WRITE"<<endl;
             char req_length[11];
-            memset(req_length, 0, sizeof(req_length));
             snprintf (req_length, 11, "%10d", write_request_str.length()); 
-            write(sockfd, string(req_length).c_str(), string(req_length).length());        
-            int return_val = write(sockfd, write_request_str.c_str(), strlen(write_request_str.c_str()));
-                if(return_val == -1)
-                cout<<"Failed because it was unable to write"<<endl;
-            //close(sockfd);
+            std::string message = std::string(req_length) + write_request_str;
+            do_write(sockfd, message.data(), message.length());     
+            close(sockfd);
         } 
     }
 }
@@ -191,15 +196,10 @@ void grant_secondary(string request_str){
             //write_request_str += "\r\n";
             cout<<"Sending GRANT"<<endl;
             char req_length[11];
-            memset(req_length, 0, sizeof(req_length));
             snprintf (req_length, 11, "%10d", write_request_str.length()); 
-            int return_val = write(sockfd, string(req_length).c_str(), string(req_length).length()); 
-            if(return_val == -1)
-                cout<<"Failed because it was unable to write length in grant secondary"<<endl;       
-            return_val = write(sockfd, write_request_str.c_str(), strlen(write_request_str.c_str()));
-            if(return_val == -1)
-                cout<<"Failed because it was unable to write in grant secondary"<<endl;
-            //close(sockfd);
+            std::string message = std::string(req_length) + write_request_str;
+            do_write(sockfd, message.data(), message.length());     
+            close(sockfd);
             break;
         } 
     }
@@ -233,13 +233,8 @@ void request_primary(string request_str){
     //req_request_str += "\r\n";
     cout<<"Sending REQUEST"<<endl;
     char req_length[11];
-    memset(req_length, 0, sizeof(req_length));
     snprintf (req_length, 11, "%10d", req_request_str.length()); 
-    int return_val = write(sockfd, string(req_length).c_str(), string(req_length).length()); 
-    if(return_val == -1)
-        cout<<"Failed because it was unable to write length in request primary"<<endl;     
-    return_val = write(sockfd, req_request_str.c_str(), strlen(req_request_str.c_str()));
-    if(return_val == -1)
-        cout<<"Failed because it was unable to write request in request primary"<<endl;
-    //close(sockfd);
+    std::string message = std::string(req_length) + req_request_str;
+    do_write(sockfd, message.data(), message.length());     
+    close(sockfd);
 }

@@ -41,17 +41,7 @@ bool do_read(int fd, char *buf, int len){
   }
   return true;
 }
-bool do_write(int fd, char *buf, int len){
-  int sent = 0;
-  while (sent < len)
-  {
-    int n = write(fd, &buf[sent], len - sent);
-    if (n < 0)
-      return false;
-    sent += n;
-  }
-  return true;
-}
+
 void create_log_file(){
 	log_file_name = log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
 	meta_log_file_name = meta_log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
@@ -90,7 +80,8 @@ void process_request(string request_str, int client_socket){
 		response.set_status(unrecognized_command_message.first);
 		response.set_description(unrecognized_command_message.second);
 		response.SerializeToString(&response_str);
-	}										
+	}	
+										
 	//write(client_socket, response_str.c_str(), strlen(response_str.c_str()));
 	char req_length[11];
 	snprintf (req_length, 11, "%10d", response_str.length()); 

@@ -22,6 +22,7 @@ sockaddr_in KVstore::get_address(std::string socket_address)
     {
         port = stoi(port_str);
     }
+
     catch(const std::invalid_argument&)
     {
         std::cerr <<invalid_ip_message;
