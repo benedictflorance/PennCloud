@@ -139,9 +139,8 @@ void signal_handler(int arg)
 		int status = fcntl(client_sockets[i], F_SETFL, fcntl(client_sockets[i], F_GETFL, 0) | O_NONBLOCK);
 		if(status != -1) // Status is -1 implies, socket is already closed and thread is closed!
 		{
-			write(client_sockets[i], shutdown_message, strlen(shutdown_message));
 			close(client_sockets[i]);
-			pthread_kill(client_threads[i], 0);
+			pthread_kill(client_threads[i].native_handle(), 0);
 		}
 	}
 	exit(-1);

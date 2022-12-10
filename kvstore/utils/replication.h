@@ -153,8 +153,8 @@ void update_secondary(string request_str){
             if(connect(sockfd, (struct sockaddr*)& tablet_addresses[my_tablet_server_group[i]], sizeof(tablet_addresses[my_tablet_server_group[i]]))<0)
             {
                 cerr<<"Connect Failed in update secondary: "<<errno<<endl;
-                close(sockfd);
-                continue;
+            close(sockfd);                
+            continue;
             }
             //write_request_str +=  "\r\n";
             cout<<"Sending WRITE"<<endl;
@@ -162,7 +162,7 @@ void update_secondary(string request_str){
             snprintf (req_length, 11, "%10d", write_request_str.length()); 
             std::string message = std::string(req_length) + write_request_str;
             do_write(sockfd, message.data(), message.length());     
-            close(sockfd);
+            close(sockfd);        
         } 
     }
 }
@@ -189,8 +189,8 @@ void grant_secondary(string request_str){
             if(connect(sockfd, (struct sockaddr*)& tablet_addresses[my_tablet_server_group[i]], sizeof(tablet_addresses[my_tablet_server_group[i]]))<0)
             {    
                 cerr<<"Connect Failed in grant secondary: "<<errno<<endl;
-                close(sockfd);
-                continue;
+            close(sockfd);
+            continue;
             }
 
             //write_request_str += "\r\n";
@@ -199,7 +199,7 @@ void grant_secondary(string request_str){
             snprintf (req_length, 11, "%10d", write_request_str.length()); 
             std::string message = std::string(req_length) + write_request_str;
             do_write(sockfd, message.data(), message.length());     
-            close(sockfd);
+            close(sockfd);            
             break;
         } 
     }
@@ -236,5 +236,5 @@ void request_primary(string request_str){
     snprintf (req_length, 11, "%10d", req_request_str.length()); 
     std::string message = std::string(req_length) + req_request_str;
     do_write(sockfd, message.data(), message.length());     
-    close(sockfd);
-}
+    close(sockfd);      
+    }

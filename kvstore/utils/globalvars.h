@@ -64,7 +64,7 @@ string curr_ip_addr;
 vector<int> rowkey_range;
 sockaddr_in master_address;
 vector<int> client_sockets;
-vector<pthread_t> client_threads;
+vector<std::thread> client_threads;
 unordered_map<string, unordered_map<string, string> > kv_store;
 unordered_map<int, int> rkey_to_primary;
 unordered_map<int, vector<int> > tablet_server_group;
@@ -87,3 +87,4 @@ unordered_map<string, int> rowkey_version;
 map<string, mutex> rowkey_version_lock;
 // Holdback queue: string is rkey, int is seqno and string is request_str
 unordered_map<string, map<int, string>> replica_holdback_queue;
+std::mutex client_sockets_mutex;

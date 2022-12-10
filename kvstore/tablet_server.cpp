@@ -8,7 +8,7 @@
 #include "utils/background_daemons.h"
 #include "utils/replication.h"
 
-void *process_client_thread(void *arg);
+void process_client_thread(int client_socket);
 int create_server();
 void process_request(string request_str, int client_socket);
 
@@ -97,9 +97,8 @@ void process_request(string request_str, int client_socket){
 	}
 }
 
-void *process_client_thread(void *arg)
+void process_client_thread(int client_socket)
 {	
-	int client_socket = *(int*) arg;
 	if(verbose)
 	{
 		// [N] New connection (where N is the file descriptor of the connection);
@@ -116,7 +115,6 @@ void *process_client_thread(void *arg)
 			if(verbose)
 					cerr<<"["<<client_socket<<"] "<<closing_message<<endl;
 			write(client_socket, shutdown_message, strlen(shutdown_message));
-			close(client_socket);
 			pthread_exit(NULL);
 		}
 		memset(length_buffer, 0, sizeof(length_buffer));
@@ -132,10 +130,8 @@ void *process_client_thread(void *arg)
 			cout<<"stoi fail in buffering"<<endl;
 			break;
 		}
-		cout<<"Length received :"<<length_buffer<<endl;
 		do_read(client_socket, request_buffer, request_length);
 		string request_str = string(request_buffer, request_length);
-		cout<<"Request received :"<<request_str<<endl;
 		PennCloud::Request request;
 		request.ParseFromString(request_str);
 		PennCloud::Response response;
@@ -336,19 +332,14 @@ int create_server()
 			return -1;			
 		}
 		//check if msg is from a fellow tablet server
-
+		client_sockets_mutex.lock();
 		client_sockets.push_back(client_socket);
 		if(verbose)
 			cerr<<("Connection from %s\n", inet_ntoa(clientaddr.sin_addr));
-		pthread_t thread;
-		
-		if(pthread_create(&thread, NULL, process_client_thread, &client_sockets.back()) != 0)
-		{
-			cerr << "Thread creation error!\r\n";
-			return -1;
-		}
-		client_threads.push_back(thread);
-		pthread_detach(thread);	
+		thread client_thread(process_client_thread, client_sockets.back());
+		client_thread.detach();
+		client_threads.push_back(std::move(client_thread));	
+		client_sockets_mutex.unlock();
 	}
 	return 0;
 }
