@@ -29,7 +29,6 @@ char *sstrstr(char *haystack, char *needle, size_t length)
 
 // function for reading
 bool do_read(int fd, char *buf, int len){
-  cout<<"Tring to read "<<len<<" here "<<endl;
   int rcvd = 0;
   while (rcvd < len)
   {
@@ -90,8 +89,6 @@ void process_request(string request_str, int client_socket){
 	if(verbose)
 	{
 		// [N] C: <text> (where <text> is a command received from the client and N is as above);
-		cerr<<"["<<client_socket<<"] "<<"Client received a request type of "<<request.type()<<" a rowkey of "<<request.rowkey()<<" a columnkey of "<<request.columnkey()<<" a value1 of "<<request.value1().length()
-			<<" a value2 of "<<request.value2().length()<<endl; 
 		// [N] S: <text> (where <text> is a response sent by the server, and N is as above);
 		cerr<<"["<<client_socket<<"] "<<"Server sent a response status of  "<<response.status()<<" response description of "<<response.description()<<" response value of "<<response.value().length()<<endl;
 	}
@@ -136,6 +133,10 @@ void process_client_thread(int client_socket)
 		request.ParseFromString(request_str);
 		PennCloud::Response response;
 		string response_str;
+		if(verbose)
+			cerr<<"["<<client_socket<<"] "<<"Client received a request type of "<<request.type()<<" a rowkey of "<<request.rowkey()
+			<<" a columnkey of "<<request.columnkey()<<" a value1 of "<<request.value1().length()
+			<<" a value2 of "<<request.value2().length()<<endl; 
 		//message from another server
 		if(request.isserver() == "true"){
 			//this is the secondary server receiving a WRITE message for replication protocol
@@ -337,8 +338,8 @@ int create_server()
 		if(verbose)
 			cerr<<("Connection from %s\n", inet_ntoa(clientaddr.sin_addr));
 		thread client_thread(process_client_thread, client_sockets.back());
+		client_threads.push_back(client_thread.native_handle());	
 		client_thread.detach();
-		client_threads.push_back(std::move(client_thread));	
 		client_sockets_mutex.unlock();
 	}
 	return 0;

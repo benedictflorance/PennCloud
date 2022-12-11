@@ -136,12 +136,12 @@ void signal_handler(int arg)
 	cerr<<endl<<shutdown_message;
 	for(int i = 0; i < client_sockets.size(); i++)
 	{
-		int status = fcntl(client_sockets[i], F_SETFL, fcntl(client_sockets[i], F_GETFL, 0) | O_NONBLOCK);
-		if(status != -1) // Status is -1 implies, socket is already closed and thread is closed!
-		{
-			close(client_sockets[i]);
-			pthread_kill(client_threads[i].native_handle(), 0);
-		}
+		// int status = fcntl(client_sockets[i], F_SETFL, fcntl(client_sockets[i], F_GETFL, 0) | O_NONBLOCK);
+		// if(status != -1) // Status is -1 implies, socket is already closed and thread is closed!
+		// {
+		close(client_sockets[i]);
+		pthread_cancel(client_threads[i]);
+		// }
 	}
 	exit(-1);
 }

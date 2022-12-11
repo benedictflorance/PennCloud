@@ -118,6 +118,10 @@ string update_kv_store(string request_str, int client_socket){
         }
         request.set_command("ACK");
         request.set_isserver("true");
+        if(request.has_value1())
+            request.clear_value1();
+        if(request.has_value2())
+            request.clear_value2();
         string ack_request_str;
         request.SerializeToString(&ack_request_str);
         //ack_request_str += "\r\n";
@@ -139,7 +143,6 @@ void update_secondary(string request_str){
     request.set_isserver("true");
     string write_request_str;
     request.SerializeToString(&write_request_str);
-    cout<<"Write String: "<<write_request_str<<endl;
     pair<int,int> my_rkey_range = find_rowkey_range(request_str);
     vector<int> my_tablet_server_group = tablet_server_group[toKey(my_rkey_range.first, my_rkey_range.second)];
     for(int i = 0; i < my_tablet_server_group.size(); i++){
@@ -173,6 +176,10 @@ void grant_secondary(string request_str){
     request.ParseFromString(request_str);
     request.set_command("GRANT");
     request.set_isserver("true");
+    if(request.has_value1())
+        request.clear_value1();
+    if(request.has_value2())
+        request.clear_value2();
     string write_request_str;
     request.SerializeToString(&write_request_str);
 
@@ -219,7 +226,6 @@ void request_primary(string request_str){
     }
     pair<int,int> my_rkey_range = find_rowkey_range(request_str);
     int unique_key = toKey(my_rkey_range.first, my_rkey_range.second);
-    cout<<rkey_to_primary[unique_key]<<endl;
     if(connect(sockfd, (struct sockaddr*)& tablet_addresses[rkey_to_primary[unique_key]], 
     sizeof(tablet_addresses[rkey_to_primary[unique_key]]))<0) 
     {

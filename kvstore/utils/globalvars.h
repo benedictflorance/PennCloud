@@ -64,7 +64,7 @@ string curr_ip_addr;
 vector<int> rowkey_range;
 sockaddr_in master_address;
 vector<int> client_sockets;
-vector<std::thread> client_threads;
+vector<pthread_t> client_threads;
 unordered_map<string, unordered_map<string, string> > kv_store;
 unordered_map<int, int> rkey_to_primary;
 unordered_map<int, vector<int> > tablet_server_group;
