@@ -263,6 +263,8 @@ void process_client_thread(int client_socket)
 					}
 					else{
 						//request primary for permission
+						// unique id to value1() - hash it here
+						reqid_to_value.insert({request.uniqueid(), make_pair(request.value1(), request.value2())});
 						request.SerializeToString(&new_request_str);
 						request_primary(new_request_str);
 					}

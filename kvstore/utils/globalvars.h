@@ -88,3 +88,4 @@ map<string, mutex> rowkey_version_lock;
 // Holdback queue: string is rkey, int is seqno and string is request_str
 unordered_map<string, map<int, string>> replica_holdback_queue;
 std::mutex client_sockets_mutex;
+unordered_map<string, pair<string, string> > reqid_to_value;

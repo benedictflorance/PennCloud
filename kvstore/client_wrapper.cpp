@@ -210,7 +210,7 @@ bool KVstore::dele(std::string rkey, std::string ckey)
 }
 
 // Sample Test
-void test()
+int main()
 {
     KVstore kv_test;
     std::cout<<"Starting test"<<std::endl;

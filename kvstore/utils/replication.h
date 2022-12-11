@@ -85,18 +85,41 @@ string update_kv_store(string request_str, int client_socket){
     request.ParseFromString(request_str);
     PennCloud::Response response;
     string response_str;
+    string value1, value2;
+    int request_owner;
+    try
+	{
+		request_owner = stoi(request.sender_server_index());
+	}
+	catch (const std::invalid_argument& e)
+	{
+        cout<<"stoi fail in update kv store"<<endl;
+        cout<<request.sender_server_index()<<endl;
+	}
+    if(curr_server_index ==request_owner)
+    {
+        value1 = reqid_to_value[request.uniqueid()].first;
+        value2 = reqid_to_value[request.uniqueid()].second;
+        reqid_to_value.erase(request.uniqueid());
+    }
+    else
+    {
+        value1 = request.value1();
+        value2 = request.value2();
+    }
     if (strcasecmp(request.type().c_str(), "PUT") == 0){
-		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
+		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(), value1, value2);
 		process_put_request(request, response);
 	}
 	else if (strcasecmp(request.type().c_str(), "CPUT") == 0){
-		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
+		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(), value1, value2);
 		process_cput_request(request, response);
 	}
 	else if (strcasecmp(request.type().c_str(), "DELETE") == 0){
-		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(),request.value1(),request.value2());
+		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(), value1, value2);
 		process_delete_request(request, response);
 	}
+
     response.SerializeToString(&response_str);
     if(!isPrimary){
         //send an ACK
@@ -145,6 +168,16 @@ void update_secondary(string request_str){
     request.SerializeToString(&write_request_str);
     pair<int,int> my_rkey_range = find_rowkey_range(request_str);
     vector<int> my_tablet_server_group = tablet_server_group[toKey(my_rkey_range.first, my_rkey_range.second)];
+    int request_owner;
+    try
+    {
+        request_owner = stoi(request.sender_server_index());
+    }
+    catch (const std::invalid_argument& e)
+    {
+        cout<<"stoi fail in update sec"<<endl;
+        cout<<request.sender_server_index()<<endl;
+    }
     for(int i = 0; i < my_tablet_server_group.size(); i++){
         if(my_tablet_server_group[i]!=curr_server_index){
             int sockfd = socket(PF_INET, SOCK_STREAM, 0);
@@ -161,6 +194,20 @@ void update_secondary(string request_str){
             }
             //write_request_str +=  "\r\n";
             cout<<"Sending WRITE"<<endl;
+            // if its equal to sender server index we clear value1()
+            if(my_tablet_server_group[i] == request_owner){
+                cout<<"I already have the values lol"<<endl;
+                request.clear_value1();
+                request.clear_value2();
+                string my_request_str;
+                request.SerializeToString(&my_request_str);
+                char req1_length[11];
+                snprintf (req1_length, 11, "%10d", my_request_str.length()); 
+                std::string message1 = std::string(req1_length) + my_request_str;
+                do_write(sockfd, message1.data(), message1.length());     
+                close(sockfd);      
+                continue;
+            }
             char req_length[11];
             snprintf (req_length, 11, "%10d", write_request_str.length()); 
             std::string message = std::string(req_length) + write_request_str;
