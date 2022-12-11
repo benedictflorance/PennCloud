@@ -23,6 +23,7 @@ class KVstore
         void put(std::string rkey, std::string ckey, std::string value);
         bool cput(std::string rkey, std::string ckey, std::string value1, std::string value2);
         bool dele(std::string rkey, std::string ckey);
+        void kill(int server_index);
 };
 
 extern KVstore kvstore;

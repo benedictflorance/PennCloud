@@ -30,8 +30,11 @@
 #include "utils/update_manager.h"
 #include "utils/date/date.h"
 #include <chrono>
+#include "request.pb.h"
+#include "response.pb.h"
 
 using namespace std;
+#include "utils/hash.h"
 
 // boolean for the v flag (debugging)
 bool v = false;
@@ -57,6 +60,74 @@ typedef struct Heartbeat{
 
 //mapping from tablet server address to heartbeat
 unordered_map<string, Heartbeat > heartbeat;
+
+//primary info  kvst
+unordered_map<int, int> rkey_to_primary;
+unordered_map<int, vector<int> > tablet_server_group;
+sockaddr_in get_address(string socket_address)
+{
+    int colon_index = socket_address.find(":");
+    string ip_address = socket_address.substr(0, colon_index);
+    string port_str = socket_address.substr(colon_index + 1, socket_address.length() - colon_index - 1);
+    if(ip_address.empty())
+    {
+            std::cout << ip_address << " " << port_str << std::endl;
+        exit(-1);
+    }
+    int port;
+    try
+    {
+        port = stoi(port_str);
+    }
+    catch(const std::invalid_argument&)
+    {
+        exit(-1);
+    }
+    struct sockaddr_in servaddr;
+    bzero(&servaddr, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(port);
+    inet_pton(AF_INET, ip_address.c_str(), &(servaddr.sin_addr));
+    return servaddr;
+}
+void initialize_primary_info(string config_file)
+{
+    ifstream config_fstream(config_file);
+    string line;
+    getline(config_fstream, line); // Get <MASTER>
+    getline(config_fstream, line);
+    getline(config_fstream, line); // Get <TABLETS>
+    int index = 0;
+    while(getline(config_fstream, line))
+    {
+        if(line == "<REPLICAS>")
+            break;
+    }
+    while(getline(config_fstream, line))
+    {
+        stringstream replica(line);
+        string row_range;
+        getline(replica, row_range, ',');
+        vector<int> server_indices;
+        string index;
+        while(getline(replica, index, ','))
+            server_indices.push_back(stoi(index));
+        int start, end;
+        int hyphen_index = row_range.find("-");
+        start = row_range[0];
+        end  = row_range[2];
+        rkey_to_primary[toKey(start, end)] = server_indices[0];
+        tablet_server_group[toKey(start, end)] = server_indices;
+        if(v)
+        {
+            cout<<"Rowkey range "<<(char) start<<" to "<<(char) end<<" has the key as "<<toKey(start, end)
+                <<" and primary server "<<rkey_to_primary[toKey(start, end)]<<" and tablet servers :";
+            for(int i = 0; i < tablet_server_group[toKey(start, end)].size(); i++)
+                cout<<tablet_server_group[toKey(start, end)][i]<<" ";
+            cout<<endl;
+        }
+    }
+}
 
 // function for reading
 bool do_read(int fd, char *buf, int len){
@@ -132,6 +203,40 @@ void process_tablet_file(){
     }
 }
 
+//assign new primary
+void assign_new_primary(int start, int end, string tablet_server_index){
+  for(int i = 0; i < tablet_server_group[toKey(start, end)].size(); i++) // 1, 2
+  {
+      int socket_to_server = socket(PF_INET, SOCK_STREAM, 0);
+      if (socket_to_server < 0) 
+      {
+          if(v)
+              cerr<<"Unable to create socket"<<endl;
+      }
+      sockaddr_in serv_addr = get_address(tablet_addresses[tablet_server_group[toKey(start, end)][i]]);
+      if(connect(socket_to_server, (struct sockaddr*)& serv_addr, 
+              sizeof(serv_addr)) < 0)
+      {
+          cerr<<"Connect failed while contacting server for new primary"<<endl;
+          continue;
+      }
+      char req_length[11];
+      string request_str;
+      PennCloud::Request request;
+      request.set_type("NEW_PRIMARY");
+      request.set_isserver("true");
+      request.set_new_primary_index(to_string(rkey_to_primary[toKey(start, end)])); // 1
+      request.set_modified_server_index(tablet_server_index); // 2
+      request.SerializeToString(&request_str);
+      memset(req_length, 0, sizeof(req_length));
+      snprintf (req_length, 11, "%10d", request_str.length()); 
+      write(socket_to_server, string(req_length).c_str(), string(req_length).length());      
+      int return_val = write(socket_to_server, request_str.c_str(), strlen(request_str.c_str()));
+      cerr<<"Master is telling "<<tablet_server_group[toKey(start, end)][i]<<"about new primary "<<endl;
+      close(socket_to_server);
+  }
+}
+
 // worker function to handle each client in a separate thread
 void worker(int comm_fd,struct sockaddr_in clientaddr){
 
@@ -142,6 +247,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
   string left_over="";
   string req = "req";
   string alive ="alive";
+  string kill = "kill";
 
   if(v){
     fprintf(stderr, "[%d] New Connection\n", comm_fd);
@@ -179,9 +285,9 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
     string lower_case(buffer);
     string append = left_over + lower_case;
     lower_case = append;
-    if(v){
-      fprintf(stderr, "[%d] C: %s", comm_fd,buffer);
-    }
+    // if(v){
+    //   fprintf(stderr, "[%d] C: %s", comm_fd,buffer);
+    // }
     for (char &c : lower_case){
       c = to_lowercase(c);
     }
@@ -232,6 +338,46 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
       }
 
     }
+    else if (lower_case.find(kill)!=string::npos){
+      // capture the string before \r\n and extract argument
+      string argument(buffer);
+      string append = left_over + argument;
+      argument = append;
+      //find index of \r\n
+      int found = argument.find(crlf);
+      argument = argument.substr(0, found);
+
+      // erasing "kill" from the string
+      argument.erase(0, 4);
+
+      //now find the row key
+      string row_key;
+      int bracket_start = argument.find('(');
+      int bracket_end = argument.find(')');
+      
+      string tablet_server_index = argument.substr(bracket_start+1,bracket_end-1);
+      cout<<"Received kill for "<<tablet_server_index;
+
+      int start, end;
+      bool primary_crash = false;
+      for(auto &nested_pair: rowkey_range){
+        vector<int> &current_group =   nested_pair.second.second;
+        auto it = find(current_group.begin(),current_group.end(),stoi(tablet_server_index));
+        if(it!=current_group.end()){
+          start = nested_pair.first;
+          end = nested_pair.second.first;
+          current_group.erase(it);
+          if(rkey_to_primary[toKey(start, end)] == stoi(tablet_server_index)){
+              rkey_to_primary[toKey(start, end)] = current_group[0]; 
+              primary_crash = true;
+          }
+        }
+      }
+      // if(primary_crash){
+      //   //send the current primary a message
+        assign_new_primary(start, end, tablet_server_index);
+      // }
+    }
     else if(lower_case.find(alive) != string::npos){
         //check which server it is
         string argument(buffer);
@@ -257,10 +403,10 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
         //increment the heartbeat counter
         heartbeat[str].counter++;
         heartbeat[str].timestamp =(long long) timeInSec;
-        if(v)
-        {
-          cerr<<"Heartbeat received from "<<str<<" with counter "<<heartbeat[str].counter<<" and timestamp "<<heartbeat[str].timestamp<<endl;
-        }
+        // if(v)
+        // {
+        //   cerr<<"Heartbeat received from "<<str<<" with counter "<<heartbeat[str].counter<<" and timestamp "<<heartbeat[str].timestamp<<endl;
+        // }
     }
     else{
       char unknown[] = "-ERR Unknown command\r\n";
@@ -368,9 +514,9 @@ void alive(){
         auto t = UpdateManager::start();
         this_thread::sleep_for(10s);
 
-        if(v){
-            cout<<"Checking for server status "<<endl;
-        }
+        // if(v){
+        //     cout<<"Checking for server status "<<endl;
+        // }
         time_t timeInSec;
         time(&timeInSec);
         int threshold = 4;
@@ -422,6 +568,8 @@ int main(int argc, char *argv[]){
 
   //process file
   process_tablet_file();
+
+  initialize_primary_info(config_file);
 
   //start evaluating server status
   thread handle_alive(alive);

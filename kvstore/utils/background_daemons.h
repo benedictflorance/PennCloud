@@ -41,7 +41,6 @@ void ask_secondaries_to_checkpoint()
     request.set_isserver("true");
     request.set_sender_server_index(to_string(curr_server_index));
     request.SerializeToString(&request_str);
-    request_str += "\r\n";
     for(int i = 0; i < rowkey_range.size(); i++)
     {
         for(int j = 1; j < tablet_server_group[rowkey_range[i]].size(); j++)

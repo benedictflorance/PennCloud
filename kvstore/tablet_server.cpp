@@ -129,6 +129,7 @@ void process_client_thread(int client_socket)
 		}
 		do_read(client_socket, request_buffer, request_length);
 		string request_str = string(request_buffer, request_length);
+
 		PennCloud::Request request;
 		request.ParseFromString(request_str);
 		PennCloud::Response response;
@@ -224,6 +225,30 @@ void process_client_thread(int client_socket)
 				thread sec_checkpoint_thread(checkpoint_kvstore_secondary);
 				sec_checkpoint_thread.detach();
 			}
+			else if ((strcasecmp(request.type().c_str(), "NEW_PRIMARY") == 0)){
+				// is new_primary
+				if(curr_server_index == stoi(request.new_primary_index())){
+					cout<<"I am the new primary "<<to_string(curr_server_index)<<endl;
+					isPrimary = true;
+				}
+				// is not the new primary
+				else{
+					cout<<"I am not the primary: "<<to_string(curr_server_index)<<endl;
+					isPrimary = false;
+				}
+				for(int i = 0; i < rowkey_range.size(); i++){
+					rkey_to_primary[rowkey_range[i]] = stoi(request.new_primary_index());
+					// for(int j = 0; j < tablet_server_group[rowkey_range[i]].size(); j++)
+					// {
+						cout<<"Before: Size of my group is"<<tablet_server_group[rowkey_range[i]].size()<<endl;
+						auto it = find(tablet_server_group[rowkey_range[i]].begin(),
+						tablet_server_group[rowkey_range[i]].end(),
+						stoi(request.modified_server_index()));
+						tablet_server_group[rowkey_range[i]].erase(it);
+						cout<<"After: Size of my group is"<<tablet_server_group[rowkey_range[i]].size()<<endl;
+					// }
+				}
+			}
 		}
 		//request from client
 		else{
@@ -254,12 +279,28 @@ void process_client_thread(int client_socket)
 						rowkey_version_lock[request.rowkey()].unlock();
 						request.set_sequence_number(to_string(rowkey_version[request.rowkey()]));
 						//locally update
-						string preprocessed_response = update_kv_store(request_str);
+						request.SerializeToString(&new_request_str);
+						string preprocessed_response = update_kv_store(new_request_str);
 						request.set_preprocessed_response(preprocessed_response);
 						request.SerializeToString(&new_request_str);
+						int start_letter = request.rowkey()[0];
+						int key;
+						for(int i = 0; i < rowkey_range.size(); i++)
+						{
+							if(start_letter >= toRowKeyRange(rowkey_range[i]).first && start_letter <= toRowKeyRange(rowkey_range[i]).second)
+							{
+								key = rowkey_range[i];
+							}
+						}
 						//ask secondary servers to update
-						update_secondary(new_request_str);
-						//add the msg to holdback queue - TODO
+						if(tablet_server_group[key].size()!= 1)
+						{
+							update_secondary(new_request_str);
+						}
+						else
+						{
+							process_request(new_request_str, req_client_sock_map[request.uniqueid()]);
+						}
 					}
 					else{
 						//request primary for permission
