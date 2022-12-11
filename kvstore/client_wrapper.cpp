@@ -210,9 +210,10 @@ bool KVstore::dele(std::string rkey, std::string ckey)
 }
 
 // Sample Test
-int main()
+void test()
 {
     KVstore kv_test;
+
     std::cout<<"Starting test"<<std::endl;
     kv_test.put("Shanbang", "password", "frontend");
     std::string response_str = kv_test.get("Shanbang", "password");

@@ -96,7 +96,7 @@ string update_kv_store(string request_str, int client_socket){
         cout<<"stoi fail in update kv store"<<endl;
         cout<<request.sender_server_index()<<endl;
 	}
-    if(curr_server_index ==request_owner)
+    if(curr_server_index == request_owner)
     {
         value1 = reqid_to_value[request.uniqueid()].first;
         value2 = reqid_to_value[request.uniqueid()].second;
@@ -109,9 +109,17 @@ string update_kv_store(string request_str, int client_socket){
     }
     if (strcasecmp(request.type().c_str(), "PUT") == 0){
 		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(), value1, value2);
+        if(!request.has_value1())
+            request.set_value1(value1);
+        if(!request.has_value2() && value2 != "")
+            request.set_value2(value2);
 		process_put_request(request, response);
 	}
 	else if (strcasecmp(request.type().c_str(), "CPUT") == 0){
+        if(!request.has_value1() && value1 != "")
+            request.set_value1(value1);
+        if(!request.has_value2() && value2 != "")
+            request.set_value2(value2);
 		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(), value1, value2);
 		process_cput_request(request, response);
 	}
@@ -196,7 +204,6 @@ void update_secondary(string request_str){
             cout<<"Sending WRITE"<<endl;
             // if its equal to sender server index we clear value1()
             if(my_tablet_server_group[i] == request_owner){
-                cout<<"I already have the values lol"<<endl;
                 request.clear_value1();
                 request.clear_value2();
                 string my_request_str;
