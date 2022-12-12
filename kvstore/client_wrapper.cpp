@@ -2,10 +2,13 @@
 
 KVstore kvstore;
 
-std::string master_ip_str = "127.0.0.1:8000"; 
-const int BUFFER_SIZE = 15000000;
-const int LENGTH_BUFFER_SIZE = 20; 
-const char* invalid_ip_message = "-ERR Invalid IP/port argument. Please adhere to <IP Address>:<Port Number>\r\n";
+KVstore::KVstore()
+{
+    for(int i = 0; i < NUM_SERVERS; i++)
+    {
+        is_server_alive[i] = true;
+    }
+}
 
 sockaddr_in KVstore::get_address(std::string socket_address)
 {
@@ -14,7 +17,6 @@ sockaddr_in KVstore::get_address(std::string socket_address)
     std::string port_str = socket_address.substr(colon_index + 1, socket_address.length() - colon_index - 1);
     if(ip_address.empty())
     {
-        std::cerr<<invalid_ip_message;
         exit(-1);
     }
     int port;
@@ -25,7 +27,6 @@ sockaddr_in KVstore::get_address(std::string socket_address)
 
     catch(const std::invalid_argument&)
     {
-        std::cerr <<invalid_ip_message;
         exit(-1);
     }
     struct sockaddr_in servaddr;
@@ -99,7 +100,7 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::strin
     return response_str;
 }
 std::pair<std::string, std::string> KVstore::contact_tablet_server(std::string type, std::string rkey, std::string ckey, std::string value1, std::string value2)
-{
+{   
     int sockfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) 
     {
@@ -221,6 +222,8 @@ void KVstore::kill(int server_index){
     // Send request here
     std::string rkey_request_msg = "KILL(" + std::to_string(server_index) + ")\r\n";
     write(sockfd, rkey_request_msg.c_str(), strlen(rkey_request_msg.c_str()));
+    is_server_alive[server_index] = false;
+    rkey_to_storage_cache.clear();
 }
 
 void KVstore::resurrect(int server_index){
@@ -235,20 +238,25 @@ void KVstore::resurrect(int server_index){
     // Send request here
     std::string rkey_request_msg = "RESURRECT(" + std::to_string(server_index) + ")\r\n";
     write(sockfd, rkey_request_msg.c_str(), strlen(rkey_request_msg.c_str()));
+    is_server_alive[server_index] = true;
 }
 
 // Sample Test
-int main()
+void test()
 {
     KVstore kv_test;
 
     // kv_test.kill(0);
+    // kv_test.kill(3);
+    // kv_test.resurrect(6);
+    // kv_test.kill(7);
+    // kv_test.kill(8);
     // kv_test.resurrect(0);
 
     // std::cout<<"Starting test"<<std::endl;
     // kv_test.put("0hanbang", "password", "frontend");
-    std::string response_str = kv_test.get("0hanbang", "password");
-    std::cout<<response_str<<std::endl;
+    // std::string response_str = kv_test.get("0hanbang", "password");
+    // std::cout<<response_str<<std::endl;
     // bool is_success = kv_test.cput("0hanbang", "password", "frontend", "backend");
     // std::cout<<is_success<<std::endl;
 
