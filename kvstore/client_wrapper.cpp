@@ -241,10 +241,13 @@ void KVstore::resurrect(int server_index){
     is_server_alive[server_index] = true;
 }
 
-std::map<int,bool> KVstore::list_server_status(){
-    // for (auto& t : is_server_alive)
-    //     std::cout << t.first << " " << t.second<<std::endl;
-    return is_server_alive;
+std::vector<bool> KVstore::list_server_status(){
+    std::vector<bool> list_server;
+    for (auto& t : is_server_alive){
+        std::cout << t.first << " " << t.second<<std::endl;
+        list_server.push_back(t.second);
+    }
+    return list_server;
 }
 
 // Sample Test
@@ -252,7 +255,7 @@ void test()
 {
     KVstore kv_test;
 
-    std::map<int,bool> test_map = kv_test.list_server_status();
+    std::vector<bool> test_map = kv_test.list_server_status();
     kv_test.kill(0);
     kv_test.kill(3);
     test_map = kv_test.list_server_status();
