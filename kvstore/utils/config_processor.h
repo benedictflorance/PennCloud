@@ -111,6 +111,7 @@ void initialize_primary_info(string config_file)
         end  = row_range[2];
         rkey_to_primary[toKey(start, end)] = server_indices[0];
         tablet_server_group[toKey(start, end)] = server_indices;
+        initial_tablet_server_group[toKey(start, end)] = server_indices;
         if(server_indices[0] == curr_server_index)
             isPrimary = true;
         if(verbose)
@@ -145,14 +146,14 @@ void signal_handler(int arg)
 	}
 	exit(-1);
 }
-void load_kvstore_from_disk()
+void load_kvstore_from_disk(string ip_addr = curr_ip_addr)
 {
     string latest_checkpt = "";
     int max_version = -1;
     for (const auto & entry : fs::directory_iterator(checkpt_dir))
     {
         string filename = entry.path().generic_string();
-        if(filename.find(curr_ip_addr) != string::npos)
+        if(filename.find(ip_addr) != string::npos)
         {
             string version_str = filename.substr(filename.find_last_of('_') + 1);
             int file_version = stoi(version_str);

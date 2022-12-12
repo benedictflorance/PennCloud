@@ -47,6 +47,7 @@ string master_address;
 
 //vector of pair of rowkeyrange: start, end, vector of tablets supporting it
 vector<pair<int,pair<int,vector<int> > > > rowkey_range;
+vector<pair<int,pair<int,vector<int> > > > original_rowkey_range;
 
 //vector of tablet addresses
 vector<string> tablet_addresses;
@@ -200,6 +201,7 @@ void process_tablet_file(){
         start = row_range[0];
         end  = row_range[2];
         rowkey_range.push_back(make_pair(start, make_pair(end,server_indices)));
+        original_rowkey_range.push_back(make_pair(start, make_pair(end,server_indices)));
     }
 }
 
@@ -237,6 +239,38 @@ void assign_new_primary(int start, int end, string tablet_server_index){
   }
 }
 
+// resurrect a server
+void resurrect_server(int start, int end, string tablet_server_index){ 
+  for(int i = 0; i < tablet_server_group[toKey(start, end)].size(); i++) // 1, 2
+  {
+      int socket_to_server = socket(PF_INET, SOCK_STREAM, 0);
+      if (socket_to_server < 0) 
+      {
+          if(v)
+              cerr<<"Unable to create socket"<<endl;
+      }
+      sockaddr_in serv_addr = get_address(tablet_addresses[tablet_server_group[toKey(start, end)][i]]);
+      if(connect(socket_to_server, (struct sockaddr*)& serv_addr, 
+              sizeof(serv_addr)) < 0)
+      {
+          cerr<<"Connect failed while contacting server for new primary"<<endl;
+          continue;
+      }
+      char req_length[11];
+      string request_str;
+      PennCloud::Request request;
+      request.set_type("RESURRECT");
+      request.set_isserver("true");
+      request.set_modified_server_index(tablet_server_index); 
+      request.SerializeToString(&request_str);
+      memset(req_length, 0, sizeof(req_length));
+      snprintf (req_length, 11, "%10d", request_str.length()); 
+      write(socket_to_server, string(req_length).c_str(), string(req_length).length());      
+      int return_val = write(socket_to_server, request_str.c_str(), strlen(request_str.c_str()));
+      cerr<<"Master is telling "<<tablet_server_group[toKey(start, end)][i]<<"about a resurrected server "<<tablet_server_index<<endl;
+      close(socket_to_server);
+  }
+}
 // worker function to handle each client in a separate thread
 void worker(int comm_fd,struct sockaddr_in clientaddr){
 
@@ -248,6 +282,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
   string req = "req";
   string alive ="alive";
   string kill = "kill";
+  string resurrect = "resurrect";
 
   if(v){
     fprintf(stderr, "[%d] New Connection\n", comm_fd);
@@ -356,7 +391,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
       int bracket_end = argument.find(')');
       
       string tablet_server_index = argument.substr(bracket_start+1,bracket_end-1);
-      cout<<"Received kill for "<<tablet_server_index;
+      cout<<"Received kill for "<<tablet_server_index<<endl;
 
       int start, end;
       bool primary_crash = false;
@@ -377,6 +412,50 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
       //   //send the current primary a message
         assign_new_primary(start, end, tablet_server_index);
       // }
+    }
+    else if (lower_case.find(resurrect)!=string::npos){
+      // capture the string before \r\n and extract argument
+      string argument(buffer);
+      string append = left_over + argument;
+      argument = append;
+      //find index of \r\n
+      int found = argument.find(crlf);
+      argument = argument.substr(0, found);
+
+      // erasing "resurrect" from the string
+      argument.erase(0, 9);
+
+      //now find the row key
+      string row_key;
+      int bracket_start = argument.find('(');
+      int bracket_end = argument.find(')');
+      cout<<"Argument start and end" << bracket_start<<" "<<bracket_end<<endl;
+      
+      string tablet_server_index = argument.substr(bracket_start+1,bracket_end-1);
+      cout<<"Received unkill for "<<tablet_server_index<<endl;
+
+      vector<pair<int, int>> matching_rowkeys;
+      int start, end;
+      for(auto &nested_pair: original_rowkey_range){
+        vector<int> &current_group =   nested_pair.second.second;
+        auto it = find(current_group.begin(),current_group.end(), stoi(tablet_server_index));
+        if(it != current_group.end()){
+          start = nested_pair.first;
+          end = nested_pair.second.first;
+          matching_rowkeys.push_back(make_pair(nested_pair.first, nested_pair.second.first));
+        }
+      }
+      for(auto &nested_pair: rowkey_range){
+        vector<int> &current_group =   nested_pair.second.second;
+        auto it = find(current_group.begin(),current_group.end(), stoi(tablet_server_index));
+        int rkey_start = nested_pair.first, rkey_end = nested_pair.second.first;
+        if(find(matching_rowkeys.begin(), matching_rowkeys.end(), pair<int, int> (rkey_start, rkey_end)) != matching_rowkeys.end())
+        {
+          current_group.push_back(stoi(tablet_server_index));
+        }
+
+      }      
+      resurrect_server(start, end, tablet_server_index);
     }
     else if(lower_case.find(alive) != string::npos){
         //check which server it is

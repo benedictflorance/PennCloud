@@ -16,4 +16,5 @@ message Request{
     optional string sequence_number = 11;
     optional string new_primary_index = 12;
     optional string modified_server_index = 13;
+    map<string, int32> rowkey_version = 14;
 }

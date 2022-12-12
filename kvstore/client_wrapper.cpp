@@ -223,29 +223,44 @@ void KVstore::kill(int server_index){
     write(sockfd, rkey_request_msg.c_str(), strlen(rkey_request_msg.c_str()));
 }
 
+void KVstore::resurrect(int server_index){
+    sockaddr_in master_sock_addr = get_address(master_ip_str);
+    int sockfd = socket(PF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) 
+    {
+        std::cerr<<"Unable to create socket"<<std::endl;
+        return;
+    }
+    connect(sockfd, (struct sockaddr*)& master_sock_addr, sizeof(master_sock_addr));
+    // Send request here
+    std::string rkey_request_msg = "RESURRECT(" + std::to_string(server_index) + ")\r\n";
+    write(sockfd, rkey_request_msg.c_str(), strlen(rkey_request_msg.c_str()));
+}
+
 // Sample Test
 int main()
 {
     KVstore kv_test;
 
-    //kv_test.kill(2);
+    // kv_test.kill(0);
+    // kv_test.resurrect(0);
 
-    std::cout<<"Starting test"<<std::endl;
-    kv_test.put("0hanbang", "password", "frontend");
+    // std::cout<<"Starting test"<<std::endl;
+    // kv_test.put("0hanbang", "password", "frontend");
     std::string response_str = kv_test.get("0hanbang", "password");
     std::cout<<response_str<<std::endl;
-    bool is_success = kv_test.cput("0hanbang", "password", "frontend", "backend");
-    std::cout<<is_success<<std::endl;
+    // bool is_success = kv_test.cput("0hanbang", "password", "frontend", "backend");
+    // std::cout<<is_success<<std::endl;
 
-    response_str = kv_test.get("0hanbang", "password");
-    std::cout<<response_str<<std::endl;
-    is_success = kv_test.dele("0hanbang", "password");
-    std::cout<<is_success<<std::endl;
-    response_str = kv_test.get("0hanbang", "password");
-    std::cout<<response_str<<std::endl;
-    kv_test.put("0hanbang", "password", "frontend"); // Expected nothing 
-    response_str = kv_test.get("0hanbang", "password");
-    std::cout<<response_str<<std::endl; // Expected frontend
+    // response_str = kv_test.get("0hanbang", "password");
+    // std::cout<<response_str<<std::endl;
+    // is_success = kv_test.dele("0hanbang", "password");
+    // std::cout<<is_success<<std::endl;
+    // response_str = kv_test.get("0hanbang", "password");
+    // std::cout<<response_str<<std::endl;
+    // kv_test.put("0hanbang", "password", "frontend"); // Expected nothing 
+    // response_str = kv_test.get("0hanbang", "password");
+    // std::cout<<response_str<<std::endl; // Expected frontend
 
 
 

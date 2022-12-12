@@ -29,6 +29,9 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
+#include <google/protobuf/map.h>  // IWYU pragma: export
+#include <google/protobuf/map_entry.h>
+#include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 #define PROTOBUF_INTERNAL_EXPORT_protobuf_request_2eproto 
@@ -38,7 +41,7 @@ namespace protobuf_request_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[1];
+  static const ::google::protobuf::internal::ParseTable schema[2];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -49,15 +52,40 @@ namespace PennCloud {
 class Request;
 class RequestDefaultTypeInternal;
 extern RequestDefaultTypeInternal _Request_default_instance_;
+class Request_RowkeyVersionEntry_DoNotUse;
+class Request_RowkeyVersionEntry_DoNotUseDefaultTypeInternal;
+extern Request_RowkeyVersionEntry_DoNotUseDefaultTypeInternal _Request_RowkeyVersionEntry_DoNotUse_default_instance_;
 }  // namespace PennCloud
 namespace google {
 namespace protobuf {
 template<> ::PennCloud::Request* Arena::CreateMaybeMessage<::PennCloud::Request>(Arena*);
+template<> ::PennCloud::Request_RowkeyVersionEntry_DoNotUse* Arena::CreateMaybeMessage<::PennCloud::Request_RowkeyVersionEntry_DoNotUse>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 namespace PennCloud {
 
 // ===================================================================
+
+class Request_RowkeyVersionEntry_DoNotUse : public ::google::protobuf::internal::MapEntry<Request_RowkeyVersionEntry_DoNotUse, 
+    ::std::string, ::google::protobuf::int32,
+    ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+    ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
+    0 > {
+public:
+  typedef ::google::protobuf::internal::MapEntry<Request_RowkeyVersionEntry_DoNotUse, 
+    ::std::string, ::google::protobuf::int32,
+    ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+    ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
+    0 > SuperType;
+  Request_RowkeyVersionEntry_DoNotUse();
+  Request_RowkeyVersionEntry_DoNotUse(::google::protobuf::Arena* arena);
+  void MergeFrom(const Request_RowkeyVersionEntry_DoNotUse& other);
+  static const Request_RowkeyVersionEntry_DoNotUse* internal_default_instance() { return reinterpret_cast<const Request_RowkeyVersionEntry_DoNotUse*>(&_Request_RowkeyVersionEntry_DoNotUse_default_instance_); }
+  void MergeFrom(const ::google::protobuf::Message& other) final;
+  ::google::protobuf::Metadata GetMetadata() const;
+};
+
+// -------------------------------------------------------------------
 
 class Request : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:PennCloud.Request) */ {
  public:
@@ -101,7 +129,7 @@ class Request : public ::google::protobuf::Message /* @@protoc_insertion_point(c
                &_Request_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    0;
+    1;
 
   void Swap(Request* other);
   friend void swap(Request& a, Request& b) {
@@ -151,7 +179,17 @@ class Request : public ::google::protobuf::Message /* @@protoc_insertion_point(c
 
   // nested types ----------------------------------------------------
 
+
   // accessors -------------------------------------------------------
+
+  // map<string, int32> rowkey_version = 14;
+  int rowkey_version_size() const;
+  void clear_rowkey_version();
+  static const int kRowkeyVersionFieldNumber = 14;
+  const ::google::protobuf::Map< ::std::string, ::google::protobuf::int32 >&
+      rowkey_version() const;
+  ::google::protobuf::Map< ::std::string, ::google::protobuf::int32 >*
+      mutable_rowkey_version();
 
   // required string type = 1;
   bool has_type() const;
@@ -380,6 +418,12 @@ class Request : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::MapField<
+      Request_RowkeyVersionEntry_DoNotUse,
+      ::std::string, ::google::protobuf::int32,
+      ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+      ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
+      0 > rowkey_version_;
   ::google::protobuf::internal::ArenaStringPtr type_;
   ::google::protobuf::internal::ArenaStringPtr rowkey_;
   ::google::protobuf::internal::ArenaStringPtr columnkey_;
@@ -404,6 +448,8 @@ class Request : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // Request
 
 // required string type = 1;
@@ -1264,9 +1310,29 @@ inline void Request::set_allocated_modified_server_index(::std::string* modified
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Request.modified_server_index)
 }
 
+// map<string, int32> rowkey_version = 14;
+inline int Request::rowkey_version_size() const {
+  return rowkey_version_.size();
+}
+inline void Request::clear_rowkey_version() {
+  rowkey_version_.Clear();
+}
+inline const ::google::protobuf::Map< ::std::string, ::google::protobuf::int32 >&
+Request::rowkey_version() const {
+  // @@protoc_insertion_point(field_map:PennCloud.Request.rowkey_version)
+  return rowkey_version_.GetMap();
+}
+inline ::google::protobuf::Map< ::std::string, ::google::protobuf::int32 >*
+Request::mutable_rowkey_version() {
+  // @@protoc_insertion_point(field_mutable_map:PennCloud.Request.rowkey_version)
+  return rowkey_version_.MutableMap();
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 
 // @@protoc_insertion_point(namespace_scope)
 

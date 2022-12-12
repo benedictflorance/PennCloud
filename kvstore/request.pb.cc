@@ -19,7 +19,15 @@
 #endif
 // @@protoc_insertion_point(includes)
 
+namespace protobuf_request_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_request_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_Request_RowkeyVersionEntry_DoNotUse;
+}  // namespace protobuf_request_2eproto
 namespace PennCloud {
+class Request_RowkeyVersionEntry_DoNotUseDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<Request_RowkeyVersionEntry_DoNotUse>
+      _instance;
+} _Request_RowkeyVersionEntry_DoNotUse_default_instance_;
 class RequestDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<Request>
@@ -27,6 +35,19 @@ class RequestDefaultTypeInternal {
 } _Request_default_instance_;
 }  // namespace PennCloud
 namespace protobuf_request_2eproto {
+static void InitDefaultsRequest_RowkeyVersionEntry_DoNotUse() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::PennCloud::_Request_RowkeyVersionEntry_DoNotUse_default_instance_;
+    new (ptr) ::PennCloud::Request_RowkeyVersionEntry_DoNotUse();
+  }
+  ::PennCloud::Request_RowkeyVersionEntry_DoNotUse::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_Request_RowkeyVersionEntry_DoNotUse =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsRequest_RowkeyVersionEntry_DoNotUse}, {}};
+
 static void InitDefaultsRequest() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -38,16 +59,27 @@ static void InitDefaultsRequest() {
   ::PennCloud::Request::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<0> scc_info_Request =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsRequest}, {}};
+::google::protobuf::internal::SCCInfo<1> scc_info_Request =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsRequest}, {
+      &protobuf_request_2eproto::scc_info_Request_RowkeyVersionEntry_DoNotUse.base,}};
 
 void InitDefaults() {
+  ::google::protobuf::internal::InitSCC(&scc_info_Request_RowkeyVersionEntry_DoNotUse.base);
   ::google::protobuf::internal::InitSCC(&scc_info_Request.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[1];
+::google::protobuf::Metadata file_level_metadata[2];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Request_RowkeyVersionEntry_DoNotUse, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Request_RowkeyVersionEntry_DoNotUse, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Request_RowkeyVersionEntry_DoNotUse, key_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Request_RowkeyVersionEntry_DoNotUse, value_),
+  0,
+  1,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Request, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Request, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -66,6 +98,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Request, sequence_number_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Request, new_primary_index_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Request, modified_server_index_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Request, rowkey_version_),
   0,
   1,
   2,
@@ -79,12 +112,15 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   10,
   11,
   12,
+  ~0u,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 18, sizeof(::PennCloud::Request)},
+  { 0, 7, sizeof(::PennCloud::Request_RowkeyVersionEntry_DoNotUse)},
+  { 9, 28, sizeof(::PennCloud::Request)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
+  reinterpret_cast<const ::google::protobuf::Message*>(&::PennCloud::_Request_RowkeyVersionEntry_DoNotUse_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::PennCloud::_Request_default_instance_),
 };
 
@@ -103,23 +139,26 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 1);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 2);
 }
 
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\rrequest.proto\022\tPennCloud\"\236\002\n\007Request\022\014"
+      "\n\rrequest.proto\022\tPennCloud\"\223\003\n\007Request\022\014"
       "\n\004type\030\001 \002(\t\022\016\n\006rowkey\030\002 \001(\t\022\021\n\tcolumnke"
       "y\030\003 \001(\t\022\016\n\006value1\030\004 \001(\014\022\016\n\006value2\030\005 \001(\014\022"
       "\017\n\007command\030\006 \001(\t\022\020\n\010isServer\030\007 \001(\t\022\033\n\023se"
       "nder_server_index\030\010 \001(\t\022\020\n\010uniqueid\030\t \001("
       "\t\022\035\n\025preprocessed_response\030\n \001(\t\022\027\n\017sequ"
       "ence_number\030\013 \001(\t\022\031\n\021new_primary_index\030\014"
-      " \001(\t\022\035\n\025modified_server_index\030\r \001(\t"
+      " \001(\t\022\035\n\025modified_server_index\030\r \001(\t\022=\n\016r"
+      "owkey_version\030\016 \003(\0132%.PennCloud.Request."
+      "RowkeyVersionEntry\0324\n\022RowkeyVersionEntry"
+      "\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\005:\0028\001"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 315);
+      descriptor, 432);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "request.proto", &protobuf_RegisterTypes);
 }
@@ -139,6 +178,23 @@ namespace PennCloud {
 
 // ===================================================================
 
+Request_RowkeyVersionEntry_DoNotUse::Request_RowkeyVersionEntry_DoNotUse() {}
+Request_RowkeyVersionEntry_DoNotUse::Request_RowkeyVersionEntry_DoNotUse(::google::protobuf::Arena* arena) : SuperType(arena) {}
+void Request_RowkeyVersionEntry_DoNotUse::MergeFrom(const Request_RowkeyVersionEntry_DoNotUse& other) {
+  MergeFromInternal(other);
+}
+::google::protobuf::Metadata Request_RowkeyVersionEntry_DoNotUse::GetMetadata() const {
+  ::protobuf_request_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_request_2eproto::file_level_metadata[0];
+}
+void Request_RowkeyVersionEntry_DoNotUse::MergeFrom(
+    const ::google::protobuf::Message& other) {
+  ::google::protobuf::Message::MergeFrom(other);
+}
+
+
+// ===================================================================
+
 void Request::InitAsDefaultInstance() {
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -155,6 +211,7 @@ const int Request::kPreprocessedResponseFieldNumber;
 const int Request::kSequenceNumberFieldNumber;
 const int Request::kNewPrimaryIndexFieldNumber;
 const int Request::kModifiedServerIndexFieldNumber;
+const int Request::kRowkeyVersionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Request::Request()
@@ -169,6 +226,7 @@ Request::Request(const Request& from)
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  rowkey_version_.MergeFrom(from.rowkey_version_);
   type_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_type()) {
     type_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.type_);
@@ -281,6 +339,7 @@ void Request::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  rowkey_version_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -539,6 +598,29 @@ bool Request::MergePartialFromCodedStream(
         break;
       }
 
+      // map<string, int32> rowkey_version = 14;
+      case 14: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(114u /* 114 & 0xFF */)) {
+          Request_RowkeyVersionEntry_DoNotUse::Parser< ::google::protobuf::internal::MapField<
+              Request_RowkeyVersionEntry_DoNotUse,
+              ::std::string, ::google::protobuf::int32,
+              ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+              ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
+              0 >,
+            ::google::protobuf::Map< ::std::string, ::google::protobuf::int32 > > parser(&rowkey_version_);
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+              input, &parser));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            parser.key().data(), static_cast<int>(parser.key().length()),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "PennCloud.Request.RowkeyVersionEntry.key");
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -686,6 +768,55 @@ void Request::SerializeWithCachedSizes(
       "PennCloud.Request.modified_server_index");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       13, this->modified_server_index(), output);
+  }
+
+  // map<string, int32> rowkey_version = 14;
+  if (!this->rowkey_version().empty()) {
+    typedef ::google::protobuf::Map< ::std::string, ::google::protobuf::int32 >::const_pointer
+        ConstPtr;
+    typedef ConstPtr SortItem;
+    typedef ::google::protobuf::internal::CompareByDerefFirst<SortItem> Less;
+    struct Utf8Check {
+      static void Check(ConstPtr p) {
+        ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          p->first.data(), static_cast<int>(p->first.length()),
+          ::google::protobuf::internal::WireFormat::SERIALIZE,
+          "PennCloud.Request.RowkeyVersionEntry.key");
+      }
+    };
+
+    if (output->IsSerializationDeterministic() &&
+        this->rowkey_version().size() > 1) {
+      ::std::unique_ptr<SortItem[]> items(
+          new SortItem[this->rowkey_version().size()]);
+      typedef ::google::protobuf::Map< ::std::string, ::google::protobuf::int32 >::size_type size_type;
+      size_type n = 0;
+      for (::google::protobuf::Map< ::std::string, ::google::protobuf::int32 >::const_iterator
+          it = this->rowkey_version().begin();
+          it != this->rowkey_version().end(); ++it, ++n) {
+        items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
+      }
+      ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());
+      ::std::unique_ptr<Request_RowkeyVersionEntry_DoNotUse> entry;
+      for (size_type i = 0; i < n; i++) {
+        entry.reset(rowkey_version_.NewEntryWrapper(
+            items[static_cast<ptrdiff_t>(i)]->first, items[static_cast<ptrdiff_t>(i)]->second));
+        ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+            14, *entry, output);
+        Utf8Check::Check(items[static_cast<ptrdiff_t>(i)]);
+      }
+    } else {
+      ::std::unique_ptr<Request_RowkeyVersionEntry_DoNotUse> entry;
+      for (::google::protobuf::Map< ::std::string, ::google::protobuf::int32 >::const_iterator
+          it = this->rowkey_version().begin();
+          it != this->rowkey_version().end(); ++it) {
+        entry.reset(rowkey_version_.NewEntryWrapper(
+            it->first, it->second));
+        ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+            14, *entry, output);
+        Utf8Check::Check(&*it);
+      }
+    }
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -838,6 +969,59 @@ void Request::SerializeWithCachedSizes(
         13, this->modified_server_index(), target);
   }
 
+  // map<string, int32> rowkey_version = 14;
+  if (!this->rowkey_version().empty()) {
+    typedef ::google::protobuf::Map< ::std::string, ::google::protobuf::int32 >::const_pointer
+        ConstPtr;
+    typedef ConstPtr SortItem;
+    typedef ::google::protobuf::internal::CompareByDerefFirst<SortItem> Less;
+    struct Utf8Check {
+      static void Check(ConstPtr p) {
+        ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          p->first.data(), static_cast<int>(p->first.length()),
+          ::google::protobuf::internal::WireFormat::SERIALIZE,
+          "PennCloud.Request.RowkeyVersionEntry.key");
+      }
+    };
+
+    if (deterministic &&
+        this->rowkey_version().size() > 1) {
+      ::std::unique_ptr<SortItem[]> items(
+          new SortItem[this->rowkey_version().size()]);
+      typedef ::google::protobuf::Map< ::std::string, ::google::protobuf::int32 >::size_type size_type;
+      size_type n = 0;
+      for (::google::protobuf::Map< ::std::string, ::google::protobuf::int32 >::const_iterator
+          it = this->rowkey_version().begin();
+          it != this->rowkey_version().end(); ++it, ++n) {
+        items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
+      }
+      ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());
+      ::std::unique_ptr<Request_RowkeyVersionEntry_DoNotUse> entry;
+      for (size_type i = 0; i < n; i++) {
+        entry.reset(rowkey_version_.NewEntryWrapper(
+            items[static_cast<ptrdiff_t>(i)]->first, items[static_cast<ptrdiff_t>(i)]->second));
+        target = ::google::protobuf::internal::WireFormatLite::
+                   InternalWriteMessageNoVirtualToArray(
+                       14, *entry, deterministic, target);
+;
+        Utf8Check::Check(items[static_cast<ptrdiff_t>(i)]);
+      }
+    } else {
+      ::std::unique_ptr<Request_RowkeyVersionEntry_DoNotUse> entry;
+      for (::google::protobuf::Map< ::std::string, ::google::protobuf::int32 >::const_iterator
+          it = this->rowkey_version().begin();
+          it != this->rowkey_version().end(); ++it) {
+        entry.reset(rowkey_version_.NewEntryWrapper(
+            it->first, it->second));
+        target = ::google::protobuf::internal::WireFormatLite::
+                   InternalWriteMessageNoVirtualToArray(
+                       14, *entry, deterministic, target);
+;
+        Utf8Check::Check(&*it);
+      }
+    }
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -861,6 +1045,20 @@ size_t Request::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormatLite::StringSize(
         this->type());
   }
+  // map<string, int32> rowkey_version = 14;
+  total_size += 1 *
+      ::google::protobuf::internal::FromIntSize(this->rowkey_version_size());
+  {
+    ::std::unique_ptr<Request_RowkeyVersionEntry_DoNotUse> entry;
+    for (::google::protobuf::Map< ::std::string, ::google::protobuf::int32 >::const_iterator
+        it = this->rowkey_version().begin();
+        it != this->rowkey_version().end(); ++it) {
+      entry.reset(rowkey_version_.NewEntryWrapper(it->first, it->second));
+      total_size += ::google::protobuf::internal::WireFormatLite::
+          MessageSizeNoVirtual(*entry);
+    }
+  }
+
   if (_has_bits_[0 / 32] & 254u) {
     // optional string rowkey = 2;
     if (has_rowkey()) {
@@ -976,6 +1174,7 @@ void Request::MergeFrom(const Request& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
+  rowkey_version_.MergeFrom(from.rowkey_version_);
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -1060,6 +1259,7 @@ void Request::Swap(Request* other) {
 }
 void Request::InternalSwap(Request* other) {
   using std::swap;
+  rowkey_version_.Swap(&other->rowkey_version_);
   type_.Swap(&other->type_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   rowkey_.Swap(&other->rowkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
@@ -1100,6 +1300,9 @@ void Request::InternalSwap(Request* other) {
 }  // namespace PennCloud
 namespace google {
 namespace protobuf {
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::PennCloud::Request_RowkeyVersionEntry_DoNotUse* Arena::CreateMaybeMessage< ::PennCloud::Request_RowkeyVersionEntry_DoNotUse >(Arena* arena) {
+  return Arena::CreateInternal< ::PennCloud::Request_RowkeyVersionEntry_DoNotUse >(arena);
+}
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::PennCloud::Request* Arena::CreateMaybeMessage< ::PennCloud::Request >(Arena* arena) {
   return Arena::CreateInternal< ::PennCloud::Request >(arena);
 }

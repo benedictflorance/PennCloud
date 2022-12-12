@@ -7,6 +7,7 @@
 #include "utils/update_manager.h"
 #include "utils/background_daemons.h"
 #include "utils/replication.h"
+#include "utils/recovery.h"
 
 void process_client_thread(int client_socket);
 int create_server();
@@ -249,6 +250,31 @@ void process_client_thread(int client_socket)
 					// }
 				}
 			}
+			else if ((strcasecmp(request.type().c_str(), "RESURRECT") == 0)){
+				int resurrected_server_index = stoi(request.modified_server_index());
+				for(auto it : initial_tablet_server_group)
+				{
+					if(find(it.second.begin(), it.second.end(), resurrected_server_index) != it.second.end())
+					{
+						tablet_server_group[it.first].push_back(resurrected_server_index);
+					}
+				}
+				if(resurrected_server_index == curr_server_index){
+					ask_sequence_numbers();
+					get_checkpoint_from_primary();
+				}
+			}
+			else if ((strcasecmp(request.type().c_str(), "SEQUENCE") == 0)){
+				int requesting_server_index = stoi(request.sender_server_index());
+				send_sequence_numbers(requesting_server_index);
+			}
+			else if ((strcasecmp(request.type().c_str(), "SEQUENCEREPLY") == 0)){
+				rowkey_version.clear();
+				for(auto item : (*request.mutable_rowkey_version()))
+				{
+					rowkey_version[item.first] = item.second;
+				}
+			}		
 		}
 		//request from client
 		else{
