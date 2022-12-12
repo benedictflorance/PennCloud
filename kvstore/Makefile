@@ -1,4 +1,5 @@
-TARGETS = tablet_server tablet_client master libkvstore.a #client_wrapper 
+TARGETS = tablet_server tablet_client master libkvstore.a 
+
 all: $(TARGETS)
 
 tablet_server: tablet_server.cpp request.pb.cc response.pb.cc utils/*
