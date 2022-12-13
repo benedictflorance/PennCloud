@@ -1,21 +1,123 @@
 <!doctype html>
-<html>
+<html lang="en-US">
 
 <head>
-    <title>PennCloud</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Andrew Zhao, Benedict Arockiaraj, Hanbang Wang, Namita Shukla">
+    <title>PennCloud | Log In</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+        crossorigin="anonymous"></script>
 </head>
 
-<body>
-    <p>You need to login first! Or <a href="/register">register here!</a></p>
-    <form action="/login" method="POST">
-        <label for="username"><b>Username</b></label>
-        <input type="text" placeholder="Enter Username" name="username" required>
+<body class="text-center d-flex flex-column" style="background-color: whitesmoke; height: 100vh">
+    <div id="alert-container" class="position-fixed" style="top: 2em; right: 2em; z-index: 2050;"></div>
+    <div class="modal fade" tabindex="-1" id="signup-model" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Register Account</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="d-grid" id="signup">
+                        <div class="mb-3">
+                            <input type="text" class="form-control form-control-lg" name="username"
+                                placeholder="Username" required autocomplete="off">
+                        </div>
+                        <div>
+                            <input type="password" class="form-control form-control-lg" name="password"
+                                placeholder="Password" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <div class="d-grid w-100">
+                        <button type="submit" class="btn btn-success btn-lg" form="signup">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <label for="password"><b>Password</b></label>
-        <input type="password" placeholder="Enter Password" name="password" required>
+    <div class="col-10 col-sm-5 col-md-3 m-auto">
+        <h1 class="mb-3" style="font-weight: 800;">PennCloud</h1>
+        <form class="d-grid" id="login">
+            <div class="mb-3">
+                <input type="text" class="form-control form-control-lg" name="username" placeholder="Username" required
+                    autocomplete="off">
+            </div>
+            <div class="mb-3">
+                <input type="password" class="form-control form-control-lg" name="password" placeholder="Password"
+                    required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg">
+                <b>Log In</b>
+            </button>
+        </form>
+        <hr>
+        <div class="d-grid">
+            <button type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#signup-model">
+                <b>Create Account</b>
+            </button>
+        </div>
+    </div>
+    <div class="mb-3">
+        <p>PennCloud &copy; 2022</p>
+        <p class="text-muted mb-0">Created by Andrew, Benedict, Hanbang & Namita</p>
+    </div>
+    <script type="text/javascript">
+        const alertContainer = document.getElementById("alert-container");
 
-        <button type="submit">Login</button>
-    </form>
+        function createAlert(type, content, timeout = 3000) {
+            const alert = `<div class="alert alert-${type} alert-dismissible fade show">
+${content}
+<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>`;
+            alertContainer.insertAdjacentHTML("afterbegin", alert);
+            setTimeout(() => new bootstrap.Alert(alertContainer.firstElementChild).close(), timeout);
+        }
+
+        function loading(element, text) {
+            const original = element.innerHTML;
+            element.innerHTML = `<span class="spinner-border spinner-border-sm"></span> ${text}`;
+            element.disabled = true;
+            return function () {
+                element.innerHTML = original;
+                element.disabled = false;
+            }
+        }
+
+        async function request(req, final) {
+            try {
+                const resp = await req;
+                if (resp.ok) {
+                    location.reload();
+                } else {
+                    createAlert('warning', await resp.text());
+                }
+            } catch (e) {
+                createAlert('danger', e);
+            } finally {
+                final();
+            }
+        }
+
+        document.getElementById("login").addEventListener("submit", function (event) {
+            event.preventDefault();
+            const restore = loading(event.submitter, "Logging in&hellip;");
+            request(fetch("/login", { method: "POST", body: new URLSearchParams(new FormData(event.target)) }), restore);
+        });
+
+        document.getElementById("signup").addEventListener("submit", function (event) {
+            event.preventDefault();
+            const restore = loading(event.submitter, "Creating&hellip;");
+            request(fetch("/signup", { method: "POST", body: new URLSearchParams(new FormData(event.target)) }), restore);
+        });
+    </script>
 </body>
 
 </html>

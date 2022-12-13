@@ -2,10 +2,13 @@
 
 KVstore kvstore;
 
-std::string master_ip_str = "127.0.0.1:8000"; 
-const int BUFFER_SIZE = 15000000;
-const int LENGTH_BUFFER_SIZE = 20; 
-const char* invalid_ip_message = "-ERR Invalid IP/port argument. Please adhere to <IP Address>:<Port Number>\r\n";
+KVstore::KVstore()
+{
+    for(int i = 0; i < NUM_SERVERS; i++)
+    {
+        is_server_alive[i] = true;
+    }
+}
 
 sockaddr_in KVstore::get_address(std::string socket_address)
 {
@@ -14,7 +17,6 @@ sockaddr_in KVstore::get_address(std::string socket_address)
     std::string port_str = socket_address.substr(colon_index + 1, socket_address.length() - colon_index - 1);
     if(ip_address.empty())
     {
-        std::cerr<<invalid_ip_message;
         exit(-1);
     }
     int port;
@@ -22,9 +24,9 @@ sockaddr_in KVstore::get_address(std::string socket_address)
     {
         port = stoi(port_str);
     }
+
     catch(const std::invalid_argument&)
     {
-        std::cerr <<invalid_ip_message;
         exit(-1);
     }
     struct sockaddr_in servaddr;
@@ -81,6 +83,7 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::strin
     request.SerializeToString(&request_str);
 
     char req_length[11];
+    memset(req_length, 0, sizeof(req_length));
     snprintf (req_length, 11, "%10d", request_str.length()); 
     std::string message = std::string(req_length) + request_str;
     do_write(sockfd, message.data(), message.length());
@@ -97,7 +100,7 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::strin
     return response_str;
 }
 std::pair<std::string, std::string> KVstore::contact_tablet_server(std::string type, std::string rkey, std::string ckey, std::string value1, std::string value2)
-{
+{   
     int sockfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) 
     {
@@ -125,10 +128,12 @@ std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string
     std::pair<std::string, std::string> response_str;
     do
     {
-
         // if rkey in cache, directly send it to storage server (if storage server cannot be connected, recontact master)
         if(rkey_to_storage_cache.find(rkey) != rkey_to_storage_cache.end())
         {
+            std::string curr_ip_addr = std::string(inet_ntoa(rkey_to_storage_cache[rkey].sin_addr)) + ":" + 
+            std::to_string(ntohs(rkey_to_storage_cache[rkey].sin_port));
+            std::cout<<"Client connected to: "<<curr_ip_addr<<std::endl;
             response_str = contact_tablet_server(type, rkey, ckey, value1, value2);
         }
         // else send it to master and then send it to storage server 
@@ -146,11 +151,12 @@ std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string
             // Send request here
             std::string rkey_request_msg = "REQ(" + rkey + ")\r\n";
             char* response_buffer = new char[BUFFER_SIZE];
+            memset(response_buffer, 0, sizeof(response_buffer));  
             write(sockfd, rkey_request_msg.c_str(), strlen(rkey_request_msg.c_str()));
             while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
             std::string tablet_ip_str = std::string(response_buffer);
             // Cache it 
-            std::cout<<tablet_ip_str<<std::endl;
+            std::cout<<"Client connected to: "<<tablet_ip_str<<std::endl;
             rkey_to_storage_cache[rkey] = get_address(tablet_ip_str);
             response_str = contact_tablet_server(type, rkey, ckey, value1, value2);
             delete response_buffer;
@@ -159,7 +165,9 @@ std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string
         // Contact master again if 
         if(response_str.second == "-CRASH")
         {
+            std::cout<<"This server crashed. Re-requesting server from master"<<std::endl;
             is_crash = true;
+            rkey_to_storage_cache.clear();
         }
         else
         {
@@ -208,32 +216,114 @@ bool KVstore::dele(std::string rkey, std::string ckey)
         return false;
 }
 
+void KVstore::kill(int server_index){
+    sockaddr_in master_sock_addr = get_address(master_ip_str);
+    int sockfd = socket(PF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) 
+    {
+        std::cerr<<"Unable to create socket"<<std::endl;
+        return;
+    }
+    connect(sockfd, (struct sockaddr*)& master_sock_addr, sizeof(master_sock_addr));
+    // Send request here
+    std::string rkey_request_msg = "KILL(" + std::to_string(server_index) + ")\r\n";
+    write(sockfd, rkey_request_msg.c_str(), strlen(rkey_request_msg.c_str()));
+    // is_server_alive[server_index] = false;
+    // rkey_to_storage_cache.clear();
+}
+
+void KVstore::resurrect(int server_index){
+    sockaddr_in master_sock_addr = get_address(master_ip_str);
+    int sockfd = socket(PF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) 
+    {
+        std::cerr<<"Unable to create socket"<<std::endl;
+        return;
+    }
+    connect(sockfd, (struct sockaddr*)& master_sock_addr, sizeof(master_sock_addr));
+    // Send request here
+    std::string rkey_request_msg = "RESURRECT(" + std::to_string(server_index) + ")\r\n";
+    write(sockfd, rkey_request_msg.c_str(), strlen(rkey_request_msg.c_str()));
+    // is_server_alive[server_index] = true;
+}
+
+std::vector<bool> KVstore::list_server_status(){
+    // Contact master to find out
+    char length_buffer[LENGTH_BUFFER_SIZE];
+    std::vector<bool> list_server;
+    char status_buffer[STATUS_BUFFER_SIZE];
+	memset(length_buffer, 0, sizeof(length_buffer));
+    memset(status_buffer, 0, sizeof(status_buffer));    
+    sockaddr_in master_sock_addr = get_address(master_ip_str);
+    int sockfd = socket(PF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) 
+    {
+        std::cerr<<"Unable to create socket, returning old values"<<std::endl;
+    }
+    else
+    {
+        connect(sockfd, (struct sockaddr*)& master_sock_addr, sizeof(master_sock_addr));
+        // Send request here
+        std::string serv_status_msg = "STATUS\r\n";
+        write(sockfd, serv_status_msg.c_str(), strlen(serv_status_msg.c_str()));
+        do_read(sockfd, length_buffer, 10);
+        int request_length = std::stoi(std::string(length_buffer, 10));
+        do_read(sockfd, status_buffer, request_length);
+        std::string status_buffer_str = std::string(status_buffer, request_length);
+        PennCloud::Response response;
+        response.ParseFromString(status_buffer_str);
+        for(auto item : (*response.mutable_server_status()))
+        {
+            is_server_alive[item.first] = item.second;
+        }
+        for (auto& t : is_server_alive){
+            std::cout << t.first << " " << t.second<<std::endl;
+            list_server.push_back(t.second);
+        }
+    }
+    return list_server;
+}
+
 // Sample Test
 void test()
 {
     KVstore kv_test;
-    // kv_test.put("10hanbang", "password", "frontend");
-    // std::string response_str = kv_test.get("10hanbang", "password");
-    // std::cout<<response_str<<std::endl;
-    // bool is_success = kv_test.cput("10hanbang", "password", "frontend", "backend");
-    // std::cout<<is_success<<std::endl;
-    // response_str = kv_test.get("10hanbang", "password");
-    // std::cout<<response_str<<std::endl;
-    // is_success = kv_test.dele("10hanbang", "password");
-    // std::cout<<is_success<<std::endl;
-    // response_str = kv_test.get("10hanbang", "password");
-    // std::cout<<response_str<<std::endl;
 
-    kv_test.put("10hanbang", "password", "frontend"); // Expected nothing 
-    std::string response_str = kv_test.get("10hanbang", "password");
-    std::cout<<response_str<<std::endl; // Expected frontend
-    bool is_success = kv_test.cput("10hanbang", "password", "", "backend");
-    std::cout<<is_success<<std::endl; // Expected 0
-    is_success = kv_test.cput("15hanbang", "password", "", "backend");
-    std::cout<<is_success<<std::endl; // Expected 1
-    response_str = kv_test.get("10hanbang", "password");
-    std::cout<<response_str<<std::endl; // Expected frontend
-    kv_test.put("10hanbang", "password","");
-    response_str = kv_test.get("10hanbang", "password"); // Expected ""
-    std::cout<<response_str<<std::endl;
+    // std::vector<bool> test_map = kv_test.list_server_status();
+    // kv_test.resurrect(0);
+    // kv_test.kill(3);
+    // kv_test.kill(6);
+    kv_test.kill(1);
+    kv_test.kill(2);
+    // kv_test.resurrect(0);
+
+    // std::cout<<"Starting test"<<std::endl;
+    // kv_test.put("0hanbang", "password", "frontend");
+    // std::string response_str = kv_test.get("0hanbang", "password");
+    // std::cout<<response_str<<std::endl;
+    // bool is_success = kv_test.cput("0hanbang", "password", "frontend", "backend");
+    // std::cout<<is_success<<std::endl;
+
+    // response_str = kv_test.get("0hanbang", "password");
+    // std::cout<<response_str<<std::endl;
+    // is_success = kv_test.dele("0hanbang", "password");
+    // std::cout<<is_success<<std::endl;
+    // response_str = kv_test.get("0hanbang", "password");
+    // std::cout<<response_str<<std::endl;
+    // kv_test.put("0hanbang", "password", "frontend"); // Expected nothing 
+    // response_str = kv_test.get("0hanbang", "password");
+    // std::cout<<response_str<<std::endl; // Expected frontend
+
+
+
+
+    // is_success = kv_test.cput("Shanbang", "password", "", "backend");
+    // std::cout<<is_success<<std::endl; // Expected 0
+    // is_success = kv_test.cput("15hanbang", "password", "", "backend");
+    // std::cout<<is_success<<std::endl; // Expected 1
+    // response_str = kv_test.get("Shanbang", "password");
+    // std::cout<<response_str<<std::endl; // Expected frontend
+    // kv_test.put("Shanbang", "password","");
+    // response_str = kv_test.get("Shanbang", "password"); // Expected ""
+    // std::cout<<response_str<<std::endl;
 }

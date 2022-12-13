@@ -69,15 +69,15 @@ void process_config_file(string config_file)
             int hyphen_index = row_range.find("-");
             start = row_range[0];
             end  = row_range[2];
-            rowkey_range.push_back(make_pair(start, end));
+            rowkey_range.push_back(toKey(start, end));
         }
     }
     if(verbose)
     {
         cerr<<"This server accepts requests for rowkey ranges: ";
-        for(auto pair : rowkey_range)
+        for(auto range : rowkey_range)
         {
-            cerr<<(char) pair.first<<"-"<<(char) pair.second<<" ";
+            cerr<<(char) toRowKeyRange(range).first<<"-"<<(char) toRowKeyRange(range).second<<" ";
         }
         cerr<<endl;
     }
@@ -111,6 +111,7 @@ void initialize_primary_info(string config_file)
         end  = row_range[2];
         rkey_to_primary[toKey(start, end)] = server_indices[0];
         tablet_server_group[toKey(start, end)] = server_indices;
+        initial_tablet_server_group[toKey(start, end)] = server_indices;
         if(server_indices[0] == curr_server_index)
             isPrimary = true;
         if(verbose)
@@ -136,27 +137,30 @@ void signal_handler(int arg)
 	cerr<<endl<<shutdown_message;
 	for(int i = 0; i < client_sockets.size(); i++)
 	{
-		int status = fcntl(client_sockets[i], F_SETFL, fcntl(client_sockets[i], F_GETFL, 0) | O_NONBLOCK);
-		if(status != -1) // Status is -1 implies, socket is already closed and thread is closed!
-		{
-			write(client_sockets[i], shutdown_message, strlen(shutdown_message));
-			close(client_sockets[i]);
-			pthread_kill(client_threads[i], 0);
-		}
+		// int status = fcntl(client_sockets[i], F_SETFL, fcntl(client_sockets[i], F_GETFL, 0) | O_NONBLOCK);
+		// if(status != -1) // Status is -1 implies, socket is already closed and thread is closed!
+		// {
+		close(client_sockets[i]);
+		pthread_cancel(client_threads[i]);
+		// }
 	}
 	exit(-1);
 }
-void load_kvstore_from_disk()
+void load_kvstore_from_disk(string ip_addr = curr_ip_addr)
 {
     string latest_checkpt = "";
+    int max_version = -1;
     for (const auto & entry : fs::directory_iterator(checkpt_dir))
     {
         string filename = entry.path().generic_string();
-        if(filename.find(curr_ip_addr) != string::npos)
+        if(filename.find(ip_addr) != string::npos)
         {
-            if(latest_checkpt == "" || filename > latest_checkpt)
+            string version_str = filename.substr(filename.find_last_of('_') + 1);
+            int file_version = stoi(version_str);
+            if(latest_checkpt == "" || file_version > max_version)
             {
                 latest_checkpt = filename;
+                max_version = file_version;
             }
         }
     }
@@ -203,7 +207,7 @@ void load_kvstore_from_disk()
             checkpt_file.read(ckey_char, ckey_size);
             checkpt_file.seekg(val_start, ios::beg);
             checkpt_file.read(value_char, val_size);
-            string rkey = string(rkey_char), ckey = string(ckey_char), value = string(value_char);
+            string rkey = string(rkey_char,rkey_size), ckey = string(ckey_char,ckey_size), value = string(value_char,val_size);
             if(kv_store.find(rkey) != kv_store.end())
             {
                 kv_store[rkey][ckey] = value;              
@@ -213,6 +217,7 @@ void load_kvstore_from_disk()
                 kv_store[rkey] = unordered_map<string, string>();
                 kv_store[rkey][ckey] = value;   
             }
+            cout<<"rowkey: "<<rkey<< " colkey: "<<ckey<<" value size: "<<value.size()<<endl;
         }
         delete rkey_char;
         delete ckey_char;

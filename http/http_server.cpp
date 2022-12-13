@@ -119,14 +119,8 @@ void handle_socket(const int s) {
 
 		headers.emplace(std::move(key), std::move(value));
 	}
-	Headers resp_headers;
 
-	Response response = {
-		.params = params,
-		.req_headers = headers,
-		.req_body = istream,
-		.resp_headers = resp_headers
-	};
+	Response response(params, std::move(headers), istream);
 
 	HandlerFunc handler = not_found_handler;
 	const auto &it = handlers.find(path);
@@ -142,9 +136,11 @@ void handle_socket(const int s) {
 		resp_body = handler(response);
 	} catch (const http::Exception &e) {
 		response.status = e.status;
-		response.resp_headers.emplace("Content-Type", "text/plain");
-		response.resp_headers.emplace("Content-Length", std::to_string(e.message.size()));
-		resp_body = std::make_unique<std::istringstream>(e.message);
+		if (!e.message.empty()) {
+			response.resp_headers.emplace("Content-Type", "text/plain");
+			response.resp_headers.emplace("Content-Length", std::to_string(e.message.size()));
+			resp_body = std::make_unique<std::istringstream>(e.message);
+		}
 	}
 
 	ostream << "HTTP/1.0 " << response.status << "\r\n";
@@ -162,6 +158,8 @@ const Status Status::FORBIDDEN = "403 Forbidden";
 const Status Status::NOT_FOUND = "404 Not Found";
 const Status Status::HTTP_VERSION_NOT_SUPPORTED = "505 HTTP Version Not Supported";
 std::pair<Session &, bool> Session::get_session(const std::string &cookie) {
+	static std::unordered_map<std::string, Session> sessions;
+
 	const auto it = sessions.find(cookie);
 	if (it != sessions.end()) {
 		return std::make_pair(std::ref(it->second), true);
@@ -178,6 +176,9 @@ std::pair<Session &, bool> Session::get_session(const std::string &cookie) {
 	}
 	return std::make_pair(std::ref(s), false);
 }
+
+Response::Response(const std::string_view &params, Headers &&req_headers, std::istream &req_body)
+	: req_headers(req_headers), req_body(req_body), session(get_session()), params(params) {}
 
 Session &Response::get_session() {
 	const auto it = req_headers.find("cookie");
@@ -216,6 +217,15 @@ no_cookie:
 	return Session::get_session(session_id).first;
 }
 
+const std::string &Response::get_username() {
+	const std::string &name = get_session().get_username();
+	if (name.empty()) {
+		resp_headers.emplace("Location", "/");
+		throw http::Exception(http::Status::FOUND);
+	}
+	return name;
+}
+
 static inline std::unordered_map<std::string, std::string> parse_params(const std::string_view &params) {
 	std::unordered_map<std::string, std::string> ret;
 
@@ -243,15 +253,17 @@ static inline std::unordered_map<std::string, std::string> parse_params(const st
 	return ret;
 }
 
+void Response::assert_content_type(const std::string &type) {
+	const auto it = req_headers.find("content-type");
+	if (it == req_headers.end() || std::string_view(it->second).substr(0, it->second.find(';')) != type) {
+		throw http::Exception(http::Status::BAD_REQUEST, "Content-Type must be " + type);
+	}
+}
+
 std::unordered_map<std::string, std::string> Response::get_params() { return parse_params(params); }
 
 std::unordered_map<std::string, std::string> Response::parse_file_upload() {
-	{
-		const auto it = req_headers.find("content-type");
-		if (it == req_headers.end()) {
-			throw http::Exception(http::Status::BAD_REQUEST, "Content-Type must be multipart/form-data");
-		}
-	}
+	assert_content_type("multipart/form-data");
 	std::string content_type = req_headers.find("content-type")->second;
 	const std::size_t b = content_type.find('=', 0);
 	const std::string boundary = "--" + content_type.substr(b + 1);
@@ -302,12 +314,7 @@ std::unordered_map<std::string, std::string> Response::parse_file_upload() {
 }
 
 std::unordered_map<std::string, std::string> Response::parse_www_form() {
-	{
-		const auto it = req_headers.find("content-type");
-		if (it == req_headers.end() || it->second != "application/x-www-form-urlencoded") {
-			throw http::Exception(http::Status::BAD_REQUEST, "Content-Type must be application/x-www-form-urlencoded");
-		}
-	}
+	assert_content_type("application/x-www-form-urlencoded");
 	std::size_t content_length = 0;
 	{
 		const auto it = req_headers.find("content-length");
@@ -324,11 +331,10 @@ std::unordered_map<std::string, std::string> Response::parse_www_form() {
 }
 
 const std::string &Session::get_username() const { return username; }
+
 void Session::set_username(const std::string &username) {
 	kvstore.put("SESSION", session_id, username);
 	this->username = username;
 }
-
-std::unordered_map<std::string, Session> Session::sessions;
 
 } // namespace http

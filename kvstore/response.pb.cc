@@ -19,7 +19,15 @@
 #endif
 // @@protoc_insertion_point(includes)
 
+namespace protobuf_response_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_response_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_Response_ServerStatusEntry_DoNotUse;
+}  // namespace protobuf_response_2eproto
 namespace PennCloud {
+class Response_ServerStatusEntry_DoNotUseDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<Response_ServerStatusEntry_DoNotUse>
+      _instance;
+} _Response_ServerStatusEntry_DoNotUse_default_instance_;
 class ResponseDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<Response>
@@ -27,6 +35,19 @@ class ResponseDefaultTypeInternal {
 } _Response_default_instance_;
 }  // namespace PennCloud
 namespace protobuf_response_2eproto {
+static void InitDefaultsResponse_ServerStatusEntry_DoNotUse() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::PennCloud::_Response_ServerStatusEntry_DoNotUse_default_instance_;
+    new (ptr) ::PennCloud::Response_ServerStatusEntry_DoNotUse();
+  }
+  ::PennCloud::Response_ServerStatusEntry_DoNotUse::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_Response_ServerStatusEntry_DoNotUse =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsResponse_ServerStatusEntry_DoNotUse}, {}};
+
 static void InitDefaultsResponse() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -38,16 +59,27 @@ static void InitDefaultsResponse() {
   ::PennCloud::Response::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<0> scc_info_Response =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsResponse}, {}};
+::google::protobuf::internal::SCCInfo<1> scc_info_Response =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsResponse}, {
+      &protobuf_response_2eproto::scc_info_Response_ServerStatusEntry_DoNotUse.base,}};
 
 void InitDefaults() {
+  ::google::protobuf::internal::InitSCC(&scc_info_Response_ServerStatusEntry_DoNotUse.base);
   ::google::protobuf::internal::InitSCC(&scc_info_Response.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[1];
+::google::protobuf::Metadata file_level_metadata[2];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Response_ServerStatusEntry_DoNotUse, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Response_ServerStatusEntry_DoNotUse, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Response_ServerStatusEntry_DoNotUse, key_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Response_ServerStatusEntry_DoNotUse, value_),
+  0,
+  1,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Response, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Response, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -56,15 +88,19 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Response, status_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Response, description_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Response, value_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Response, server_status_),
   0,
   1,
   2,
+  ~0u,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 8, sizeof(::PennCloud::Response)},
+  { 0, 7, sizeof(::PennCloud::Response_ServerStatusEntry_DoNotUse)},
+  { 9, 18, sizeof(::PennCloud::Response)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
+  reinterpret_cast<const ::google::protobuf::Message*>(&::PennCloud::_Response_ServerStatusEntry_DoNotUse_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::PennCloud::_Response_default_instance_),
 };
 
@@ -83,18 +119,21 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 1);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 2);
 }
 
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\016response.proto\022\tPennCloud\">\n\010Response\022"
-      "\016\n\006status\030\001 \002(\t\022\023\n\013description\030\002 \001(\t\022\r\n\005"
-      "value\030\003 \001(\014"
+      "\n\016response.proto\022\tPennCloud\"\261\001\n\010Response"
+      "\022\016\n\006status\030\001 \002(\t\022\023\n\013description\030\002 \001(\t\022\r\n"
+      "\005value\030\003 \001(\014\022<\n\rserver_status\030\004 \003(\0132%.Pe"
+      "nnCloud.Response.ServerStatusEntry\0323\n\021Se"
+      "rverStatusEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005value\030\002 "
+      "\001(\010:\0028\001"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 91);
+      descriptor, 207);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "response.proto", &protobuf_RegisterTypes);
 }
@@ -114,12 +153,30 @@ namespace PennCloud {
 
 // ===================================================================
 
+Response_ServerStatusEntry_DoNotUse::Response_ServerStatusEntry_DoNotUse() {}
+Response_ServerStatusEntry_DoNotUse::Response_ServerStatusEntry_DoNotUse(::google::protobuf::Arena* arena) : SuperType(arena) {}
+void Response_ServerStatusEntry_DoNotUse::MergeFrom(const Response_ServerStatusEntry_DoNotUse& other) {
+  MergeFromInternal(other);
+}
+::google::protobuf::Metadata Response_ServerStatusEntry_DoNotUse::GetMetadata() const {
+  ::protobuf_response_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_response_2eproto::file_level_metadata[0];
+}
+void Response_ServerStatusEntry_DoNotUse::MergeFrom(
+    const ::google::protobuf::Message& other) {
+  ::google::protobuf::Message::MergeFrom(other);
+}
+
+
+// ===================================================================
+
 void Response::InitAsDefaultInstance() {
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int Response::kStatusFieldNumber;
 const int Response::kDescriptionFieldNumber;
 const int Response::kValueFieldNumber;
+const int Response::kServerStatusFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Response::Response()
@@ -134,6 +191,7 @@ Response::Response(const Response& from)
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  server_status_.MergeFrom(from.server_status_);
   status_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_status()) {
     status_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.status_);
@@ -186,6 +244,7 @@ void Response::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  server_status_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
@@ -256,6 +315,25 @@ bool Response::MergePartialFromCodedStream(
         break;
       }
 
+      // map<int32, bool> server_status = 4;
+      case 4: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(34u /* 34 & 0xFF */)) {
+          Response_ServerStatusEntry_DoNotUse::Parser< ::google::protobuf::internal::MapField<
+              Response_ServerStatusEntry_DoNotUse,
+              ::google::protobuf::int32, bool,
+              ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
+              ::google::protobuf::internal::WireFormatLite::TYPE_BOOL,
+              0 >,
+            ::google::protobuf::Map< ::google::protobuf::int32, bool > > parser(&server_status_);
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+              input, &parser));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -309,6 +387,45 @@ void Response::SerializeWithCachedSizes(
       3, this->value(), output);
   }
 
+  // map<int32, bool> server_status = 4;
+  if (!this->server_status().empty()) {
+    typedef ::google::protobuf::Map< ::google::protobuf::int32, bool >::const_pointer
+        ConstPtr;
+    typedef ::google::protobuf::internal::SortItem< ::google::protobuf::int32, ConstPtr > SortItem;
+    typedef ::google::protobuf::internal::CompareByFirstField<SortItem> Less;
+
+    if (output->IsSerializationDeterministic() &&
+        this->server_status().size() > 1) {
+      ::std::unique_ptr<SortItem[]> items(
+          new SortItem[this->server_status().size()]);
+      typedef ::google::protobuf::Map< ::google::protobuf::int32, bool >::size_type size_type;
+      size_type n = 0;
+      for (::google::protobuf::Map< ::google::protobuf::int32, bool >::const_iterator
+          it = this->server_status().begin();
+          it != this->server_status().end(); ++it, ++n) {
+        items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
+      }
+      ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());
+      ::std::unique_ptr<Response_ServerStatusEntry_DoNotUse> entry;
+      for (size_type i = 0; i < n; i++) {
+        entry.reset(server_status_.NewEntryWrapper(
+            items[static_cast<ptrdiff_t>(i)].second->first, items[static_cast<ptrdiff_t>(i)].second->second));
+        ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+            4, *entry, output);
+      }
+    } else {
+      ::std::unique_ptr<Response_ServerStatusEntry_DoNotUse> entry;
+      for (::google::protobuf::Map< ::google::protobuf::int32, bool >::const_iterator
+          it = this->server_status().begin();
+          it != this->server_status().end(); ++it) {
+        entry.reset(server_status_.NewEntryWrapper(
+            it->first, it->second));
+        ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+            4, *entry, output);
+      }
+    }
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -353,6 +470,49 @@ void Response::SerializeWithCachedSizes(
         3, this->value(), target);
   }
 
+  // map<int32, bool> server_status = 4;
+  if (!this->server_status().empty()) {
+    typedef ::google::protobuf::Map< ::google::protobuf::int32, bool >::const_pointer
+        ConstPtr;
+    typedef ::google::protobuf::internal::SortItem< ::google::protobuf::int32, ConstPtr > SortItem;
+    typedef ::google::protobuf::internal::CompareByFirstField<SortItem> Less;
+
+    if (deterministic &&
+        this->server_status().size() > 1) {
+      ::std::unique_ptr<SortItem[]> items(
+          new SortItem[this->server_status().size()]);
+      typedef ::google::protobuf::Map< ::google::protobuf::int32, bool >::size_type size_type;
+      size_type n = 0;
+      for (::google::protobuf::Map< ::google::protobuf::int32, bool >::const_iterator
+          it = this->server_status().begin();
+          it != this->server_status().end(); ++it, ++n) {
+        items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
+      }
+      ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());
+      ::std::unique_ptr<Response_ServerStatusEntry_DoNotUse> entry;
+      for (size_type i = 0; i < n; i++) {
+        entry.reset(server_status_.NewEntryWrapper(
+            items[static_cast<ptrdiff_t>(i)].second->first, items[static_cast<ptrdiff_t>(i)].second->second));
+        target = ::google::protobuf::internal::WireFormatLite::
+                   InternalWriteMessageNoVirtualToArray(
+                       4, *entry, deterministic, target);
+;
+      }
+    } else {
+      ::std::unique_ptr<Response_ServerStatusEntry_DoNotUse> entry;
+      for (::google::protobuf::Map< ::google::protobuf::int32, bool >::const_iterator
+          it = this->server_status().begin();
+          it != this->server_status().end(); ++it) {
+        entry.reset(server_status_.NewEntryWrapper(
+            it->first, it->second));
+        target = ::google::protobuf::internal::WireFormatLite::
+                   InternalWriteMessageNoVirtualToArray(
+                       4, *entry, deterministic, target);
+;
+      }
+    }
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -376,6 +536,20 @@ size_t Response::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormatLite::StringSize(
         this->status());
   }
+  // map<int32, bool> server_status = 4;
+  total_size += 1 *
+      ::google::protobuf::internal::FromIntSize(this->server_status_size());
+  {
+    ::std::unique_ptr<Response_ServerStatusEntry_DoNotUse> entry;
+    for (::google::protobuf::Map< ::google::protobuf::int32, bool >::const_iterator
+        it = this->server_status().begin();
+        it != this->server_status().end(); ++it) {
+      entry.reset(server_status_.NewEntryWrapper(it->first, it->second));
+      total_size += ::google::protobuf::internal::WireFormatLite::
+          MessageSizeNoVirtual(*entry);
+    }
+  }
+
   if (_has_bits_[0 / 32] & 6u) {
     // optional string description = 2;
     if (has_description()) {
@@ -419,6 +593,7 @@ void Response::MergeFrom(const Response& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
+  server_status_.MergeFrom(from.server_status_);
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
@@ -461,6 +636,7 @@ void Response::Swap(Response* other) {
 }
 void Response::InternalSwap(Response* other) {
   using std::swap;
+  server_status_.Swap(&other->server_status_);
   status_.Swap(&other->status_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   description_.Swap(&other->description_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
@@ -481,6 +657,9 @@ void Response::InternalSwap(Response* other) {
 }  // namespace PennCloud
 namespace google {
 namespace protobuf {
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::PennCloud::Response_ServerStatusEntry_DoNotUse* Arena::CreateMaybeMessage< ::PennCloud::Response_ServerStatusEntry_DoNotUse >(Arena* arena) {
+  return Arena::CreateInternal< ::PennCloud::Response_ServerStatusEntry_DoNotUse >(arena);
+}
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::PennCloud::Response* Arena::CreateMaybeMessage< ::PennCloud::Response >(Arena* arena) {
   return Arena::CreateInternal< ::PennCloud::Response >(arena);
 }

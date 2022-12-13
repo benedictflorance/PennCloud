@@ -2,6 +2,7 @@
 
 #include <unistd.h>
 
+#include <cstring>
 #include <iostream>
 #include <sstream>
 #include <thread>
@@ -10,79 +11,22 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "../kvstore/client_wrapper.h"
+#include "console.hpp"
+#include "account.hpp"
 
 static std::unique_ptr<std::istream> index_page(http::Response &resp) {
-	http::Session &session = resp.get_session();
-
-	if (session.get_username().empty()) {
-		resp.resp_headers.emplace("Content-Type", "text/html");
+	resp.resp_headers.emplace("Content-Type", "text/html");
+	const std::string &username = resp.session.get_username();
+	if (username.empty()) {
 		return std::make_unique<std::ifstream>("static/login.html");
 	}
-
-	resp.resp_headers.emplace("Content-Type", "text/html");
-	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
-	*ss << "Welcome, " << session.get_username() << "!";
-	*ss << R"(<br /><a href="/logout">Logout</a>)";
-	return ss;
-}
-
-static std::unique_ptr<std::istream> login(http::Response &resp) {
-	const std::unordered_map<std::string, std::string> form = resp.parse_www_form();
-	std::string username, password;
+	std::string str;
 	{
-		const auto it = form.find("username");
-		if (it == form.end() || it->second.empty()) {
-			throw http::Exception(http::Status::BAD_REQUEST, "Missing username");
-		}
-		username = std::move(it->second);
+		std::ifstream t("static/index.html");
+		str.assign((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
 	}
-
-	{
-		const auto it = form.find("password");
-		if (it == form.end() || it->second.empty()) {
-			throw http::Exception(http::Status::BAD_REQUEST, "Missing password");
-		}
-		password = std::move(it->second);
-	}
-
-	http::Session &session = resp.get_session();
-
-	if (kvstore.get("ACCOUNT", username) == password) {
-		session.set_username(username);
-		resp.resp_headers.emplace("Location", "/");
-		resp.status = http::Status::FOUND;
-		return nullptr;
-	}
-	throw http::Exception(http::Status::FORBIDDEN, "Invalid username or password");
-}
-
-static std::unique_ptr<std::istream> register_f(http::Response &resp) {
-	const std::unordered_map<std::string, std::string> form = resp.parse_www_form();
-	std::string username, password;
-	{
-		const auto it = form.find("username");
-		if (it == form.end() || it->second.empty()) {
-			throw http::Exception(http::Status::BAD_REQUEST, "Missing username");
-		}
-		username = std::move(it->second);
-	}
-
-	{
-		const auto it = form.find("password");
-		if (it == form.end() || it->second.empty()) {
-			throw http::Exception(http::Status::BAD_REQUEST, "Missing password");
-		}
-		password = std::move(it->second);
-	}
-
-	if (kvstore.cput("ACCOUNT", username, "", password)) {
-		resp.resp_headers.emplace("Location", "/");
-		resp.status = http::Status::FOUND;
-		return nullptr;
-	}
-
-	throw http::Exception(http::Status::FORBIDDEN, "User already exists");
+	str.replace(str.find("{{username}}"), std::strlen("{{username}}"), username);
+	return std::make_unique<std::istringstream>(str);
 }
 
 static void handle(const int client) {
@@ -95,14 +39,24 @@ static void handle(const int client) {
 
 int main() {
 	http::register_handler("/", http::Method::GET, index_page);
-	http::register_handler("/register", http::Method::GET, [](http::Response &resp) {
+	http::register_handler("/mail", http::Method::GET, [](http::Response &resp) {
+		resp.get_username();
 		resp.resp_headers.emplace("Content-Type", "text/html");
-		return std::make_unique<std::ifstream>("static/register.html");
+		return std::make_unique<std::ifstream>("static/mail.html");
 	});
-	http::register_handler("/register", http::Method::POST, register_f);
+	http::register_handler("/console", http::Method::GET, [](http::Response &resp) {
+		resp.get_username();
+		resp.resp_headers.emplace("Content-Type", "text/html");
+		return std::make_unique<std::ifstream>("static/console.html");
+	});
+
+	http::register_handler("/bstatus/change", http::Method::POST, change_status);
+	http::register_handler("/bstatus", http::Method::GET, backend_status);
+
+	http::register_handler("/signup", http::Method::POST, signup);
 	http::register_handler("/login", http::Method::POST, login);
 	http::register_handler("/logout", http::Method::GET, [](http::Response &resp) {
-		resp.get_session().set_username("");
+		resp.session.set_username("");
 		resp.resp_headers.emplace("Location", "/");
 		resp.status = http::Status::FOUND;
 		return nullptr;
@@ -127,6 +81,7 @@ int main() {
 		throw std::system_error(errno, std::generic_category(), "listen");
 	}
 
+	std::cerr << "Listening on port 12450" << std::endl;
 	while (true) {
 		const int client = accept(sock, nullptr, nullptr);
 		if (client == -1) {

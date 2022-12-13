@@ -29,6 +29,9 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
+#include <google/protobuf/map.h>  // IWYU pragma: export
+#include <google/protobuf/map_entry.h>
+#include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 #define PROTOBUF_INTERNAL_EXPORT_protobuf_response_2eproto 
@@ -38,7 +41,7 @@ namespace protobuf_response_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[1];
+  static const ::google::protobuf::internal::ParseTable schema[2];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -49,15 +52,40 @@ namespace PennCloud {
 class Response;
 class ResponseDefaultTypeInternal;
 extern ResponseDefaultTypeInternal _Response_default_instance_;
+class Response_ServerStatusEntry_DoNotUse;
+class Response_ServerStatusEntry_DoNotUseDefaultTypeInternal;
+extern Response_ServerStatusEntry_DoNotUseDefaultTypeInternal _Response_ServerStatusEntry_DoNotUse_default_instance_;
 }  // namespace PennCloud
 namespace google {
 namespace protobuf {
 template<> ::PennCloud::Response* Arena::CreateMaybeMessage<::PennCloud::Response>(Arena*);
+template<> ::PennCloud::Response_ServerStatusEntry_DoNotUse* Arena::CreateMaybeMessage<::PennCloud::Response_ServerStatusEntry_DoNotUse>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 namespace PennCloud {
 
 // ===================================================================
+
+class Response_ServerStatusEntry_DoNotUse : public ::google::protobuf::internal::MapEntry<Response_ServerStatusEntry_DoNotUse, 
+    ::google::protobuf::int32, bool,
+    ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
+    ::google::protobuf::internal::WireFormatLite::TYPE_BOOL,
+    0 > {
+public:
+  typedef ::google::protobuf::internal::MapEntry<Response_ServerStatusEntry_DoNotUse, 
+    ::google::protobuf::int32, bool,
+    ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
+    ::google::protobuf::internal::WireFormatLite::TYPE_BOOL,
+    0 > SuperType;
+  Response_ServerStatusEntry_DoNotUse();
+  Response_ServerStatusEntry_DoNotUse(::google::protobuf::Arena* arena);
+  void MergeFrom(const Response_ServerStatusEntry_DoNotUse& other);
+  static const Response_ServerStatusEntry_DoNotUse* internal_default_instance() { return reinterpret_cast<const Response_ServerStatusEntry_DoNotUse*>(&_Response_ServerStatusEntry_DoNotUse_default_instance_); }
+  void MergeFrom(const ::google::protobuf::Message& other) final;
+  ::google::protobuf::Metadata GetMetadata() const;
+};
+
+// -------------------------------------------------------------------
 
 class Response : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:PennCloud.Response) */ {
  public:
@@ -101,7 +129,7 @@ class Response : public ::google::protobuf::Message /* @@protoc_insertion_point(
                &_Response_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    0;
+    1;
 
   void Swap(Response* other);
   friend void swap(Response& a, Response& b) {
@@ -151,7 +179,17 @@ class Response : public ::google::protobuf::Message /* @@protoc_insertion_point(
 
   // nested types ----------------------------------------------------
 
+
   // accessors -------------------------------------------------------
+
+  // map<int32, bool> server_status = 4;
+  int server_status_size() const;
+  void clear_server_status();
+  static const int kServerStatusFieldNumber = 4;
+  const ::google::protobuf::Map< ::google::protobuf::int32, bool >&
+      server_status() const;
+  ::google::protobuf::Map< ::google::protobuf::int32, bool >*
+      mutable_server_status();
 
   // required string status = 1;
   bool has_status() const;
@@ -210,6 +248,12 @@ class Response : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::MapField<
+      Response_ServerStatusEntry_DoNotUse,
+      ::google::protobuf::int32, bool,
+      ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
+      ::google::protobuf::internal::WireFormatLite::TYPE_BOOL,
+      0 > server_status_;
   ::google::protobuf::internal::ArenaStringPtr status_;
   ::google::protobuf::internal::ArenaStringPtr description_;
   ::google::protobuf::internal::ArenaStringPtr value_;
@@ -224,6 +268,8 @@ class Response : public ::google::protobuf::Message /* @@protoc_insertion_point(
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // Response
 
 // required string status = 1;
@@ -424,9 +470,29 @@ inline void Response::set_allocated_value(::std::string* value) {
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Response.value)
 }
 
+// map<int32, bool> server_status = 4;
+inline int Response::server_status_size() const {
+  return server_status_.size();
+}
+inline void Response::clear_server_status() {
+  server_status_.Clear();
+}
+inline const ::google::protobuf::Map< ::google::protobuf::int32, bool >&
+Response::server_status() const {
+  // @@protoc_insertion_point(field_map:PennCloud.Response.server_status)
+  return server_status_.GetMap();
+}
+inline ::google::protobuf::Map< ::google::protobuf::int32, bool >*
+Response::mutable_server_status() {
+  // @@protoc_insertion_point(field_mutable_map:PennCloud.Response.server_status)
+  return server_status_.MutableMap();
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 
 // @@protoc_insertion_point(namespace_scope)
 
