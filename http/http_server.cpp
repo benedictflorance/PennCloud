@@ -220,6 +220,7 @@ static inline std::unordered_map<std::string, std::string> parse_params(const st
 	std::unordered_map<std::string, std::string> ret;
 
 	std::size_t pos = 0;
+	if(params.size() < 2) return ret;
 	while (pos < params.size()) {
 		const std::size_t eq = params.find('=', pos);
 		if (eq == std::string::npos) {
