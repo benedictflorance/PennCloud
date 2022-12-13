@@ -63,7 +63,7 @@ struct Response {
 	std::unordered_map<std::string, std::string> get_params();
 	std::unordered_map<std::string, std::string> parse_www_form();
 	std::unordered_map<std::string, std::string> parse_file_upload();
-private:
+public:
 	const std::string_view params;
 	Session &get_session();
 };
