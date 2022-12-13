@@ -35,6 +35,8 @@ class KVstore
         void kill(int server_index);
         void resurrect(int server_index);
         std::vector<bool> list_server_status();
+        std::vector<std::string> list_rowkeys();
+        std::vector<std::string> list_colkeys(std::string rkey);
 };
 
 extern KVstore kvstore;

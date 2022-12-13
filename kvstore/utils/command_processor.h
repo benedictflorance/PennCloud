@@ -51,6 +51,39 @@ void process_get_request(PennCloud::Request &request, PennCloud::Response &respo
         rowkey_lock[request.rowkey()].unlock();
     }
 }
+
+void process_listcolkey_request(PennCloud::Request &request, PennCloud::Response &response)
+{
+    if(!request.has_rowkey())
+    {
+        response.set_status(param_unset_message.first);
+        response.set_description(param_unset_message.second);
+    }
+    else if(!is_rowkey_accepted(request.rowkey()))
+    {
+        response.set_status(invalid_rowkey_message.first);
+        response.set_description(invalid_rowkey_message.second);
+    }
+    else
+    {
+        rowkey_lock[request.rowkey()].lock();
+        if(kv_store.find(request.rowkey()) != kv_store.end())
+        {
+            for(auto itr: kv_store[request.rowkey()]){
+                response.add_col_keys(itr.first.c_str());            
+            }
+
+            response.set_status("+OK");
+        }
+        else
+        {
+            response.set_status(key_inexistence_message.first);
+            response.set_description(key_inexistence_message.second);
+        }
+        rowkey_lock[request.rowkey()].unlock();
+    }
+}
+
 void create_nonexistent_mutex(string rowkey)
 {
     //create rowkey lock if it doesn't exist
