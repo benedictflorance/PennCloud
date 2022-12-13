@@ -8,4 +8,5 @@ message Response{
     optional bytes value = 3; // 
     map<int32, bool> server_status = 4;
     repeated string col_keys = 5;
+    repeated string row_keys = 6;
 }

@@ -96,12 +96,13 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::strin
     response.ParseFromString(response_buffer_str);
     std::cout<<"Received a status of "<<response.status()<<" description of "<<response.description()<<" value of size "<<response.value().length()<<std::endl;
     std::pair<std::string, std::string> response_str;
-    if(request.type() != "LIST_COLKEY")
-      response_str  = std::make_pair(response.value(), response.status());
-    else
-    {
+    //CHANGE:
+    if(request.type() == "LIST_COLKEY")
         response_str  = std::make_pair(response_buffer_str, response.status());
-    }  
+    else if(request.type() == "LIST_ROWKEY")
+        response_str  = std::make_pair(response_buffer_str, response.status());
+    else
+        response_str  = std::make_pair(response.value(), response.status());  
     delete response_buffer;
     return response_str;
 }
@@ -292,6 +293,30 @@ std::vector<bool> KVstore::list_server_status(){
 
 std::vector<std::string> KVstore::list_rowkeys(){
 
+    sockaddr_in master_sock_addr = get_address(master_ip_str);
+    int sockfd = socket(PF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) 
+    {
+        std::cerr<<"Unable to create socket"<<std::endl;
+
+    }
+    connect(sockfd, (struct sockaddr*)& master_sock_addr, sizeof(master_sock_addr));
+    
+    std::vector<std::string> rkey_initial;
+    std::pair<std::string, std::string> response_str;
+    std::vector<std::string> row_keys_vec;
+    rkey_initial.push_back("0");
+    rkey_initial.push_back("a");
+    rkey_initial.push_back("z");
+    for(int rkey = 0; rkey < rkey_initial.size();rkey ++){
+        std::pair<std::string, std::string> result = process_kvstore_request("LIST_ROWKEY", rkey_initial[rkey], "");
+        PennCloud::Response response;
+        response.ParseFromString(result.first);
+        std::copy(response.row_keys().begin(), response.row_keys().end(), std::back_inserter(row_keys_vec));
+    }
+    // for(int i =0;i<row_keys_vec.size();i++)
+    //         std::cout<<row_keys_vec[i]<<std::endl;
+    return row_keys_vec;
 }
 
 std::vector<std::string> KVstore::list_colkeys(std::string rkey){
@@ -305,11 +330,15 @@ std::vector<std::string> KVstore::list_colkeys(std::string rkey){
 }
 
 // Sample Test
-int main()
+void test()
 {
     KVstore kv_test;
 
-    kv_test.list_colkeys("09090");
+    kv_test.put("abccc", "password", "frontend");
+    kv_test.put("zxyyy", "password", "frontend");
+    kv_test.put("SHU", "password", "frontend");
+    kv_test.put("0000", "password", "frontend");
+    kv_test.list_rowkeys();
 
     // std::vector<bool> test_map = kv_test.list_server_status();
     // kv_test.resurrect(0);
