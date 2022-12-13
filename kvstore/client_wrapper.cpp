@@ -305,7 +305,7 @@ std::vector<std::string> KVstore::list_colkeys(std::string rkey){
 }
 
 // Sample Test
-int main()
+void test()
 {
     KVstore kv_test;
 
