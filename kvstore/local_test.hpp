@@ -1,8 +1,11 @@
+#pragma once
+
 #include <string>
 #include <unordered_map>
 
 class KVstore {
 	std::unordered_map<std::string, std::unordered_map<std::string, std::string>> kvstore;
+	std::vector<bool> status = std::vector<bool>(6);
 
   public:
 	std::string get(const std::string &rkey, const std::string &ckey) {
@@ -39,6 +42,10 @@ class KVstore {
 		}
 		return false;
 	}
+
+	void kill(int server_index) { status[server_index] = false; }
+	void resurrect(int server_index) { status[server_index] = true; }
+	std::vector<bool> list_server_status() { return status; }
 };
 
 extern KVstore kvstore;

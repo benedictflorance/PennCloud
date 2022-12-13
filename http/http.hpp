@@ -32,8 +32,6 @@ struct Status : std::string_view {
 };
 
 class Session {
-	static std::unordered_map<std::string, Session> sessions;
-
 	const std::string session_id;
 	std::string username;
 
@@ -49,20 +47,25 @@ class Session {
 
 typedef std::unordered_multimap<std::string, std::string> Headers;
 struct Response {
+	Response(const std::string_view &params, Headers &&req_headers, std::istream &req_body);
 	Response(const Response &) = delete;
 	Response &operator=(const Response &) = delete;
 
-	const std::string_view params;
 	const Headers req_headers;
 	std::istream &req_body;
 
-	Status status = Status::OK;
 	Headers resp_headers;
+	Session &session;
+	Status status = Status::OK;
 
-	Session &get_session();
+	const std::string &get_username();
+	void assert_content_type(const std::string &content_type);
 	std::unordered_map<std::string, std::string> get_params();
 	std::unordered_map<std::string, std::string> parse_www_form();
 	std::unordered_map<std::string, std::string> parse_file_upload();
+private:
+	const std::string_view params;
+	Session &get_session();
 };
 
 struct Exception : public std::exception {
