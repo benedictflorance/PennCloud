@@ -7,4 +7,5 @@ message Response{
     optional string description = 2; // Message present if there's an error
     optional bytes value = 3; // 
     map<int32, bool> server_status = 4;
+    repeated string col_keys = 5;
 }

@@ -191,6 +191,28 @@ class Response : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::google::protobuf::Map< ::google::protobuf::int32, bool >*
       mutable_server_status();
 
+  // repeated string col_keys = 5;
+  int col_keys_size() const;
+  void clear_col_keys();
+  static const int kColKeysFieldNumber = 5;
+  const ::std::string& col_keys(int index) const;
+  ::std::string* mutable_col_keys(int index);
+  void set_col_keys(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_col_keys(int index, ::std::string&& value);
+  #endif
+  void set_col_keys(int index, const char* value);
+  void set_col_keys(int index, const char* value, size_t size);
+  ::std::string* add_col_keys();
+  void add_col_keys(const ::std::string& value);
+  #if LANG_CXX11
+  void add_col_keys(::std::string&& value);
+  #endif
+  void add_col_keys(const char* value);
+  void add_col_keys(const char* value, size_t size);
+  const ::google::protobuf::RepeatedPtrField< ::std::string>& col_keys() const;
+  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_col_keys();
+
   // required string status = 1;
   bool has_status() const;
   void clear_status();
@@ -254,6 +276,7 @@ class Response : public ::google::protobuf::Message /* @@protoc_insertion_point(
       ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
       ::google::protobuf::internal::WireFormatLite::TYPE_BOOL,
       0 > server_status_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> col_keys_;
   ::google::protobuf::internal::ArenaStringPtr status_;
   ::google::protobuf::internal::ArenaStringPtr description_;
   ::google::protobuf::internal::ArenaStringPtr value_;
@@ -486,6 +509,75 @@ inline ::google::protobuf::Map< ::google::protobuf::int32, bool >*
 Response::mutable_server_status() {
   // @@protoc_insertion_point(field_mutable_map:PennCloud.Response.server_status)
   return server_status_.MutableMap();
+}
+
+// repeated string col_keys = 5;
+inline int Response::col_keys_size() const {
+  return col_keys_.size();
+}
+inline void Response::clear_col_keys() {
+  col_keys_.Clear();
+}
+inline const ::std::string& Response::col_keys(int index) const {
+  // @@protoc_insertion_point(field_get:PennCloud.Response.col_keys)
+  return col_keys_.Get(index);
+}
+inline ::std::string* Response::mutable_col_keys(int index) {
+  // @@protoc_insertion_point(field_mutable:PennCloud.Response.col_keys)
+  return col_keys_.Mutable(index);
+}
+inline void Response::set_col_keys(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:PennCloud.Response.col_keys)
+  col_keys_.Mutable(index)->assign(value);
+}
+#if LANG_CXX11
+inline void Response::set_col_keys(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:PennCloud.Response.col_keys)
+  col_keys_.Mutable(index)->assign(std::move(value));
+}
+#endif
+inline void Response::set_col_keys(int index, const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  col_keys_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:PennCloud.Response.col_keys)
+}
+inline void Response::set_col_keys(int index, const char* value, size_t size) {
+  col_keys_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:PennCloud.Response.col_keys)
+}
+inline ::std::string* Response::add_col_keys() {
+  // @@protoc_insertion_point(field_add_mutable:PennCloud.Response.col_keys)
+  return col_keys_.Add();
+}
+inline void Response::add_col_keys(const ::std::string& value) {
+  col_keys_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:PennCloud.Response.col_keys)
+}
+#if LANG_CXX11
+inline void Response::add_col_keys(::std::string&& value) {
+  col_keys_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:PennCloud.Response.col_keys)
+}
+#endif
+inline void Response::add_col_keys(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  col_keys_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:PennCloud.Response.col_keys)
+}
+inline void Response::add_col_keys(const char* value, size_t size) {
+  col_keys_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:PennCloud.Response.col_keys)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+Response::col_keys() const {
+  // @@protoc_insertion_point(field_list:PennCloud.Response.col_keys)
+  return col_keys_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+Response::mutable_col_keys() {
+  // @@protoc_insertion_point(field_mutable_list:PennCloud.Response.col_keys)
+  return &col_keys_;
 }
 
 #ifdef __GNUC__

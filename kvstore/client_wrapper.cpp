@@ -95,7 +95,13 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::strin
     std::string response_buffer_str = std::string(response_buffer, request_length);
     response.ParseFromString(response_buffer_str);
     std::cout<<"Received a status of "<<response.status()<<" description of "<<response.description()<<" value of size "<<response.value().length()<<std::endl;
-    std::pair<std::string, std::string> response_str = std::make_pair(response.value(), response.status());
+    std::pair<std::string, std::string> response_str;
+    if(request.type() != "LIST_COLKEY")
+      response_str  = std::make_pair(response.value(), response.status());
+    else
+    {
+        response_str  = std::make_pair(response_buffer_str, response.status());
+    }  
     delete response_buffer;
     return response_str;
 }
@@ -284,17 +290,33 @@ std::vector<bool> KVstore::list_server_status(){
     return list_server;
 }
 
+std::vector<std::string> KVstore::list_rowkeys(){
+
+}
+
+std::vector<std::string> KVstore::list_colkeys(std::string rkey){
+    // if rkey in cache, directly send it to storage server (if storage server cannot be connected, recontact master)
+    std::vector<std::string> col_keys_vec;
+    std::pair<std::string, std::string> result = process_kvstore_request("LIST_COLKEY", rkey, "");
+    PennCloud::Response response;
+    response.ParseFromString(result.first);
+    std::copy(response.col_keys().begin(), response.col_keys().end(), std::back_inserter(col_keys_vec));
+    return col_keys_vec;
+}
+
 // Sample Test
-void test()
+int main()
 {
     KVstore kv_test;
+
+    kv_test.list_colkeys("09090");
 
     // std::vector<bool> test_map = kv_test.list_server_status();
     // kv_test.resurrect(0);
     // kv_test.kill(3);
     // kv_test.kill(6);
-    kv_test.kill(1);
-    kv_test.kill(2);
+    // kv_test.kill(1);
+    // kv_test.kill(2);
     // kv_test.resurrect(0);
 
     // std::cout<<"Starting test"<<std::endl;

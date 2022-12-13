@@ -72,12 +72,11 @@ void checkpoint_kvstore_primary()
 {
 	while(true){
 		auto t = UpdateManager::start();
-		this_thread::sleep_for(30s);
+		this_thread::sleep_for(3000s);
         // Before starting to checkpoint, send start checkpoint command to other secondaries
         ask_secondaries_to_checkpoint();
         checkpoint_kvstore_secondary();
 	}
-
 }
 void checkpoint_kvstore_secondary()
 {
