@@ -151,6 +151,7 @@ std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string
             // Send request here
             std::string rkey_request_msg = "REQ(" + rkey + ")\r\n";
             char* response_buffer = new char[BUFFER_SIZE];
+            memset(response_buffer, 0, sizeof(response_buffer));  
             write(sockfd, rkey_request_msg.c_str(), strlen(rkey_request_msg.c_str()));
             while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
             std::string tablet_ip_str = std::string(response_buffer);

@@ -82,13 +82,13 @@ void replay_log(string file_name, string metadata_file){
         log_file.seekg(val2_start, ios::beg);
         log_file.read(value2_char, val2_size);
         string request(req_char),
-        rowk(rkey_char),
-        colk(ckey_char),
-        v1(value1_char),
-        v2(value2_char);
+        rowk(rkey_char,rkey_size),
+        colk(ckey_char,ckey_size),
+        v1(value1_char,val1_size),
+        v2(value2_char, val2_size);
 
         if(verbose)
-            cout<<request<<" "<<rowk<<" "<<colk<<" "<<v1<<" "<<v2<<endl;
+            cout<<request<<" "<<rowk<<" "<<colk<<" "<<v1.size()<<" "<<v2.size()<<endl;
         
         process_request(request, rowk, colk, v1, v2);
     }

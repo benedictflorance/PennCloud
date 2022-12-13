@@ -207,7 +207,7 @@ void load_kvstore_from_disk(string ip_addr = curr_ip_addr)
             checkpt_file.read(ckey_char, ckey_size);
             checkpt_file.seekg(val_start, ios::beg);
             checkpt_file.read(value_char, val_size);
-            string rkey = string(rkey_char), ckey = string(ckey_char), value = string(value_char);
+            string rkey = string(rkey_char,rkey_size), ckey = string(ckey_char,ckey_size), value = string(value_char,val_size);
             if(kv_store.find(rkey) != kv_store.end())
             {
                 kv_store[rkey][ckey] = value;              
@@ -217,6 +217,7 @@ void load_kvstore_from_disk(string ip_addr = curr_ip_addr)
                 kv_store[rkey] = unordered_map<string, string>();
                 kv_store[rkey][ckey] = value;   
             }
+            cout<<"rowkey: "<<rkey<< " colkey: "<<ckey<<" value size: "<<value.size()<<endl;
         }
         delete rkey_char;
         delete ckey_char;
