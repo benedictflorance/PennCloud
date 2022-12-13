@@ -110,14 +110,19 @@ std::vector<std::pair<std::string, std::string>> deserial_vector(std::string str
 std::string nav_filepath(std::string username, std::string filepath, std::vector<std::string> splitted, std::vector<std::pair<std::string, std::string>> &list) {
 		split(filepath, "/", splitted);
 		std::string search = "_root";
+		if(splitted.empty()) {
+			std::string fileval = kvstore.get(username, search);
+			if(fileval != "") list = deserial_vector(fileval);
+			return search;
+		}
 		for(int i = 0; i < splitted.size(); i++) {
 			std::string fileval = kvstore.get(username, search);
 			if(fileval != "") list = deserial_vector(fileval);
 			int index = -1;
 			for(int j = 0; j < list.size(); j++) {
-				if(list[i].first == splitted[i]) {
-					search = list[i].second;
-					index = i;
+				if(list[j].first == splitted[i]) {
+					search = list[j].second;
+					index = j;
 				}
 			}
 			if (index < 0) return "";
@@ -127,7 +132,7 @@ std::string nav_filepath(std::string username, std::string filepath, std::vector
 }
 
 static std::unique_ptr<std::istream> return_val(http::Response &resp) {
-	http::Session &session = resp.get_session();
+	http::Session &session = resp.session;
 	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
 	const std::unordered_map<std::string, std::string> params = resp.get_params();
 	session.set_username(user);
@@ -166,7 +171,7 @@ static std::unique_ptr<std::istream> return_val(http::Response &resp) {
 }
 
 static std::unique_ptr<std::istream> create_val(http::Response &resp) {
-	http::Session &session = resp.get_session();
+	http::Session &session = resp.session;
 	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
 	const std::unordered_map<std::string, std::string> params = resp.get_params();
 	session.set_username(user);
@@ -206,7 +211,7 @@ static std::unique_ptr<std::istream> create_val(http::Response &resp) {
 }
 
 static std::unique_ptr<std::istream> create_folder(http::Response &resp) {
-	http::Session &session = resp.get_session();
+	http::Session &session = resp.session;
 	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
 	const std::unordered_map<std::string, std::string> params = resp.get_params();
 	session.set_username(user);
@@ -234,7 +239,7 @@ static std::unique_ptr<std::istream> create_folder(http::Response &resp) {
 
 
 static std::unique_ptr<std::istream> index_page(http::Response &resp) {
-	http::Session &session = resp.get_session();
+	http::Session &session = resp.session;
 	session.set_username(user);
 	std::string username = session.get_username();
 	if (username == "") {
@@ -301,7 +306,7 @@ static std::unique_ptr<std::istream> index_page(http::Response &resp) {
 }
 
 static std::unique_ptr<std::istream> test(http::Response &resp) {
-	http::Session &session = resp.get_session();
+	http::Session &session = resp.session;
 	session.set_username(user);
 	if (session.get_username().empty()) {
 		resp.resp_headers.emplace("Content-Type", "text/html");
@@ -318,7 +323,7 @@ static std::unique_ptr<std::istream> test(http::Response &resp) {
 static std::unique_ptr<std::istream> post_file(http::Response &resp) {
 	const std::unordered_map<std::string, std::string> form = resp.parse_file_upload();
 	std::string username, password;
-	http::Session &session = resp.get_session();
+	http::Session &session = resp.session;
 	const std::unordered_map<std::string, std::string> params = resp.get_params();
 	session.set_username(user);
 	if (session.get_username().empty()) {
@@ -371,7 +376,7 @@ static std::unique_ptr<std::istream> get_file(http::Response &resp) {
 static std::unique_ptr<std::istream> delete_file(http::Response &resp) {
 	const std::unordered_map<std::string, std::string> form = resp.parse_file_upload();
 	std::string username, password;
-	http::Session &session = resp.get_session();
+	http::Session &session = resp.session;
 	const std::unordered_map<std::string, std::string> params = resp.get_params();
 	if (session.get_username().empty()) {
 		resp.resp_headers.emplace("Content-Type", "text/html");
@@ -391,20 +396,18 @@ static std::unique_ptr<std::istream> delete_file(http::Response &resp) {
 	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
 	std::string fileval = kvstore.get(user, search);
 	if(fileval != "") filelist = deserial_vector(fileval);
-	std::string loc = std::to_string( (rand() % 10000));
-	filelist.push_back(std::pair<std::string, std::string>(it->second, loc));
 	//*ss << "Welcome, " << session.get_username() << "!";
 	*ss << R"(<br /><a href="/">Go Back</a>)";
-	std::string 
+	std::string key = "";
 	int index = -1;
 	for(int i = 0; i < filelist.size(); i++) {
 		if(filename == filelist[i].first) {
 			key = filelist[i].second;
 			index = i;
 	}
-	filelist.erase(filelist.begin() + i);
+	}
+	filelist.erase(filelist.begin() + index);
 	kvstore.dele(username, key);
-	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
 	*ss << "File deleted";
 	return ss;
 }
