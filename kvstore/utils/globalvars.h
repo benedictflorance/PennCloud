@@ -90,3 +90,4 @@ map<string, mutex> rowkey_version_lock;
 unordered_map<string, map<int, string>> replica_holdback_queue;
 std::mutex client_sockets_mutex;
 unordered_map<string, pair<string, string> > reqid_to_value;
+bool is_dead = false;

@@ -39,6 +39,8 @@ using namespace std;
 // boolean for the v flag (debugging)
 bool v = false;
 
+int NUM_SERVERS = 9;
+
 pthread_t id_heartbeat;
 pthread_t id_frontend;
 
@@ -51,6 +53,9 @@ vector<pair<int,pair<int,vector<int> > > > original_rowkey_range;
 
 //vector of tablet addresses
 vector<string> tablet_addresses;
+
+//map for server status
+unordered_map<int,bool> server_status;
 
 //struct for heartbeats of each tablet server
 typedef struct Heartbeat{
@@ -283,6 +288,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
   string alive ="alive";
   string kill = "kill";
   string resurrect = "resurrect";
+  string status = "status";
 
   if(v){
     fprintf(stderr, "[%d] New Connection\n", comm_fd);
@@ -392,6 +398,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
       
       string tablet_server_index = argument.substr(bracket_start+1,bracket_end-1);
       cout<<"Received kill for "<<tablet_server_index<<endl;
+      server_status[stoi(tablet_server_index)] = false;
 
       int start, end;
       bool primary_crash = false;
@@ -408,10 +415,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
           }
         }
       }
-      // if(primary_crash){
-      //   //send the current primary a message
-        assign_new_primary(start, end, tablet_server_index);
-      // }
+      assign_new_primary(start, end, tablet_server_index);
     }
     else if (lower_case.find(resurrect)!=string::npos){
       // capture the string before \r\n and extract argument
@@ -433,6 +437,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
       
       string tablet_server_index = argument.substr(bracket_start+1,bracket_end-1);
       cout<<"Received unkill for "<<tablet_server_index<<endl;
+      server_status[stoi(tablet_server_index)] = true;
 
       vector<pair<int, int>> matching_rowkeys;
       int start, end;
@@ -475,7 +480,6 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
             temp_h.status = "ALIVE";
             heartbeat.insert({str,temp_h});     
         }
-        
         //get the time heartbeat was received
         time_t timeInSec;
         time(&timeInSec);
@@ -486,6 +490,22 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
         // {
         //   cerr<<"Heartbeat received from "<<str<<" with counter "<<heartbeat[str].counter<<" and timestamp "<<heartbeat[str].timestamp<<endl;
         // }
+    }
+    else if(lower_case.find(status)!=string::npos){
+
+        string response_str;
+        PennCloud::Response response;
+        for(auto item : server_status)
+        {
+            (*response.mutable_server_status())[item.first] = item.second;
+        }
+        response.set_status("+OK");
+        response.SerializeToString(&response_str);
+        char req_length[11];
+        snprintf (req_length, 11, "%10d", response_str.length()); 
+        std::string message = std::string(req_length) + response_str;
+        do_write(comm_fd, message.data(), message.length());
+
     }
     else{
       char unknown[] = "-ERR Unknown command\r\n";
@@ -649,6 +669,11 @@ int main(int argc, char *argv[]){
   process_tablet_file();
 
   initialize_primary_info(config_file);
+
+  for(int i = 0; i < NUM_SERVERS; i++)
+  {
+      server_status[i] = true;
+  }
 
   //start evaluating server status
   thread handle_alive(alive);

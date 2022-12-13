@@ -131,6 +131,9 @@ std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string
         // if rkey in cache, directly send it to storage server (if storage server cannot be connected, recontact master)
         if(rkey_to_storage_cache.find(rkey) != rkey_to_storage_cache.end())
         {
+            std::string curr_ip_addr = std::string(inet_ntoa(rkey_to_storage_cache[rkey].sin_addr)) + ":" + 
+            std::to_string(ntohs(rkey_to_storage_cache[rkey].sin_port));
+            std::cout<<"Client connected to: "<<curr_ip_addr<<std::endl;
             response_str = contact_tablet_server(type, rkey, ckey, value1, value2);
         }
         // else send it to master and then send it to storage server 
@@ -152,7 +155,7 @@ std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string
             while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
             std::string tablet_ip_str = std::string(response_buffer);
             // Cache it 
-            std::cout<<tablet_ip_str<<std::endl;
+            std::cout<<"Client connected to: "<<tablet_ip_str<<std::endl;
             rkey_to_storage_cache[rkey] = get_address(tablet_ip_str);
             response_str = contact_tablet_server(type, rkey, ckey, value1, value2);
             delete response_buffer;
@@ -161,7 +164,9 @@ std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string
         // Contact master again if 
         if(response_str.second == "-CRASH")
         {
+            std::cout<<"This server crashed. Re-requesting server from master"<<std::endl;
             is_crash = true;
+            rkey_to_storage_cache.clear();
         }
         else
         {
@@ -222,8 +227,8 @@ void KVstore::kill(int server_index){
     // Send request here
     std::string rkey_request_msg = "KILL(" + std::to_string(server_index) + ")\r\n";
     write(sockfd, rkey_request_msg.c_str(), strlen(rkey_request_msg.c_str()));
-    is_server_alive[server_index] = false;
-    rkey_to_storage_cache.clear();
+    // is_server_alive[server_index] = false;
+    // rkey_to_storage_cache.clear();
 }
 
 void KVstore::resurrect(int server_index){
@@ -238,31 +243,57 @@ void KVstore::resurrect(int server_index){
     // Send request here
     std::string rkey_request_msg = "RESURRECT(" + std::to_string(server_index) + ")\r\n";
     write(sockfd, rkey_request_msg.c_str(), strlen(rkey_request_msg.c_str()));
-    is_server_alive[server_index] = true;
+    // is_server_alive[server_index] = true;
 }
 
 std::vector<bool> KVstore::list_server_status(){
+    // Contact master to find out
+    char length_buffer[LENGTH_BUFFER_SIZE];
     std::vector<bool> list_server;
-    for (auto& t : is_server_alive){
-        std::cout << t.first << " " << t.second<<std::endl;
-        list_server.push_back(t.second);
+    char status_buffer[STATUS_BUFFER_SIZE];
+	memset(length_buffer, 0, sizeof(length_buffer));
+    memset(status_buffer, 0, sizeof(status_buffer));    
+    sockaddr_in master_sock_addr = get_address(master_ip_str);
+    int sockfd = socket(PF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) 
+    {
+        std::cerr<<"Unable to create socket, returning old values"<<std::endl;
+    }
+    else
+    {
+        connect(sockfd, (struct sockaddr*)& master_sock_addr, sizeof(master_sock_addr));
+        // Send request here
+        std::string serv_status_msg = "STATUS\r\n";
+        write(sockfd, serv_status_msg.c_str(), strlen(serv_status_msg.c_str()));
+        do_read(sockfd, length_buffer, 10);
+        int request_length = std::stoi(std::string(length_buffer, 10));
+        do_read(sockfd, status_buffer, request_length);
+        std::string status_buffer_str = std::string(status_buffer, request_length);
+        PennCloud::Response response;
+        response.ParseFromString(status_buffer_str);
+        for(auto item : (*response.mutable_server_status()))
+        {
+            is_server_alive[item.first] = item.second;
+        }
+        for (auto& t : is_server_alive){
+            std::cout << t.first << " " << t.second<<std::endl;
+            list_server.push_back(t.second);
+        }
     }
     return list_server;
 }
 
 // Sample Test
-void test()
+int main()
 {
     KVstore kv_test;
 
-    std::vector<bool> test_map = kv_test.list_server_status();
-    kv_test.kill(0);
-    kv_test.kill(3);
-    test_map = kv_test.list_server_status();
-    kv_test.resurrect(0);
-    test_map = kv_test.list_server_status();
-    // kv_test.kill(7);
-    // kv_test.kill(8);
+    // std::vector<bool> test_map = kv_test.list_server_status();
+    // kv_test.resurrect(0);
+    // kv_test.kill(3);
+    // kv_test.kill(6);
+    kv_test.kill(1);
+    kv_test.kill(2);
     // kv_test.resurrect(0);
 
     // std::cout<<"Starting test"<<std::endl;

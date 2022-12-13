@@ -6,4 +6,5 @@ message Response{
     required string status = 1; // +OK or -ERR
     optional string description = 2; // Message present if there's an error
     optional bytes value = 3; // 
+    map<int32, bool> server_status = 4;
 }

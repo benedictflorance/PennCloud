@@ -228,6 +228,11 @@ void process_client_thread(int client_socket)
 			}
 			else if ((strcasecmp(request.type().c_str(), "NEW_PRIMARY") == 0)){
 				// is new_primary
+				if(stoi(request.modified_server_index()) == curr_server_index)
+				{
+					is_dead = true;
+					cout<<"I am server "<<curr_server_index<<" and my is_dead is "<<(int) is_dead<<endl;
+				}
 				if(curr_server_index == stoi(request.new_primary_index())){
 					cout<<"I am the new primary "<<to_string(curr_server_index)<<endl;
 					isPrimary = true;
@@ -239,19 +244,21 @@ void process_client_thread(int client_socket)
 				}
 				for(int i = 0; i < rowkey_range.size(); i++){
 					rkey_to_primary[rowkey_range[i]] = stoi(request.new_primary_index());
-					// for(int j = 0; j < tablet_server_group[rowkey_range[i]].size(); j++)
-					// {
-						cout<<"Before: Size of my group is"<<tablet_server_group[rowkey_range[i]].size()<<endl;
-						auto it = find(tablet_server_group[rowkey_range[i]].begin(),
-						tablet_server_group[rowkey_range[i]].end(),
-						stoi(request.modified_server_index()));
-						tablet_server_group[rowkey_range[i]].erase(it);
-						cout<<"After: Size of my group is"<<tablet_server_group[rowkey_range[i]].size()<<endl;
-					// }
+					cout<<"Before: Size of my group is"<<tablet_server_group[rowkey_range[i]].size()<<endl;
+					auto it = find(tablet_server_group[rowkey_range[i]].begin(),
+					tablet_server_group[rowkey_range[i]].end(),
+					stoi(request.modified_server_index()));
+					tablet_server_group[rowkey_range[i]].erase(it);
+					cout<<"After: Size of my group is"<<tablet_server_group[rowkey_range[i]].size()<<endl;
 				}
 			}
 			else if ((strcasecmp(request.type().c_str(), "RESURRECT") == 0)){
 				int resurrected_server_index = stoi(request.modified_server_index());
+				if(resurrected_server_index == curr_server_index)
+				{
+					is_dead = false;				
+					cout<<"I am server "<<curr_server_index<<" and my is_dead is "<<(int) is_dead<<endl;
+				}
 				for(auto it : initial_tablet_server_group)
 				{
 					if(find(it.second.begin(), it.second.end(), resurrected_server_index) != it.second.end())
@@ -279,79 +286,98 @@ void process_client_thread(int client_socket)
 		//request from client
 		else{
 			cout<<"Request from Client"<<endl;
-			if((strcasecmp(request.type().c_str(), "PUT") == 0) || 
-				(strcasecmp(request.type().c_str(), "CPUT") == 0) ||
-				(strcasecmp(request.type().c_str(), "DELETE") == 0))
+			if(!is_dead)
 			{
-				request.set_uniqueid(get_time() + to_string(rand()));
-				req_client_sock_map[request.uniqueid()] = client_socket;
-				if(is_rowkey_accepted(request.rowkey()))
-				{	
-					request.set_sender_server_index(to_string(curr_server_index));
-					//TO DO - make it more unique
-					string new_request_str;
-					
-					if(isPrimary){
-						rowkey_version_lock[request.rowkey()].lock();
-						// Initialize seq to 0 if it sees rkey for first time, else increment
-						if(rowkey_version.find(request.rowkey()) == rowkey_version.end())
-						{
-							rowkey_version[request.rowkey()] = 1;
-						}
-						else
-						{
-							rowkey_version[request.rowkey()]++;
-						}
-						rowkey_version_lock[request.rowkey()].unlock();
-						request.set_sequence_number(to_string(rowkey_version[request.rowkey()]));
-						//locally update
-						request.SerializeToString(&new_request_str);
-						string preprocessed_response = update_kv_store(new_request_str);
-						request.set_preprocessed_response(preprocessed_response);
-						request.SerializeToString(&new_request_str);
-						int start_letter = request.rowkey()[0];
-						int key;
-						for(int i = 0; i < rowkey_range.size(); i++)
-						{
-							if(start_letter >= toRowKeyRange(rowkey_range[i]).first && start_letter <= toRowKeyRange(rowkey_range[i]).second)
+				if((strcasecmp(request.type().c_str(), "PUT") == 0) || 
+					(strcasecmp(request.type().c_str(), "CPUT") == 0) ||
+					(strcasecmp(request.type().c_str(), "DELETE") == 0))
+				{
+					cout<<"I am server "<<curr_server_index<<" and I am not dead and processing this PUT-type request"<<endl;
+					request.set_uniqueid(get_time() + to_string(rand()));
+					req_client_sock_map[request.uniqueid()] = client_socket;
+					if(is_rowkey_accepted(request.rowkey()))
+					{	
+						request.set_sender_server_index(to_string(curr_server_index));
+						//TO DO - make it more unique
+						string new_request_str;
+						
+						if(isPrimary){
+							rowkey_version_lock[request.rowkey()].lock();
+							// Initialize seq to 0 if it sees rkey for first time, else increment
+							if(rowkey_version.find(request.rowkey()) == rowkey_version.end())
 							{
-								key = rowkey_range[i];
+								rowkey_version[request.rowkey()] = 1;
+							}
+							else
+							{
+								rowkey_version[request.rowkey()]++;
+							}
+							rowkey_version_lock[request.rowkey()].unlock();
+							request.set_sequence_number(to_string(rowkey_version[request.rowkey()]));
+							//locally update
+							request.SerializeToString(&new_request_str);
+							string preprocessed_response = update_kv_store(new_request_str);
+							request.set_preprocessed_response(preprocessed_response);
+							request.SerializeToString(&new_request_str);
+							int start_letter = request.rowkey()[0];
+							int key;
+							for(int i = 0; i < rowkey_range.size(); i++)
+							{
+								if(start_letter >= toRowKeyRange(rowkey_range[i]).first && start_letter <= toRowKeyRange(rowkey_range[i]).second)
+								{
+									key = rowkey_range[i];
+								}
+							}
+							//ask secondary servers to update
+							if(tablet_server_group[key].size()!= 1)
+							{
+								update_secondary(new_request_str);
+							}
+							else
+							{
+								process_request(new_request_str, req_client_sock_map[request.uniqueid()]);
 							}
 						}
-						//ask secondary servers to update
-						if(tablet_server_group[key].size()!= 1)
-						{
-							update_secondary(new_request_str);
-						}
-						else
-						{
-							process_request(new_request_str, req_client_sock_map[request.uniqueid()]);
+						else{
+							//request primary for permission
+							// unique id to value1() - hash it here
+							reqid_to_value.insert({request.uniqueid(), make_pair(request.value1(), request.value2())});
+							request.SerializeToString(&new_request_str);
+							request_primary(new_request_str);
 						}
 					}
-					else{
-						//request primary for permission
-						// unique id to value1() - hash it here
-						reqid_to_value.insert({request.uniqueid(), make_pair(request.value1(), request.value2())});
+					else
+					{
+						PennCloud::Response response;
+						response.set_status(invalid_rowkey_message.first);
+						response.set_description(invalid_rowkey_message.second);
+						string preprocessed_response;
+						response.SerializeToString(&preprocessed_response);
+						request.set_preprocessed_response(preprocessed_response);
+						string new_request_str;
 						request.SerializeToString(&new_request_str);
-						request_primary(new_request_str);
+						process_request(new_request_str, req_client_sock_map[request.uniqueid()]);
 					}
 				}
 				else
 				{
-					PennCloud::Response response;
-					response.set_status(invalid_rowkey_message.first);
-					response.set_description(invalid_rowkey_message.second);
-					string preprocessed_response;
-					response.SerializeToString(&preprocessed_response);
-					request.set_preprocessed_response(preprocessed_response);
-					string new_request_str;
-					request.SerializeToString(&new_request_str);
-					process_request(new_request_str, req_client_sock_map[request.uniqueid()]);
-				}
+					cout<<"I am server "<<curr_server_index<<" and I am not dead and processing this GET-type request"<<endl;
+					process_request(request_str, client_socket);
+				}		
 			}
 			else
 			{
-				process_request(request_str, client_socket);
+				cout<<"I am server "<<curr_server_index<<" and I am SO dead"<<endl;
+				PennCloud::Response response;
+				request.set_type("PUT");
+				string new_request_str;
+				string preprocessed_response;
+				response.set_status("-CRASH");
+				response.set_description("Emulating a crash");
+				response.SerializeToString(&preprocessed_response);	
+				request.set_preprocessed_response(preprocessed_response);
+				request.SerializeToString(&new_request_str);				
+				process_request(new_request_str, client_socket);
 			}
 		}
 	}
