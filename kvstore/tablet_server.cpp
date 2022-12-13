@@ -81,6 +81,10 @@ void process_request(string request_str, int client_socket){
 		response.SerializeToString(&response_str);
 
 	}
+	else if(strcasecmp(request.type().c_str(), "LIST_ROWKEY") == 0){
+		process_listrowkey_request(request, response);
+		response.SerializeToString(&response_str);
+	}
 	else{
 		response.set_status(unrecognized_command_message.first);
 		response.set_description(unrecognized_command_message.second);

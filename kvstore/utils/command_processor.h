@@ -84,6 +84,14 @@ void process_listcolkey_request(PennCloud::Request &request, PennCloud::Response
     }
 }
 
+void process_listrowkey_request(PennCloud::Request &request, PennCloud::Response &response)
+{
+    for(auto itr: kv_store){
+        response.add_row_keys(itr.first.c_str());            
+    }
+    response.set_status("+OK");
+}
+
 void create_nonexistent_mutex(string rowkey)
 {
     //create rowkey lock if it doesn't exist
