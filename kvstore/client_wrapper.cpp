@@ -284,7 +284,7 @@ std::vector<bool> KVstore::list_server_status(){
 }
 
 // Sample Test
-int main()
+void test()
 {
     KVstore kv_test;
 
