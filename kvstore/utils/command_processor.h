@@ -377,8 +377,8 @@ void process_rename_request(PennCloud::Request &request, PennCloud::Response &re
                             }
                             if (content2.find("/" + ren + ":") != std::string::npos) 
                             {
-                                response.set_status(target_inode_exists_message.first);
-                                response.set_description(target_inode_exists_message.second);
+                                response.set_status(target_file_notexists_message.first);
+                                response.set_description(target_file_notexists_message.second);
                             }
                             else
                             {

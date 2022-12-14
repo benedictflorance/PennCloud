@@ -101,8 +101,11 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, const std:
         response_str  = std::make_pair(response_buffer_str, response.status());
     else if(request.type() == "LIST_ROWKEY")
         response_str  = std::make_pair(response_buffer_str, response.status());
+    else if(request.type() == "RENAME")
+        response_str  = std::make_pair(response.description(), response.status());
     else
         response_str  = std::make_pair(response.value(), response.status()); 
+    
     delete response_buffer; 
     return response_str;
 }
@@ -344,6 +347,8 @@ std::string KVstore::storage_create(const std::string &rkey, const std::string &
 std::string KVstore::storage_rename(const std::string &rkey, const std::string &parent, const std::string &name, const std::string &target2)
 {
     std::pair<std::string, std::string> result = process_kvstore_request("RENAME", rkey, parent, name, target2);
+    if(result.second  == "+OK")
+        return "";
     return result.first;
 }
 // Sample Test
