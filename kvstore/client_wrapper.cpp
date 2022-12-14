@@ -62,10 +62,8 @@ bool do_write(int fd, char *buf, int len){
 std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::string type, std::string rkey, std::string ckey, std::string value1, std::string value2)
 {
     std::string request_str;
-    char *response_buffer = new char[BUFFER_SIZE];
     char length_buffer[LENGTH_BUFFER_SIZE];
 	memset(length_buffer, 0, sizeof(length_buffer));
-    memset(response_buffer, 0, sizeof(response_buffer));
     PennCloud::Request request;
     PennCloud::Response response;
     // Test invalid rowkey
@@ -91,6 +89,8 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::strin
 						<<" a value2 of "<<request.value2().length()<<std::endl; 
     do_read(sockfd, length_buffer, 10);
 	int request_length = std::stoi(std::string(length_buffer, 10));
+    char *response_buffer = new char[request_length+10];
+    memset(response_buffer, 0, sizeof(response_buffer));
     do_read(sockfd, response_buffer, request_length);
     std::string response_buffer_str = std::string(response_buffer, request_length);
     response.ParseFromString(response_buffer_str);
@@ -103,7 +103,6 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, std::strin
         response_str  = std::make_pair(response_buffer_str, response.status());
     else
         response_str  = std::make_pair(response.value(), response.status());  
-    delete response_buffer;
     return response_str;
 }
 std::pair<std::string, std::string> KVstore::contact_tablet_server(std::string type, std::string rkey, std::string ckey, std::string value1, std::string value2)
@@ -157,16 +156,15 @@ std::pair<std::string, std::string> KVstore::process_kvstore_request(std::string
             connect(sockfd, (struct sockaddr*)& master_sock_addr, sizeof(master_sock_addr));
             // Send request here
             std::string rkey_request_msg = "REQ(" + rkey + ")\r\n";
-            char* response_buffer = new char[BUFFER_SIZE];
+            char response_buffer[100];
             memset(response_buffer, 0, sizeof(response_buffer));  
             write(sockfd, rkey_request_msg.c_str(), strlen(rkey_request_msg.c_str()));
-            while(read(sockfd, response_buffer, BUFFER_SIZE) == 0);
+            while(read(sockfd, response_buffer, 100) == 0);
             std::string tablet_ip_str = std::string(response_buffer);
             // Cache it 
             std::cout<<"Client connected to: "<<tablet_ip_str<<std::endl;
             rkey_to_storage_cache[rkey] = get_address(tablet_ip_str);
             response_str = contact_tablet_server(type, rkey, ckey, value1, value2);
-            delete response_buffer;
             close(sockfd);
         }
         // Contact master again if 
@@ -275,6 +273,8 @@ std::vector<bool> KVstore::list_server_status(){
         write(sockfd, serv_status_msg.c_str(), strlen(serv_status_msg.c_str()));
         do_read(sockfd, length_buffer, 10);
         int request_length = std::stoi(std::string(length_buffer, 10));
+        char *response_buffer = new char[request_length+10];
+        memset(response_buffer, 0, sizeof(response_buffer));
         do_read(sockfd, status_buffer, request_length);
         std::string status_buffer_str = std::string(status_buffer, request_length);
         PennCloud::Response response;
@@ -326,19 +326,20 @@ std::vector<std::string> KVstore::list_colkeys(std::string rkey){
     PennCloud::Response response;
     response.ParseFromString(result.first);
     std::copy(response.col_keys().begin(), response.col_keys().end(), std::back_inserter(col_keys_vec));
+    sort(col_keys_vec.begin(), col_keys_vec.end(), std::greater<std::string>());
     return col_keys_vec;
 }
 
 // Sample Test
-void test()
+int main()
 {
     KVstore kv_test;
 
     kv_test.put("abccc", "password", "frontend");
-    kv_test.put("zxyyy", "password", "frontend");
-    kv_test.put("SHU", "password", "frontend");
-    kv_test.put("0000", "password", "frontend");
-    kv_test.list_rowkeys();
+    kv_test.put("abccc", "bb", "frontend");
+    kv_test.put("abccc", "zz", "frontend");
+    kv_test.put("abccc", "aa", "frontend");
+    kv_test.list_colkeys("abccc");
 
     // std::vector<bool> test_map = kv_test.list_server_status();
     // kv_test.resurrect(0);

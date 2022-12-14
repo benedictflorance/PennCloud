@@ -214,7 +214,7 @@ void load_kvstore_from_disk(string ip_addr = curr_ip_addr)
             }
             else
             {
-                kv_store[rkey] = unordered_map<string, string>();
+                kv_store[rkey] = map<string, string, greater<string> >();
                 kv_store[rkey][ckey] = value;   
             }
             cout<<"rowkey: "<<rkey<< " colkey: "<<ckey<<" value size: "<<value.size()<<endl;

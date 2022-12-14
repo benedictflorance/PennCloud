@@ -65,7 +65,7 @@ vector<int> rowkey_range;
 sockaddr_in master_address;
 vector<int> client_sockets;
 vector<pthread_t> client_threads;
-unordered_map<string, unordered_map<string, string> > kv_store;
+map<string, map<string, string, greater <string> > > kv_store;
 unordered_map<int, int> rkey_to_primary;
 unordered_map<int, vector<int> > initial_tablet_server_group;
 unordered_map<int, vector<int> > tablet_server_group;
