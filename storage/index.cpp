@@ -324,7 +324,7 @@ static std::unique_ptr<std::istream> post_file(http::Response &resp) {
 		resp.resp_headers.emplace("Content-Type", "text/html");
 		return std::make_unique<std::ifstream>("static/login.html");
 	}
-
+	username = resp.session.get_username();
 	const auto it = form.find("filename");
 	const auto it3 = params.find("filepath");
 	const auto it2 = form.find("content");
