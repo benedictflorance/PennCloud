@@ -11,7 +11,7 @@
 #include <ext/stdio_filebuf.h>
 #include <sys/socket.h>
 
-#include "../kvstore/client_wrapper.h"
+#include "../kvstore/local_test.hpp"
 
 namespace http {
 std::unordered_map<std::string_view, std::unordered_map<Method, HandlerFunc>> handlers;
@@ -157,6 +157,7 @@ const Status Status::BAD_REQUEST = "400 Bad Request";
 const Status Status::FORBIDDEN = "403 Forbidden";
 const Status Status::NOT_FOUND = "404 Not Found";
 const Status Status::HTTP_VERSION_NOT_SUPPORTED = "505 HTTP Version Not Supported";
+
 std::pair<Session &, bool> Session::get_session(const std::string &cookie) {
 	static std::unordered_map<std::string, Session> sessions;
 
@@ -177,13 +178,10 @@ std::pair<Session &, bool> Session::get_session(const std::string &cookie) {
 	return std::make_pair(std::ref(s), false);
 }
 
-Response::Response(const std::string_view &params, Headers &&req_headers, std::istream &req_body)
-	: req_headers(req_headers), req_body(req_body), session(get_session()), params(params) {}
+static inline Session &get_session(Response *resp) {
+	const auto it = resp->req_headers.find("cookie");
 
-Session &Response::get_session() {
-	const auto it = req_headers.find("cookie");
-
-	if (it != req_headers.end()) {
+	if (it != resp->req_headers.end()) {
 		const std::string_view cookie = it->second;
 		const std::size_t pos = cookie.find("session=");
 		if (pos == std::string_view::npos) {
@@ -213,15 +211,17 @@ no_cookie:
 		session_id = ss.str();
 	} while (Session::get_session(session_id).second);
 
-	resp_headers.emplace("Set-Cookie", "session=" + session_id + "; Max-Age=86400; HttpOnly");
+	resp->resp_headers.emplace("Set-Cookie", "session=" + session_id + "; Max-Age=86400; HttpOnly");
 	return Session::get_session(session_id).first;
 }
 
-const std::string &Response::get_username() {
-	const std::string &name = get_session().get_username();
+Response::Response(const std::string_view &p, Headers &&rh, std::istream &rb)
+	: req_headers(std::move(rh)), req_body(rb), session(get_session(this)), params(p) {}
+
+std::string Response::get_username_api() {
+	const std::string &name = session.get_username();
 	if (name.empty()) {
-		resp_headers.emplace("Location", "/");
-		throw http::Exception(http::Status::FOUND);
+		throw http::Exception(http::Status::FORBIDDEN, "Not logged in");
 	}
 	return name;
 }
@@ -230,7 +230,6 @@ static inline std::unordered_map<std::string, std::string> parse_params(const st
 	std::unordered_map<std::string, std::string> ret;
 
 	std::size_t pos = 0;
-	if(params.size() < 2) return ret;
 	while (pos < params.size()) {
 		const std::size_t eq = params.find('=', pos);
 		if (eq == std::string::npos) {
@@ -253,6 +252,13 @@ static inline std::unordered_map<std::string, std::string> parse_params(const st
 	return ret;
 }
 
+void Response::assert_logged_in() {
+	if (session.get_username().empty()) {
+		resp_headers.emplace("Location", "/");
+		throw http::Exception(http::Status::FOUND);
+	}
+}
+
 void Response::assert_content_type(const std::string &type) {
 	const auto it = req_headers.find("content-type");
 	if (it == req_headers.end() || std::string_view(it->second).substr(0, it->second.find(';')) != type) {
@@ -261,57 +267,6 @@ void Response::assert_content_type(const std::string &type) {
 }
 
 std::unordered_map<std::string, std::string> Response::get_params() { return parse_params(params); }
-
-std::unordered_map<std::string, std::string> Response::parse_file_upload() {
-	assert_content_type("multipart/form-data");
-	std::string content_type = req_headers.find("content-type")->second;
-	const std::size_t b = content_type.find('=', 0);
-	const std::string boundary = "--" + content_type.substr(b + 1);
-	const std::size_t boundary_size = boundary.length();
-	std::size_t content_length = 0;
-	{
-		const auto it = req_headers.find("content-length");
-		if (it == req_headers.end()) {
-			throw http::Exception(http::Status::BAD_REQUEST, "missing content-length");
-		}
-		content_length = std::stoul(it->second);
-	}
-
-	std::unordered_map<std::string, std::string> ret;
-	std::vector<std::string> content;
-	std::string multicontent;
-	multicontent.resize(content_length);
-	req_body.read(multicontent.data(), content_length);
-	std::size_t pos = 0;
-	while (pos < multicontent.size()) {
-		const std::size_t bound = multicontent.find(boundary, pos);
-		pos = bound + boundary_size + 2;
-		const std::size_t bound2 = multicontent.find(boundary, pos);
-		if (bound2 == std::string::npos) {
-			content.push_back(multicontent.substr(pos));
-			break;
-		} else {
-			content.push_back(multicontent.substr(pos, bound2 - pos));
-		}
-	}
-	for (int i = 0; i < content.size(); i++) {
-		pos = 0;
-		std::size_t eq = content[i].find("filename=", pos);
-		if (eq == std::string::npos) {
-			break;
-		}
-		pos = eq + 1;
-		const std::size_t amp = content[i].find("\r\n", pos);
-		std::string value = content[i].substr(pos + 8, amp - pos - 8);
-		pos = amp + 2;
-		ret.emplace(std::move("filename"), std::move(value));
-		eq = content[i].find("\r\n\r\n", pos);
-		value = content[i].substr(eq + 4);
-		ret.emplace(std::move("content"), std::move(value));
-	}
-
-	return ret;
-}
 
 std::unordered_map<std::string, std::string> Response::parse_www_form() {
 	assert_content_type("application/x-www-form-urlencoded");
@@ -330,7 +285,7 @@ std::unordered_map<std::string, std::string> Response::parse_www_form() {
 	return parse_params(content);
 }
 
-const std::string &Session::get_username() const { return username; }
+std::string Session::get_username() const { return username; }
 
 void Session::set_username(const std::string &username) {
 	kvstore.put("SESSION", session_id, username);
