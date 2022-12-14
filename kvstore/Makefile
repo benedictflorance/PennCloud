@@ -8,8 +8,8 @@ tablet_server: tablet_server.cpp request.pb.cc response.pb.cc utils/*
 tablet_client: tablet_client.cpp request.pb.cc response.pb.cc utils/*
 	g++ $< request.pb.cc response.pb.cc -lpthread -w -lprotobuf -std=c++17 -g -o $@
 
-client_wrapper: client_wrapper.cpp request.pb.cc response.pb.cc utils/*
-	g++ $< request.pb.cc response.pb.cc -lpthread -w -lprotobuf -std=c++17 -g -o $@
+# client_wrapper: client_wrapper.cpp request.pb.cc response.pb.cc utils/*
+# 	g++ $< request.pb.cc response.pb.cc -lpthread -w -lprotobuf -std=c++17 -g -o $@
 
 client_wrapper.o: client_wrapper.cpp request.pb.cc response.pb.cc 
 	g++ $^ -lpthread -lprotobuf -std=c++17 -w -g -c

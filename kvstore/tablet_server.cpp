@@ -253,12 +253,10 @@ void process_client_thread(int client_socket)
 				}
 				for(int i = 0; i < rowkey_range.size(); i++){
 					rkey_to_primary[rowkey_range[i]] = stoi(request.new_primary_index());
-					cout<<"Before: Size of my group is"<<tablet_server_group[rowkey_range[i]].size()<<endl;
 					auto it = find(tablet_server_group[rowkey_range[i]].begin(),
 					tablet_server_group[rowkey_range[i]].end(),
 					stoi(request.modified_server_index()));
 					tablet_server_group[rowkey_range[i]].erase(it);
-					cout<<"After: Size of my group is"<<tablet_server_group[rowkey_range[i]].size()<<endl;
 				}
 			}
 			else if ((strcasecmp(request.type().c_str(), "RESURRECT") == 0)){
@@ -352,6 +350,7 @@ void process_client_thread(int client_socket)
 						else{
 							//request primary for permission
 							// unique id to value1() - hash it here
+							cout<<"Value 2 while setting hash"<<request.value2()<<endl;
 							reqid_to_value.insert({request.uniqueid(), make_pair(request.value1(), request.value2())});
 							request.SerializeToString(&new_request_str);
 							request_primary(new_request_str);

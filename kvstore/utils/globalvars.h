@@ -46,9 +46,10 @@ pair<const char*, const char*>  inode_exists_message = make_pair("-ERR", "INode 
 pair<const char*, const char*>  inode_notexists_message = make_pair("-ERR", "INode does not exist");
 pair<const char*, const char*>  invalid_target_message = make_pair("-ERR", "Invalid target");
 pair<const char*, const char*>  target_inode_notdir_message = make_pair("-ERR", "Target INode not directory");
-pair<const char*, const char*>  target_inode_exists_message = make_pair("-ERR", "Target INode doesexists already");
-pair<const char*, const char*>  target_inode_notexists_message = make_pair("-ERR", "Target INode exists already");
-
+pair<const char*, const char*>  target_inode_exists_message = make_pair("-ERR", "Target INode exists already");
+pair<const char*, const char*>  target_inode_notexists_message = make_pair("-ERR", "Target INode does not exist already");
+pair<const char*, const char*>  directory_not_empty_message = make_pair("-ERR", "Directory is not empty");
+pair<const char*, const char*>  target_file_notexists_message = make_pair("-ERR", "Target File/Dir already exists");
 
 // Integer constants
 const int LENGTH_BUFFER_SIZE = 20; 
