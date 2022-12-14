@@ -347,7 +347,7 @@ std::string KVstore::storage_rename(const std::string &rkey, const std::string &
     return result.first;
 }
 // Sample Test
-int main()
+void test()
 {
     KVstore kv_test;
     //Storage create testing
