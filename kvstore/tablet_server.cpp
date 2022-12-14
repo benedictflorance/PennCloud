@@ -112,11 +112,8 @@ void process_client_thread(int client_socket)
 		cerr<<"["<<client_socket<<"] "<<new_connection_message<<endl;
 	}
 	char length_buffer[LENGTH_BUFFER_SIZE];
-	char *request_buffer = new char[BUFFER_SIZE];
 	while(true)
 	{	
-		// char *command_end_index;
-		// int client_shutdown = read(client_socket, current_buffer, BUFFER_SIZE-strlen(net_buffer));
 		if(shutdown_flag)
 		{
 			if(verbose)
@@ -125,7 +122,6 @@ void process_client_thread(int client_socket)
 			pthread_exit(NULL);
 		}
 		memset(length_buffer, 0, sizeof(length_buffer));
-		memset(request_buffer, 0, sizeof(request_buffer));
 		do_read(client_socket, length_buffer, 10);
 		int request_length;
 		try
@@ -137,6 +133,8 @@ void process_client_thread(int client_socket)
 			cout<<"stoi fail in buffering"<<endl;
 			break;
 		}
+		char *request_buffer = new char[request_length + 10];
+		memset(request_buffer, 0, sizeof(request_buffer));
 		do_read(client_socket, request_buffer, request_length);
 		string request_str = string(request_buffer, request_length);
 
@@ -389,8 +387,8 @@ void process_client_thread(int client_socket)
 				process_request(new_request_str, client_socket);
 			}
 		}
+		delete request_buffer;
 	}
-	delete request_buffer;
 }
 
 int create_server()

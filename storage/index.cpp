@@ -321,38 +321,37 @@ static std::unique_ptr<std::istream> test(http::Response &resp) {
 }
 
 static std::unique_ptr<std::istream> post_file(http::Response &resp) {
-	const std::unordered_map<std::string, std::string> form = resp.parse_file_upload();
-	std::string username, password;
-	http::Session &session = resp.session;
-	const std::unordered_map<std::string, std::string> params = resp.get_params();
-	session.set_username(user);
-	if (session.get_username().empty()) {
-		resp.resp_headers.emplace("Content-Type", "text/html");
-		return std::make_unique<std::ifstream>("static/login.html");
-	}
-
-	const auto it = form.find("filename");
-	const auto it3 = params.find("filepath");
-	const auto it2 = form.find("content");
-	if(it == form.end()) {
-					throw http::Exception(http::Status::BAD_REQUEST, "Bad Request");
-	}
-	std::vector<std::string> splitted;
-	std::vector<std::pair<std::string, std::string>> list;
-	std::string val = it3->second;
-	split(val, "/", splitted);
-	std::string search = nav_filepath(username, val, splitted, list);
-	resp.resp_headers.emplace("Content-Type", "text/html");
-	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
-	std::string fileval = kvstore.get(user, search);
-	if(fileval != "") filelist = deserial_vector(fileval);
-	std::string loc = std::to_string( (rand() % 10000));
-	filelist.push_back(std::pair<std::string, std::string>(it->second, loc));
-	kvstore.put(user, files, serial_vector(filelist));
-	kvstore.put(user, loc, it2->second);
-	//*ss << "Welcome, " << session.get_username() << "!";
-	*ss << R"(<br /><a href="/">Go Back</a>)";
-	return ss;
+    const std::unordered_map<std::string, std::string> form = resp.parse_file_upload();
+    std::string username, password;
+    const std::unordered_map<std::string, std::string> params = resp.get_params();
+    resp.session.set_username(user);
+    if (resp.session.get_username().empty()) {
+        resp.resp_headers.emplace("Content-Type", "text/html");
+        return std::make_unique<std::ifstream>("static/login.html");
+    }
+    username = resp.session.get_username();
+    const auto it = form.find("filename");
+    const auto it3 = params.find("filepath");
+    const auto it2 = form.find("content");
+    if(it == form.end()) {
+                    throw http::Exception(http::Status::BAD_REQUEST, "Bad Request");
+    }
+    std::vector<std::string> splitted;
+    std::vector<std::pair<std::string, std::string>> list;
+    std::string val = it3->second;
+    split(val, "/", splitted);
+    std::string search = nav_filepath(username, val, splitted, list);
+    resp.resp_headers.emplace("Content-Type", "text/html");
+    std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
+    std::string fileval = kvstore.get(user, search);
+    if(fileval != "") filelist = deserial_vector(fileval);
+    std::string loc = std::to_string( (rand() % 10000));
+    filelist.push_back(std::pair<std::string, std::string>(it->second, loc));
+    kvstore.put(user, files, serial_vector(filelist));
+    kvstore.put(user, loc, it2->second);
+    //*ss << "Welcome, " << session.get_username() << "!";
+    *ss << R"(<br /><a href="/">Go Back</a>)";
+    return ss;
 }
 
 
