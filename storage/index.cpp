@@ -132,15 +132,14 @@ std::string nav_filepath(std::string username, std::string filepath, std::vector
 }
 
 static std::unique_ptr<std::istream> return_val(http::Response &resp) {
-	http::Session &session = resp.session;
 	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
 	const std::unordered_map<std::string, std::string> params = resp.get_params();
-	session.set_username(user);
-	if (session.get_username().empty()) {
+	resp.session.set_username(user);
+	if (resp.session.get_username().empty()) {
 		resp.resp_headers.emplace("Content-Type", "text/html");
 		return std::make_unique<std::ifstream>("static/login.html");
 	}
-	std::string username = session.get_username();
+	std::string username =resp.session.get_username();
 	if(params.find("filepath") == params.end()) {
 			throw http::Exception(http::Status::BAD_REQUEST, "Bad Request");
 	}
@@ -171,15 +170,14 @@ static std::unique_ptr<std::istream> return_val(http::Response &resp) {
 }
 
 static std::unique_ptr<std::istream> create_val(http::Response &resp) {
-	http::Session &session = resp.session;
 	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
 	const std::unordered_map<std::string, std::string> params = resp.get_params();
-	session.set_username(user);
-	if (session.get_username().empty()) {
+	resp.session.set_username(user);
+	if (resp.session.get_username().empty()) {
 		resp.resp_headers.emplace("Content-Type", "text/html");
 		return std::make_unique<std::ifstream>("static/login.html");
 	}
-	std::string username = session.get_username();
+	std::string username = resp.session.get_username();
 	if(params.find("filepath") == params.end()) {
 			throw http::Exception(http::Status::BAD_REQUEST, "Bad Request");
 	}
@@ -211,16 +209,15 @@ static std::unique_ptr<std::istream> create_val(http::Response &resp) {
 }
 
 static std::unique_ptr<std::istream> create_folder(http::Response &resp) {
-	http::Session &session = resp.session;
 	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
 	const std::unordered_map<std::string, std::string> params = resp.get_params();
-	session.set_username(user);
-	if (session.get_username().empty()) {
+	resp.session.set_username(user);
+	if (resp.session.get_username().empty()) {
 		resp.resp_headers.emplace("Content-Type", "text/html");
 		return std::make_unique<std::ifstream>("static/login.html");
 	}
 	const std::unordered_map<std::string, std::string> form = resp.parse_www_form();
-	std::string username = session.get_username();
+	std::string username = resp.session.get_username();
 	if(params.find("filepath") == params.end()) {
 			throw http::Exception(http::Status::BAD_REQUEST, "Bad Request");
 	}
@@ -239,9 +236,8 @@ static std::unique_ptr<std::istream> create_folder(http::Response &resp) {
 
 
 static std::unique_ptr<std::istream> index_page(http::Response &resp) {
-	http::Session &session = resp.session;
-	session.set_username(user);
-	std::string username = session.get_username();
+	resp.session.set_username(user);
+	std::string username = resp.session.get_username();
 	if (username == "") {
 		resp.resp_headers.emplace("Content-Type", "text/html");
 		return std::make_unique<std::ifstream>("static/login.html");
@@ -306,16 +302,15 @@ static std::unique_ptr<std::istream> index_page(http::Response &resp) {
 }
 
 static std::unique_ptr<std::istream> test(http::Response &resp) {
-	http::Session &session = resp.session;
-	session.set_username(user);
-	if (session.get_username().empty()) {
+	resp.session.set_username(user);
+	if (resp.session.get_username().empty()) {
 		resp.resp_headers.emplace("Content-Type", "text/html");
 		return std::make_unique<std::ifstream>("static/login.html");
 	}
 
 	resp.resp_headers.emplace("Content-Type", "text/html");
 	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
-	*ss << "Welcome, " << session.get_username() << "!";
+	*ss << "Welcome, " << resp.session.get_username() << "!";
 	*ss << R"(<br /><a href="/logout">Logout</a>)";
 	return ss;
 }
@@ -323,10 +318,9 @@ static std::unique_ptr<std::istream> test(http::Response &resp) {
 static std::unique_ptr<std::istream> post_file(http::Response &resp) {
 	const std::unordered_map<std::string, std::string> form = resp.parse_file_upload();
 	std::string username, password;
-	http::Session &session = resp.session;
 	const std::unordered_map<std::string, std::string> params = resp.get_params();
-	session.set_username(user);
-	if (session.get_username().empty()) {
+	resp.session.set_username(user);
+	if (resp.session.get_username().empty()) {
 		resp.resp_headers.emplace("Content-Type", "text/html");
 		return std::make_unique<std::ifstream>("static/login.html");
 	}
@@ -449,7 +443,7 @@ int main() {
 
 	const sockaddr_in addr = {
 		.sin_family = AF_INET,
-		.sin_port = htons(10003),
+		.sin_port = htons(10002),
 		.sin_addr = {.s_addr = INADDR_ANY},
 	};
 	std::string file = "";
