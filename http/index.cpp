@@ -13,6 +13,7 @@
 
 #include "console.hpp"
 #include "account.hpp"
+#include "storage.hpp"
 
 static std::unique_ptr<std::istream> index_page(http::Response &resp) {
 	resp.resp_headers.emplace("Content-Type", "text/html");
@@ -40,15 +41,19 @@ static void handle(const int client) {
 int main() {
 	http::register_handler("/", http::Method::GET, index_page);
 	http::register_handler("/mail", http::Method::GET, [](http::Response &resp) {
-		resp.get_username();
+		resp.assert_logged_in();
 		resp.resp_headers.emplace("Content-Type", "text/html");
 		return std::make_unique<std::ifstream>("static/mail.html");
 	});
 	http::register_handler("/console", http::Method::GET, [](http::Response &resp) {
-		resp.get_username();
+		resp.assert_logged_in();
 		resp.resp_headers.emplace("Content-Type", "text/html");
 		return std::make_unique<std::ifstream>("static/console.html");
 	});
+
+	http::register_handler("/kvstore/get", http::Method::GET, raw_get);
+	http::register_handler("/kvstore/listr", http::Method::GET, list_rkey);
+	http::register_handler("/kvstore/listc", http::Method::GET, list_ckey);
 
 	http::register_handler("/bstatus/change", http::Method::POST, change_status);
 	http::register_handler("/bstatus", http::Method::GET, backend_status);
@@ -61,6 +66,9 @@ int main() {
 		resp.status = http::Status::FOUND;
 		return nullptr;
 	});
+
+	http::register_handler("/storage/create", http::Method::POST, create_storage);
+	http::register_handler("/storage/rename", http::Method::POST, rename_storage);
 
 	const int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == -1) {

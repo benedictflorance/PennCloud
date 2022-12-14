@@ -41,7 +41,7 @@ class Session {
 	Session(const std::string &sid) : session_id(sid) {}
 
 	static std::pair<Session &, bool> get_session(const std::string &cookie);
-	const std::string &get_username() const;
+	std::string get_username() const;
 	void set_username(const std::string &username);
 };
 
@@ -58,14 +58,14 @@ struct Response {
 	Session &session;
 	Status status = Status::OK;
 
-	const std::string &get_username();
+	std::string get_username_api();
+	void assert_logged_in();
 	void assert_content_type(const std::string &content_type);
 	std::unordered_map<std::string, std::string> get_params();
 	std::unordered_map<std::string, std::string> parse_www_form();
-	std::unordered_map<std::string, std::string> parse_file_upload();
-public:
+
+  private:
 	const std::string_view params;
-	Session &get_session();
 };
 
 struct Exception : public std::exception {
