@@ -57,3 +57,38 @@ static std::unique_ptr<std::istream> signup(http::Response &resp) {
 
 	throw http::Exception(http::Status::FORBIDDEN, "User already exists");
 }
+
+static std::unique_ptr<std::istream> logout(http::Response &resp) {
+	resp.session.set_username("");
+	resp.resp_headers.emplace("Location", "/");
+	resp.status = http::Status::FOUND;
+	return nullptr;
+}
+
+static std::unique_ptr<std::istream> change_pass(http::Response &resp) {
+	const std::string username = resp.get_username_api();
+	const std::unordered_map<std::string, std::string> form = resp.parse_www_form();
+
+	std::string old_pass, new_pass;
+	{
+		const auto it = form.find("old");
+		if (it == form.end() || it->second.empty()) {
+			throw http::Exception(http::Status::BAD_REQUEST, "Missing old password");
+		}
+		old_pass = std::move(it->second);
+	}
+
+	{
+		const auto it = form.find("new");
+		if (it == form.end() || it->second.empty()) {
+			throw http::Exception(http::Status::BAD_REQUEST, "Missing new password");
+		}
+		new_pass = std::move(it->second);
+	}
+
+	if (kvstore.cput("ACCOUNT", username, old_pass, new_pass)) {
+		return nullptr;
+	}
+
+	throw http::Exception(http::Status::FORBIDDEN, "Incorrect password");
+}
