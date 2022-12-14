@@ -36,6 +36,8 @@ class KVstore
         std::vector<bool> list_server_status();
         std::vector<std::string> list_rowkeys();
         std::vector<std::string> list_colkeys(const std::string &rkey);
+        std::string storage_create(const std::string &rkey, const std::string &parent, const std::string &name, bool is_dir);
+        std::string storage_rename(const std::string &rkey, const std::string &parent, const std::string &name, const std::string &target2);
 };
 
 extern KVstore kvstore;

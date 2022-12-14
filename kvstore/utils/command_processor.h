@@ -210,3 +210,178 @@ void process_delete_request(PennCloud::Request &request, PennCloud::Response &re
         rowkey_lock[request.rowkey()].unlock();
     }
 }
+
+void process_create_request(PennCloud::Request &request, PennCloud::Response &response)
+{
+    if(!request.has_rowkey() || !request.has_columnkey() || !request.has_value1() || !request.has_value2())
+    {
+        response.set_status(param_unset_message.first);
+        response.set_description(param_unset_message.second);
+    }
+    else if(!is_rowkey_accepted(request.rowkey()))
+    {
+        response.set_status(invalid_rowkey_message.first);
+        response.set_description(invalid_rowkey_message.second);
+    }
+    else
+    {
+        rowkey_lock[request.rowkey()].lock();
+        if(kv_store.find(request.rowkey()) != kv_store.end())
+        {
+            if(kv_store[request.rowkey()].find(request.columnkey()) != kv_store[request.rowkey()].end())
+            {
+                string content = kv_store[request.rowkey()][request.columnkey()];
+                if (content[0] != '/') 
+                {
+                    response.set_status(inode_notdir_message.first);
+                    response.set_description(inode_notdir_message.second);
+                }
+                else if (content.find("/" + request.value1() + ":") != std::string::npos) 
+                {
+                    response.set_status(inode_exists_message.first);
+                    response.set_description(inode_exists_message.second);
+                }
+                else
+                {
+                    std::string new_counter;
+                    if(kv_store[request.rowkey()].find("c") != kv_store[request.rowkey()].end())
+                        new_counter = std::to_string(std::stoi(kv_store[request.rowkey()]["c"]) + 1);
+                    else
+                        new_counter = "1";
+                    kv_store[request.rowkey()]["c"] = new_counter;
+                    bool is_dir = stoi(request.value2());
+                    content += request.value1() + ":" + new_counter + (is_dir ? "d/" : "f/");
+                    kv_store[request.rowkey()][request.value1()] = content;
+                    if (is_dir) 
+                    {
+                        kv_store[request.rowkey()][new_counter] = "/";
+                    }
+                    response.set_status("+OK");
+                    response.set_value(new_counter);
+                }
+            }
+            else
+            {
+                response.set_status(inode_inexistence_message.first);
+                response.set_description(inode_inexistence_message.second);
+            }
+        }
+        else
+        {
+            response.set_status(inode_inexistence_message.first);
+            response.set_description(inode_inexistence_message.second);
+        }
+        rowkey_lock[request.rowkey()].unlock();
+    }
+}
+
+void process_rename_request(PennCloud::Request &request, PennCloud::Response &response)
+{
+    if(!request.has_rowkey() || !request.has_columnkey() || !request.has_value1() || !request.has_value2())
+    {
+        response.set_status(param_unset_message.first);
+        response.set_description(param_unset_message.second);
+    }
+    else if(!is_rowkey_accepted(request.rowkey()))
+    {
+        response.set_status(invalid_rowkey_message.first);
+        response.set_description(invalid_rowkey_message.second);
+    }
+    else
+    {
+        rowkey_lock[request.rowkey()].lock();
+        if(kv_store.find(request.rowkey()) != kv_store.end())
+        {
+            if(kv_store[request.rowkey()].find(request.columnkey()) != kv_store[request.rowkey()].end())
+            {
+                string content = kv_store[request.rowkey()][request.columnkey()];
+                const std::size_t pos = content.find("/" + request.value1() + ":");
+                if (content[0] != '/') 
+                {
+                    response.set_status(inode_notdir_message.first);
+                    response.set_description(inode_notdir_message.second);
+                }
+                else if (pos == std::string::npos) 
+                {
+                    response.set_status(inode_notexists_message.first);
+                    response.set_description(inode_notexists_message.second);
+                }
+                else
+                {
+                    const std::size_t end = content.find("/", pos + 1);
+                    const std::size_t prefix_len = pos + request.value1().size() + 2;
+                    const std::string inode = content.substr(prefix_len, end + 1 - prefix_len);
+                    content.erase(pos + 1, end - pos);
+                    if (request.value2().empty()) 
+                    {
+                        kv_store[request.rowkey()][request.columnkey()] = content;
+                    }
+                    else
+                    {
+                        const std::size_t pos2 = request.value2().find("%2F");
+                        if (pos2 == std::string::npos) 
+                        {
+                            response.set_status(invalid_target_message.first);
+                            response.set_description(invalid_target_message.second);
+                        }
+                        else
+                        {
+                            const std::string target = request.value2().substr(0, pos2);
+                            const std::string ren = request.value2().substr(pos2 + std::strlen("%2F"));
+                            std::string content2;
+                            if (target == request.columnkey()) 
+                            {
+                                content2 = content;
+                            } 
+                            else 
+                            {
+                                if(kv_store[request.rowkey()].find(target) != kv_store[request.rowkey()].end())
+                                {
+                                    content2 = kv_store[request.rowkey()][target];
+                                    if (content2[0] != '/') 
+                                    {
+                                        response.set_status(target_inode_notdir_message.first);
+                                        response.set_description(target_inode_notdir_message.second);
+                                    }
+
+                                }
+                                else
+                                {
+                                    response.set_status(target_inode_notexists_message.first);
+                                    response.set_description(target_inode_notexists_message.second);
+                                }
+                            }
+                            if (content2.find("/" + ren + ":") != std::string::npos) 
+                            {
+                                response.set_status(target_inode_exists_message.first);
+                                response.set_description(target_inode_exists_message.second);
+                            }
+                            else
+                            {
+                                content2 += ren + ":" + inode;
+                                if (target != request.columnkey()) 
+                                {
+                                    kv_store[request.rowkey()][request.columnkey()] = content;
+                                }
+                                kv_store[request.rowkey()][target] = content2;
+                            }       
+                        }                    
+                    }
+                    response.set_status("+OK");
+                }
+            }
+            else
+            {
+                response.set_status(inode_inexistence_message.first);
+                response.set_description(inode_inexistence_message.second);
+            }
+        }
+        else
+        {
+            response.set_status(inode_inexistence_message.first);
+            response.set_description(inode_inexistence_message.second);
+        }
+        rowkey_lock[request.rowkey()].unlock();
+    }
+
+}

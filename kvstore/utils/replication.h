@@ -127,6 +127,19 @@ string update_kv_store(string request_str, int client_socket){
 		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(), value1, value2);
 		process_delete_request(request, response);
 	}
+    else if (strcasecmp(request.type().c_str(), "CREATE") == 0){
+        request.set_value1(value1);
+        request.set_value2(value2);
+		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(), value1, value2);
+		process_create_request(request, response);
+	}
+    else if (strcasecmp(request.type().c_str(), "RENAME") == 0){
+        request.set_value1(value1);
+        request.set_value2(value2);
+		update_log(log_file_name,meta_log_file_name,request.type(),request.rowkey(),request.columnkey(), value1, value2);
+		process_rename_request(request, response);
+	}
+
 
     response.SerializeToString(&response_str);
     if(!isPrimary){

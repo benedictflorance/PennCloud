@@ -71,7 +71,9 @@ void process_request(string request_str, int client_socket){
 	}
 	else if((strcasecmp(request.type().c_str(), "PUT") == 0) || 
 					(strcasecmp(request.type().c_str(), "CPUT") == 0) ||
-					(strcasecmp(request.type().c_str(), "DELETE") == 0))
+					(strcasecmp(request.type().c_str(), "DELETE") == 0) ||
+					(strcasecmp(request.type().c_str(), "CREATE") == 0) ||
+					(strcasecmp(request.type().c_str(), "RENAME") == 0))
 	{
 		response_str = request.preprocessed_response();
 		response.ParseFromString(response_str);
@@ -297,7 +299,9 @@ void process_client_thread(int client_socket)
 			{
 				if((strcasecmp(request.type().c_str(), "PUT") == 0) || 
 					(strcasecmp(request.type().c_str(), "CPUT") == 0) ||
-					(strcasecmp(request.type().c_str(), "DELETE") == 0))
+					(strcasecmp(request.type().c_str(), "DELETE") == 0) ||
+					(strcasecmp(request.type().c_str(), "CREATE") == 0) ||
+					(strcasecmp(request.type().c_str(), "RENAME") == 0))
 				{
 					cout<<"I am server "<<curr_server_index<<" and I am not dead and processing this PUT-type request"<<endl;
 					request.set_uniqueid(get_time() + to_string(rand()));

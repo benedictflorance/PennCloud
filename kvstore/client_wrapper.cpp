@@ -70,11 +70,11 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, const std:
     request.set_type(type);
     request.set_rowkey(rkey);
     request.set_columnkey(ckey);
-    if(type == "PUT" || type == "CPUT")
+    if(type == "PUT" || type == "CPUT" || type == "CREATE" || type == "RENAME")
     {
         request.set_value1(value1);
     }
-    if(type == "CPUT")
+    if(type == "CPUT" || type == "CREATE"|| type == "RENAME")
     {
         request.set_value2(value2);;
     }
@@ -333,11 +333,48 @@ std::vector<std::string> KVstore::list_colkeys(const std::string &rkey){
     sort(col_keys_vec.begin(), col_keys_vec.end(), std::greater<std::string>());
     return col_keys_vec;
 }
+std::string KVstore::storage_create(const std::string &rkey, const std::string &parent, const std::string &name, bool is_dir)
+{
+    std::string value2 = std::to_string(int(is_dir));
+    std::pair<std::string, std::string> result = process_kvstore_request("CREATE", rkey, parent, name, value2);
+    return result.first;
 
+}
+
+std::string KVstore::storage_rename(const std::string &rkey, const std::string &parent, const std::string &name, const std::string &target2)
+{
+    std::pair<std::string, std::string> result = process_kvstore_request("RENAME", rkey, parent, name, target2);
+    return result.first;
+}
 // Sample Test
-void test()
+int main()
 {
     KVstore kv_test;
+    //Storage create testing
+    // std::string response_str;
+    // response_str = kv_test.storage_create("abc", "cab", "abc", true);
+    // kv_test.put("abc", "password", "frontend");
+    // response_str = kv_test.storage_create("abc", "cab", "abc", true);
+    // kv_test.put("abc", "cab", "frontend");
+    // response_str = kv_test.storage_create("abc", "cab", "abc", true);
+    // kv_test.put("abc", "cab", "/abc/inode:");
+    // response_str = kv_test.storage_create("abc", "cab", "inode", true);
+    // response_str = kv_test.storage_create("abc", "cab", "def", true); //abc-c -> 1, content = "def:1:d/", abc-cab -> content, abc-1 -> "/" return 1
+    // std::cout<<response_str;
+
+    //Storage rename testing
+    std::string response_str;
+    response_str = kv_test.storage_rename("abc", "cab", "abc", "Def");
+    kv_test.put("abc", "password", "frontend");
+    response_str = kv_test.storage_rename("abc", "cab", "abc", "Def");
+    kv_test.put("abc", "cab", "frontend");
+    response_str = kv_test.storage_rename("abc", "cab", "abc", "Def");
+    kv_test.put("abc", "cab", "/abc:");
+    response_str = kv_test.storage_rename("abc", "cab", "inode", "Def");
+    kv_test.put("abc", "cab", "/abc/inode:");
+    response_str = kv_test.storage_rename("abc", "cab", "inode", "Def");
+    response_str = kv_test.storage_rename("abc", "cab", "def", "Def"); //abc-c -> 1, content = "def:1:d/", abc-cab -> content, abc-1 -> "/" return 1
+    std::cout<<response_str;
 
     // kv_test.put("abccc", "password", "frontend");
     // kv_test.put("abccc", "bb", "frontend");

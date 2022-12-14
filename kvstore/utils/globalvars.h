@@ -40,6 +40,15 @@ pair<const char*, const char*>  unrecognized_command_message = make_pair("-ERR",
 pair<const char*, const char*>  param_unset_message = make_pair("-ERR", "Parameter(s) required for this command are not set");
 pair<const char*, const char*>  invalid_rowkey_message = make_pair("-ERR", "This tablet does not process this rowkey");
 pair<const char*, const char*>  key_inexistence_message = make_pair("-ERR", "Row or column key doesn't exist");
+pair<const char*, const char*>  inode_inexistence_message = make_pair("-ERR", "INode does not exist");
+pair<const char*, const char*>  inode_notdir_message = make_pair("-ERR", "INode not directory");
+pair<const char*, const char*>  inode_exists_message = make_pair("-ERR", "INode exists already");
+pair<const char*, const char*>  inode_notexists_message = make_pair("-ERR", "INode does not exist");
+pair<const char*, const char*>  invalid_target_message = make_pair("-ERR", "Invalid target");
+pair<const char*, const char*>  target_inode_notdir_message = make_pair("-ERR", "Target INode not directory");
+pair<const char*, const char*>  target_inode_exists_message = make_pair("-ERR", "Target INode doesexists already");
+pair<const char*, const char*>  target_inode_notexists_message = make_pair("-ERR", "Target INode exists already");
+
 
 // Integer constants
 const int LENGTH_BUFFER_SIZE = 20; 
