@@ -3,7 +3,7 @@
 #include "utils/config_processor.h"
 #include "request.pb.h"
 #include "response.pb.h"
-
+const int BUFFER_SIZE = 15000000;
 void clear_keys(PennCloud::Request &request, PennCloud::Response &response, string &request_str, char* response_buffer, char* req_length)
 {
     cout<<"Response has a status of "<<response.status()<<" description of "<<response.description()<<" a value of "<<response.value()<<endl;

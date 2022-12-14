@@ -43,9 +43,6 @@ pair<const char*, const char*>  key_inexistence_message = make_pair("-ERR", "Row
 
 // Integer constants
 const int LENGTH_BUFFER_SIZE = 20; 
-const int BUFFER_SIZE = 15000000;
-const int RKEY_BUFFER_SIZE = 10000;
-const int CKEY_BUFFER_SIZE = 25000;
 
 const string replicas_header = "<REPLICAS>";
 const string checkpt_dir = "checkpoints/";
@@ -65,7 +62,7 @@ vector<int> rowkey_range;
 sockaddr_in master_address;
 vector<int> client_sockets;
 vector<pthread_t> client_threads;
-unordered_map<string, unordered_map<string, string> > kv_store;
+map<string, map<string, string, greater <string> > > kv_store;
 unordered_map<int, int> rkey_to_primary;
 unordered_map<int, vector<int> > initial_tablet_server_group;
 unordered_map<int, vector<int> > tablet_server_group;

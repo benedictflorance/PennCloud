@@ -37,11 +37,6 @@ void replay_log(string file_name, string metadata_file){
         cout<<"Replaying log"<<endl;
 
     string line;
-    char *req_char = new char[RKEY_BUFFER_SIZE];
-    char *rkey_char = new char[RKEY_BUFFER_SIZE];
-    char *ckey_char = new char[CKEY_BUFFER_SIZE];
-    char *value1_char = new char[BUFFER_SIZE];
-    char *value2_char = new char[BUFFER_SIZE];
     while(getline(meta_file,line)){
         stringstream meta(line); 
         string req_start_str, req_size_str, rkey_start_str, rkey_size_str, ckey_start_str, ckey_size_str,
@@ -66,6 +61,11 @@ void replay_log(string file_name, string metadata_file){
         val1_size= stoi(val1_size_str),
         val2_start = stoi(val2_start_str), 
         val2_size= stoi(val2_size_str);
+        char *req_char = new char[req_size + 10];
+        char *rkey_char = new char[rkey_size + 10];
+        char *ckey_char = new char[ckey_size + 10];
+        char *value1_char = new char[val1_size + 10];
+        char *value2_char = new char[val2_size + 10];
         memset(req_char, 0, sizeof(req_char));
         memset(rkey_char, 0, sizeof(rkey_char));
         memset(ckey_char, 0, sizeof(ckey_char));
@@ -91,12 +91,12 @@ void replay_log(string file_name, string metadata_file){
             cout<<request<<" "<<rowk<<" "<<colk<<" "<<v1.size()<<" "<<v2.size()<<endl;
         
         process_request(request, rowk, colk, v1, v2);
+        delete req_char;
+        delete rkey_char;
+        delete ckey_char;
+        delete value1_char;
+        delete value2_char;
     }
-    delete req_char;
-    delete rkey_char;
-    delete ckey_char;
-    delete value1_char;
-    delete value2_char;
 }
 
 void process_request(string req, string rowk, string colk, string v1, string v2){

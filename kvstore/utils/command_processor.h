@@ -128,7 +128,7 @@ void process_put_request(PennCloud::Request &request, PennCloud::Response &respo
         }
         else
         {
-            kv_store[request.rowkey()] = unordered_map<string, string>();
+            kv_store[request.rowkey()] = map<string, string, greater<string> >();
             kv_store[request.rowkey()][request.columnkey()] = request.value1();   
             response.set_status("+OK");
         }
