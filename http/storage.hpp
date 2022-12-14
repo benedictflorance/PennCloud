@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../kvstore/local_test.hpp"
+#include "../kvstore/client_wrapper.h"
 #include "http.hpp"
 
 #include <iomanip>
@@ -8,7 +8,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
-KVstore kvstore;
+// KVstore kvstore;
 
 static std::unique_ptr<std::istream> get_file(http::Response &resp) {
 	const std::string username = resp.get_username_api();

@@ -94,9 +94,8 @@ string update_kv_store(string request_str, int client_socket){
 	catch (const std::invalid_argument& e)
 	{
         cout<<"stoi fail in update kv store"<<endl;
-        cout<<request.sender_server_index()<<endl;
 	}
-    if(curr_server_index == request_owner)
+    if(curr_server_index == request_owner && !isPrimary)
     {
         value1 = reqid_to_value[request.uniqueid()].first;
         value2 = reqid_to_value[request.uniqueid()].second;

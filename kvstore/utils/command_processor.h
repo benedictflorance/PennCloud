@@ -249,9 +249,9 @@ void process_create_request(PennCloud::Request &request, PennCloud::Response &re
                     else
                         new_counter = "1";
                     kv_store[request.rowkey()]["c"] = new_counter;
-                    bool is_dir = stoi(request.value2());
+                    bool is_dir = (bool) stoi(request.value2());
                     content += request.value1() + ":" + new_counter + (is_dir ? "d/" : "f/");
-                    kv_store[request.rowkey()][request.value1()] = content;
+                    kv_store[request.rowkey()][request.columnkey()] = content;
                     if (is_dir) 
                     {
                         kv_store[request.rowkey()][new_counter] = "/";
@@ -310,10 +310,34 @@ void process_rename_request(PennCloud::Request &request, PennCloud::Response &re
                 {
                     const std::size_t end = content.find("/", pos + 1);
                     const std::size_t prefix_len = pos + request.value1().size() + 2;
-                    const std::string inode = content.substr(prefix_len, end + 1 - prefix_len);
+                    std::string inode = content.substr(prefix_len, end + 1 - prefix_len);
                     content.erase(pos + 1, end - pos);
                     if (request.value2().empty()) 
                     {
+                        // kv_store[request.rowkey()][request.columnkey()] = content;
+                        inode.pop_back();
+                        if (inode.back() == 'd')
+                        {
+                            inode.pop_back();
+                            const std::string content2 =  kv_store[request.rowkey()][inode];
+                            if (content2.size() > 1)
+                            {
+                                response.set_status(directory_not_empty_message.first);
+                                response.set_description(directory_not_empty_message.second);
+                                rowkey_lock[request.rowkey()].unlock();
+                                return;
+                            }
+                        } 
+                        else 
+                        {
+                            inode.pop_back();
+                        }
+                        //dele(rkey, inode);
+                        if(kv_store[request.rowkey()].find(inode) != kv_store[request.rowkey()].end())
+                        {
+                            kv_store[request.rowkey()].erase(inode);
+                        }
+                        //put(rkey, parent, content);
                         kv_store[request.rowkey()][request.columnkey()] = content;
                     }
                     else
