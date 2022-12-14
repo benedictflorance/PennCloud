@@ -12,7 +12,7 @@
         integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
         crossorigin="anonymous"></script>
     <style>
-        ol {
+        .overflow-auto {
             max-height: 50vh;
             counter-reset: elementcounter;
         }
@@ -24,9 +24,9 @@
     </style>
 </head>
 
-<body class="d-flex flex-column" style="background-color: whitesmoke; height: 100vh">
+<body class="d-flex flex-column" style="background-color: whitesmoke; min-height: 100vh">
     <div id="alert-container" class="position-fixed" style="top: 2em; right: 2em; z-index: 2050;"></div>
-    <div class="col-10 col-md-6 col-xl-4 m-auto row">
+    <div class="my-auto row" style="margin-left: 20vw; margin-right: 20vw">
         <h1 class="mb-3" style="font-weight: 800;">Admin Console</h1>
         <div class="col-sm mb-3">
             <h4>Frontend Servers</h4>
@@ -36,15 +36,34 @@
                 <li class="list-group-item list-group-item-success"></li>
             </ol>
         </div>
-        <div class="col-sm">
+        <div class="col-sm mb-3">
             <h4>Backend Servers</h4>
             <ol class="list-group overflow-auto" id="bservers">
-                <span class="spinner-border spinner-border-sm"></span>
+                <span class="spinner-border spinner-border-lg m-auto"></span>
             </ol>
+        </div>
+        <div class="col-lg-8">
+            <h4>KVStore Data</h4>
+            <div class="row g-0 gx-3 py-1 h-100 rounded-3 border bg-light bg-gradient">
+                <div class="col">
+                    <h6>Column</h6>
+                    <div id="rkey" class="list-group overflow-auto list-group-flush">
+                        <span class="spinner-border spinner-border-lg m-auto"></span>
+                    </div>
+                </div>
+                <div class="col d-none">
+                    <h6>Row</h6>
+                    <div id="ckey" class="list-group overflow-auto list-group-flush"></div>
+                </div>
+                <div class="col d-none">
+                    <h6>Data</h6>
+                    <textarea id="raw" class="w-100 border-0" style="resize: none; height:calc(100% - 1.75em)" readonly></textarea>
+                </div>
+            </div>
         </div>
     </div>
     <div class="mb-3 text-center">
-        <p>PennCloud &copy; 2022</p>
+        <p><a href="/">PennCloud</a> &copy; 2022</p>
         <p class="text-muted mb-0">Created by Andrew, Benedict, Hanbang & Namita</p>
     </div>
     <script type="text/javascript">
@@ -59,18 +78,12 @@ ${content}
             setTimeout(() => new bootstrap.Alert(alertContainer.firstElementChild).close(), timeout);
         }
 
-        function loading(element, text = "") {
-            const original = element.children[0];
-            element.innerHTML = `<span class="spinner-grow spinner-grow-sm"></span> ${text}`;
-            element.classList.add("disabled");
-            return function () {
-                element.replaceChildren(original);
-                element.classList.remove("disabled");
-            }
-        }
-
         async function change_status(e) {
-            const restore = loading(e.target.parentElement);
+            const parent = e.target.parentElement;
+            const original = parent.children[0];
+            parent.innerHTML = '<span class="spinner-grow spinner-grow-sm"></span>';
+            parent.classList.add("disabled");
+
             let status = e.target.checked;
             try {
                 const resp = await fetch("/bstatus/change", {
@@ -87,9 +100,9 @@ ${content}
                 status = !status;
                 createAlert("danger", "Failed to change backend status. Please try again later.");
             } finally {
-                restore();
+                parent.replaceChildren(original);
+                parent.classList.remove("disabled");
                 e.target.checked = status;
-                const parent = e.target.parentElement;
                 if (status) {
                     parent.classList.remove("list-group-item-danger");
                     parent.classList.add("list-group-item-success");
@@ -124,7 +137,94 @@ ${content}
             }
         }
 
+        function choose(target) {
+            target.parentElement.querySelector('button.active')?.classList.remove("active");
+            target.classList.add("active");
+            const buttons = target.parentElement.getElementsByTagName('button');
+            for (const button of buttons) {
+                button.disabled = true;
+            }
+            return function() {
+                for (const button of buttons) {
+                    button.disabled = false;
+                }
+            }
+        }
+
+        async function get_kvstore_data(e) {
+            const target = e.target;
+            const unlock = choose(target);
+            
+            const ele = document.getElementById("raw");
+            ele.parentElement.classList.remove("d-none");
+            ele.value = "";
+            ele.placeholder = "Loading...";
+
+            try {
+                const response = await fetch('/kvstore/get?' + new URLSearchParams({ rkey: this, ckey: target.textContent }));
+                if (!response.ok) {
+                    createAlert("warning", await response.text());
+                    return;
+                }
+                ele.value = await response.text();
+            } catch (error) {
+                createAlert("danger", "Failed to fetch raw data. Please try again later.")
+            } finally {
+                unlock();
+            }
+        }
+
+        async function list_col_keys(e) {
+            const target = e.target;
+            const unlock = choose(target);
+
+            document.getElementById("raw").parentElement.classList.add("d-none");
+
+            const ele = document.getElementById("ckey");
+            ele.parentElement.classList.remove("d-none");
+            ele.innerHTML = '<span class="spinner-border spinner-border-lg m-auto"></span>';
+            const rkey = target.textContent;
+
+            try {
+                const response = await fetch('/kvstore/listc?' + new URLSearchParams({ rkey }));
+                if (!response.ok) {
+                    createAlert("warning", await response.text());
+                    return;
+                }
+                const data = await response.json();
+                ele.replaceChildren();
+                for (const key of data) {
+                    ele.insertAdjacentHTML("beforeend", `<button type="button" class="list-group-item list-group-item-action text-truncate">${key}</button>`);
+                    ele.lastElementChild.addEventListener("click", get_kvstore_data.bind(rkey));
+                }
+            } catch (error) {
+                createAlert("danger", "Failed to fetch col keys. Please try again later.")
+            } finally {
+                unlock();
+            }
+        }
+
+        async function list_row_keys() {
+            try {
+                const response = await fetch('/kvstore/listr');
+                if (!response.ok) {
+                    createAlert("warning", await response.text());
+                    return;
+                }
+                const data = await response.json();
+                const ele = document.getElementById("rkey");
+                ele.replaceChildren();
+                for (const key of data) {
+                    ele.insertAdjacentHTML("beforeend", `<button type="button" class="list-group-item list-group-item-action text-truncate">${key}</button>`);
+                    ele.lastElementChild.addEventListener("click", list_col_keys);
+                }
+            } catch (error) {
+                createAlert("danger", "Failed to fetch row keys. Please try again later.")
+            }
+        }
+
         fetch_backend_status();
+        list_row_keys();
     </script>
 </body>
 

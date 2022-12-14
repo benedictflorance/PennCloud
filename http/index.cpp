@@ -60,12 +60,8 @@ int main() {
 
 	http::register_handler("/signup", http::Method::POST, signup);
 	http::register_handler("/login", http::Method::POST, login);
-	http::register_handler("/logout", http::Method::GET, [](http::Response &resp) {
-		resp.session.set_username("");
-		resp.resp_headers.emplace("Location", "/");
-		resp.status = http::Status::FOUND;
-		return nullptr;
-	});
+	http::register_handler("/logout", http::Method::GET, logout);
+	http::register_handler("/change", http::Method::POST, change_pass);
 
 	http::register_handler("/storage/create", http::Method::POST, create_storage);
 	http::register_handler("/storage/rename", http::Method::POST, rename_storage);
