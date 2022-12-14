@@ -216,7 +216,7 @@ ${nd}
 </li>`);
                     const btns = delem.lastElementChild.getElementsByTagName("button");
                     btns[0].addEventListener("click", enter_dir.bind(num, nd));
-                    btns[1].addEventListener("click", move_inode.bind(num, nd));
+                    btns[1].addEventListener("click", move_inode.bind(num, nd, name));
                     btns[2].addEventListener("click", delete_inode.bind(name));
                 });
                 const felem = document.getElementById("files");
