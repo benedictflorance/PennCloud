@@ -11,8 +11,8 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "console.hpp"
 #include "account.hpp"
+#include "console.hpp"
 #include "storage.hpp"
 
 static std::unique_ptr<std::istream> index_page(http::Response &resp) {
@@ -50,6 +50,16 @@ int main() {
 		resp.resp_headers.emplace("Content-Type", "text/html");
 		return std::make_unique<std::ifstream>("static/console.html");
 	});
+	http::register_handler("/storage", http::Method::GET, [](http::Response &resp) {
+		resp.assert_logged_in();
+		resp.resp_headers.emplace("Content-Type", "text/html");
+		return std::make_unique<std::ifstream>("static/storage.html");
+	});
+	http::register_handler("/storage/select", http::Method::GET, [](http::Response &resp) {
+		resp.assert_logged_in();
+		resp.resp_headers.emplace("Content-Type", "text/html");
+		return std::make_unique<std::ifstream>("static/storage_select.html");
+	});
 
 	http::register_handler("/kvstore/get", http::Method::GET, raw_get);
 	http::register_handler("/kvstore/listr", http::Method::GET, list_rkey);
@@ -63,6 +73,8 @@ int main() {
 	http::register_handler("/logout", http::Method::GET, logout);
 	http::register_handler("/change", http::Method::POST, change_pass);
 
+	http::register_handler("/storage/list", http::Method::GET, list_dir);
+	http::register_handler("/storage/download", http::Method::GET, get_file);
 	http::register_handler("/storage/create", http::Method::POST, create_storage);
 	http::register_handler("/storage/rename", http::Method::POST, rename_storage);
 

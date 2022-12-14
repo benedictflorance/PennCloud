@@ -62,7 +62,12 @@ static std::unique_ptr<std::istream> raw_get(http::Response &resp) {
 	if (ckey == form.end() || ckey->second.empty()) {
 		throw http::Exception(http::Status::BAD_REQUEST, "Missing column key");
 	}
-	return std::make_unique<std::stringstream>(kvstore.get(rkey->second, ckey->second));
+
+	const std::string value = kvstore.get(rkey->second, ckey->second);
+	if (value.empty()) {
+		throw http::Exception(http::Status::NOT_FOUND, "Key not found");
+	}
+	return std::make_unique<std::stringstream>(value);
 }
 
 static std::unique_ptr<std::istream> list_rkey(http::Response &resp) {

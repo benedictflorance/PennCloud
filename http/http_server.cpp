@@ -156,6 +156,7 @@ const Status Status::FOUND = "302 Found";
 const Status Status::BAD_REQUEST = "400 Bad Request";
 const Status Status::FORBIDDEN = "403 Forbidden";
 const Status Status::NOT_FOUND = "404 Not Found";
+const Status Status::INTERNAL_SERVER_ERROR = "500 Internal Server Error";
 const Status Status::HTTP_VERSION_NOT_SUPPORTED = "505 HTTP Version Not Supported";
 
 std::pair<Session &, bool> Session::get_session(const std::string &cookie) {

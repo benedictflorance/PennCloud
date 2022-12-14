@@ -28,6 +28,7 @@ struct Status : std::string_view {
 	static const Status NOT_FOUND;
 
 	// 5xx
+	static const Status INTERNAL_SERVER_ERROR;
 	static const Status HTTP_VERSION_NOT_SUPPORTED;
 };
 

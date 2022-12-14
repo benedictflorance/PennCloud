@@ -24,48 +24,59 @@
     </style>
 </head>
 
-<body class="d-flex flex-column" style="background-color: whitesmoke; min-height: 100vh">
+<body style="background-color: whitesmoke; height: 100vh;">
     <div id="alert-container" class="position-fixed" style="top: 2em; right: 2em; z-index: 2050;"></div>
-    <div class="my-auto row" style="margin-left: 20vw; margin-right: 20vw">
-        <h1 class="mb-3" style="font-weight: 800;">Admin Console</h1>
-        <div class="col-sm mb-3">
-            <h4>Frontend Servers</h4>
-            <ol class="list-group overflow-auto">
-                <li class="list-group-item list-group-item-success"></li>
-                <li class="list-group-item list-group-item-danger"></li>
-                <li class="list-group-item list-group-item-success"></li>
-            </ol>
-        </div>
-        <div class="col-sm mb-3">
-            <h4>Backend Servers</h4>
-            <ol class="list-group overflow-auto" id="bservers">
-                <span class="spinner-border spinner-border-lg m-auto"></span>
-            </ol>
-        </div>
-        <div class="col-lg-8">
-            <h4>KVStore Data</h4>
-            <div class="row g-0 gx-3 py-1 h-100 rounded-3 border bg-light bg-gradient">
-                <div class="col">
-                    <h6>Column</h6>
-                    <div id="rkey" class="list-group overflow-auto list-group-flush">
+
+    <div class="d-flex flex-column h-100">
+        <div class="flex-fill container my-5 d-flex flex-column">
+            <h1 class="mb-3" style="font-weight: 800;">Admin Console</h1>
+            <div class="row flex-fill">
+                <div class="col-sm mb-3">
+                    <h4>Frontend Servers</h4>
+                    <ol class="list-group overflow-auto">
+                        <li class="list-group-item list-group-item-success"></li>
+                        <li class="list-group-item list-group-item-danger"></li>
+                        <li class="list-group-item list-group-item-success"></li>
+                    </ol>
+                </div>
+                <div class="col-sm mb-3">
+                    <h4>Backend Servers</h4>
+                    <ol class="list-group overflow-auto" id="bservers">
                         <span class="spinner-border spinner-border-lg m-auto"></span>
+                    </ol>
+                </div>
+                <div class="col-lg-8">
+                    <h4>KVStore Data</h4>
+                    <div class="row gy-0 gx-3 py-1 rounded-3 border bg-light">
+                        <div class="col">
+                            <h6>Column</h6>
+                            <div class="overflow-auto">
+                                <div id="rkey" class="list-group list-group-flush">
+                                    <span class="spinner-border spinner-border-lg m-auto"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col d-none">
+                            <h6>Row</h6>
+                            <div class="overflow-auto">
+                                <div id="ckey" class="list-group list-group-flush"></div>
+                            </div>
+                        </div>
+                        <div class="col d-none">
+                            <h6>Data</h6>
+                            <textarea id="raw" class="w-100 border-0" style="resize: none; min-height: 50vh"
+                                readonly></textarea>
+                        </div>
                     </div>
-                </div>
-                <div class="col d-none">
-                    <h6>Row</h6>
-                    <div id="ckey" class="list-group overflow-auto list-group-flush"></div>
-                </div>
-                <div class="col d-none">
-                    <h6>Data</h6>
-                    <textarea id="raw" class="w-100 border-0" style="resize: none; height:calc(100% - 1.75em)" readonly></textarea>
                 </div>
             </div>
         </div>
+        <div class="mb-3 text-center">
+            <p><a href="/">PennCloud</a> &copy; 2022</p>
+            <p class="text-muted mb-0">Created by Andrew, Benedict, Hanbang & Namita</p>
+        </div>
     </div>
-    <div class="mb-3 text-center">
-        <p><a href="/">PennCloud</a> &copy; 2022</p>
-        <p class="text-muted mb-0">Created by Andrew, Benedict, Hanbang & Namita</p>
-    </div>
+
     <script type="text/javascript">
         const alertContainer = document.getElementById("alert-container");
 
@@ -144,7 +155,7 @@ ${content}
             for (const button of buttons) {
                 button.disabled = true;
             }
-            return function() {
+            return function () {
                 for (const button of buttons) {
                     button.disabled = false;
                 }
@@ -154,9 +165,9 @@ ${content}
         async function get_kvstore_data(e) {
             const target = e.target;
             const unlock = choose(target);
-            
+
             const ele = document.getElementById("raw");
-            ele.parentElement.classList.remove("d-none");
+            ele.closest('.col').classList.remove("d-none");
             ele.value = "";
             ele.placeholder = "Loading...";
 
@@ -178,10 +189,10 @@ ${content}
             const target = e.target;
             const unlock = choose(target);
 
-            document.getElementById("raw").parentElement.classList.add("d-none");
+            document.getElementById("raw").closest('.col').classList.add("d-none");
 
             const ele = document.getElementById("ckey");
-            ele.parentElement.classList.remove("d-none");
+            ele.closest('.col').classList.remove("d-none");
             ele.innerHTML = '<span class="spinner-border spinner-border-lg m-auto"></span>';
             const rkey = target.textContent;
 

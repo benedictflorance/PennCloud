@@ -94,6 +94,8 @@ class KVstore {
 		return new_counter;
 	}
 
+	void dele(const std::string &rkey, const std::string &ckey) { put(rkey, ckey, ""); }
+
 	std::string storage_rename(const std::string &rkey, const std::string &parent, const std::string &name,
 							   const std::string &target2) {
 		std::string content = get(rkey, parent);
@@ -110,11 +112,22 @@ class KVstore {
 
 		const std::size_t end = content.find("/", pos + 1);
 		const std::size_t prefix_len = pos + name.size() + 2;
-		const std::string inode = content.substr(prefix_len, end + 1 - prefix_len);
+		std::string inode = content.substr(prefix_len, end + 1 - prefix_len);
 
 		content.erase(pos + 1, end - pos);
 
 		if (target2.empty()) {
+			inode.pop_back();
+			if (inode.back() == 'd') {
+				inode.pop_back();
+				const std::string content2 = get(rkey, inode);
+				if (content2.size() > 1) {
+					return "directory is not empty";
+				}
+			} else {
+				inode.pop_back();
+			}
+			dele(rkey, inode);
 			put(rkey, parent, content);
 			return "";
 		}

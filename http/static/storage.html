@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en-US">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Andrew Zhao, Benedict Arockiaraj, Hanbang Wang, Namita Shukla">
+    <title>PennCloud | Webmail</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+        crossorigin="anonymous"></script>
+</head>
+
+<body style="height: 100vh;">
+    <div id="alert-container" class="position-fixed" style="top: 2em; right: 2em; z-index: 2050;"></div>
+    <div class="modal fade" tabindex="-1" id="move-modal">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Move/Rename File/Directory To</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <iframe src="/storage/select" title="move frame" class="w-100" style="height: 60vh;"></iframe>
+                    <form id="move">
+                        <input class="form-control" type="text" placeholder="Target Filename" required>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <div class="d-grid w-100">
+                        <button type="submit" class="btn btn-warning btn-lg" form="move">Move</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-column h-100">
+        <header class="p-3 text-white" style="background-color: var(--bs-success);">
+            <div class="container d-flex align-items-center justify-content-between" style="height: 3rem;">
+                <h3 class="user-select-none m-0">Storage Service</h3>
+                <div>
+                    <a class="btn btn-outline-light"
+                        href="javascript:document.getElementById('file-select').click()">Upload File</a>
+                    <a class="btn btn-primary" href="javascript:create_dir()">Create Directory</a>
+                    <input class="form-control d-none" type="file" id="file-select">
+                </div>
+            </div>
+        </header>
+        <div class="container flex-fill overflow-hidden">
+            <div class="row" style="height: 95%;">
+                <div class="col mt-3 mx-auto d-flex flex-column h-100">
+                    <nav class="fs-3">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item active" data-id="0"><a>root</a></li>
+                        </ol>
+                    </nav>
+                    <span class="spinner-border m-auto" style="width: 3rem; height: 3rem;" id="loading"></span>
+                    <div class="overflow-auto h-100 d-none" id="listing">
+                        <h5 class="sticky-top bg-light">Directories</h5>
+                        <ul class="list-group mb-3" id="dirs"></ul>
+                        <h5 class="sticky-top bg-light">Files</h5>
+                        <ul class="list-group" id="files"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="p-3 text-center border-top" style="background-color: whitesmoke">
+            <p><a href="/">PennCloud</a> &copy; 2022</p>
+            <p class="text-muted mb-0">Created by Andrew, Benedict, Hanbang & Namita</p>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        const alertContainer = document.getElementById("alert-container");
+
+        function createAlert(type, content, timeout = 3000) {
+            const alert = `<div class="alert alert-${type} alert-dismissible fade show">
+${content}
+<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>`;
+            alertContainer.insertAdjacentHTML("afterbegin", alert);
+            const e = new bootstrap.Alert(alertContainer.firstElementChild);
+            if (timeout > 0)
+                setTimeout(() => e.close(), timeout);
+            return e;
+        }
+
+        function loading(element, text) {
+            const original = [...element.childNodes];
+            element.innerHTML = `<div class="d-flex align-items-center"><span class="spinner-border spinner-border-sm me-1"></span> ${text}</div>`;
+            element.disabled = true;
+            return function () {
+                element.replaceChildren(...original);
+                element.disabled = false;
+            }
+        }
+
+        async function download_file(name, e) {
+            const final = loading(e.target.parentElement, `Downloading&hellip;`);
+            try {
+                const resp = await fetch(`/storage/download?id=${this}`);
+                if (!resp.ok) {
+                    createAlert('warning', await resp.text());
+                    return;
+                }
+
+                const a = document.createElement("a");
+                a.href = window.URL.createObjectURL(await resp.blob());
+                a.download = name;
+                a.click();
+            } catch (e) {
+                createAlert('danger', e);
+            } finally {
+                final();
+            }
+        }
+
+        async function delete_inode(e) {
+            const final = loading(e.target.parentElement, `Deleting&hellip;`);
+            try {
+                const resp = await fetch("/storage/rename", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `parent=${current_dir()}&name=${this}`
+                });
+                if (!resp.ok) {
+                    createAlert('warning', await resp.text());
+                    return;
+                }
+            } catch (e) {
+                createAlert('danger', e);
+            } finally {
+                await list_dir();
+                final();
+            }
+        }
+
+        const breadcrumb = document.querySelector("ol.breadcrumb");
+
+        async function create_dir() {
+            const name = prompt("Directory Name");
+            if (!name) return;
+            const alert = createAlert('info', `<span class="spinner-border spinner-border-sm"></span> Creating ${name}&hellip;`, 0);
+
+            try {
+                const resp = await fetch(`/storage/create?parent=${current_dir()}&name=${encodeURIComponent(name)}&dir=1`, { method: 'POST' });
+                if (!resp.ok) {
+                    createAlert('warning', await resp.text());
+                    return;
+                }
+                createAlert('success', `Created directory ${name}!`);
+            } catch (e) {
+                createAlert('danger', e);
+            } finally {
+                await list_dir();
+                alert.close();
+            }
+        }
+
+        function current_dir() {
+            return breadcrumb.querySelector("li.breadcrumb-item.active").dataset["id"];
+        }
+
+        const loading_ind = document.getElementById("loading");
+        const listing = document.getElementById("listing");
+
+        function enter_dir(name) {
+            loading_ind.classList.remove("d-none");
+            listing.classList.add("d-none");
+
+            const ele = breadcrumb.querySelector("li.breadcrumb-item.active");
+            ele.classList.remove("active");
+            ele.firstElementChild.href = `javascript:change_dir("${ele.dataset["id"]}")`;
+            breadcrumb.insertAdjacentHTML("beforeend", `<li class="breadcrumb-item active" data-id="${this}"><a>${name}</a></li>`);
+            list_dir();
+        }
+
+        function change_dir(id) {
+            loading_ind.classList.remove("d-none");
+            listing.classList.add("d-none");
+
+            const ele = breadcrumb.querySelector("li.breadcrumb-item[data-id='" + id + "']");
+            while (ele.nextElementSibling) {
+                ele.nextElementSibling.remove();
+            }
+            ele.classList.add("active");
+            ele.firstElementChild.removeAttribute("href");
+            list_dir();
+        }
+
+        async function list_dir() {
+            try {
+                const resp = await fetch(`/storage/list?id=${current_dir()}`);
+                if (!resp.ok) {
+                    createAlert('warning', await resp.text());
+                    return;
+                }
+
+                const [dirs, files] = await resp.json();
+                const delem = document.getElementById("dirs");
+                delem.replaceChildren();
+                dirs.forEach(function ([name, num], i) {
+                    const nd = decodeURIComponent(name);
+                    delem.insertAdjacentHTML("beforeend", `<li class="list-group-item list-group-item-${i % 2 ? "dark" : "secondary"} d-flex justify-content-between align-items-center">
+${nd}
+<div class="btn-group btn-group-sm">
+<button type="button" class="btn btn-info">Enter</button>
+<button type="button" class="btn btn-warning">Move</button>
+<button type="button" class="btn btn-danger">Delete</button>
+</div>
+</li>`);
+                    const btns = delem.lastElementChild.getElementsByTagName("button");
+                    btns[0].addEventListener("click", enter_dir.bind(num, nd));
+                    btns[1].addEventListener("click", move_inode.bind(num, nd));
+                    btns[2].addEventListener("click", delete_inode.bind(name));
+                });
+                const felem = document.getElementById("files");
+                felem.replaceChildren();
+                files.forEach(function ([name, num], i) {
+                    const nd = decodeURIComponent(name);
+                    felem.insertAdjacentHTML("beforeend", `<li class="list-group-item list-group-item-${i % 2 ? "dark" : "secondary"} d-flex justify-content-between align-items-center">${nd}
+<div class="btn-group btn-group-sm">
+<button type="button" class="btn btn-info">Download</button>
+<button type="button" class="btn btn-warning">Move</button>
+<button type="button" class="btn btn-danger">Delete</button>
+</div>
+</li>`);
+                    const btns = felem.lastElementChild.getElementsByTagName("button");
+                    btns[0].addEventListener("click", download_file.bind(num, nd));
+                    btns[1].addEventListener("click", move_inode.bind(num, nd, name));
+                    btns[2].addEventListener("click", delete_inode.bind(name));
+                });
+
+                listing.classList.remove("d-none");
+            } catch (e) {
+                createAlert('danger', e);
+            } finally {
+                loading_ind.classList.add("d-none");
+            }
+        }
+
+        async function upload_file(file) {
+            const alert = createAlert('info', `<span class="spinner-border spinner-border-sm"></span> Uploading ${file.name}&hellip;`, 0);
+
+            try {
+                const resp = await fetch(`/storage/create?parent=${current_dir()}&name=${encodeURIComponent(file.name)}`, {
+                    method: 'POST',
+                    body: file,
+                });
+                if (!resp.ok) {
+                    createAlert('warning', await resp.text());
+                    return;
+                }
+                createAlert('success', `Uploaded file ${file.name}!`);
+            } catch (e) {
+                createAlert('danger', e);
+            } finally {
+                await list_dir();
+                alert.close();
+            }
+        }
+
+        document.getElementById("file-select").addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            if (file) upload_file(file);
+            e.target.value = "";
+        });
+
+        list_dir();
+
+        const modal = new bootstrap.Modal("#move-modal");
+        function move_inode(nd, name, e) {
+            const ele = modal._element;
+
+            const iframe = ele.getElementsByTagName("iframe")[0].contentWindow;
+            iframe.document.querySelector("ol.breadcrumb").innerHTML = breadcrumb.innerHTML;
+            iframe.document.getElementById("loading").classList.remove("d-none");
+            iframe.document.getElementById("listing").classList.add("d-none");
+            iframe.list_dir();
+            ele.getElementsByTagName("input")[0].value = nd;
+            ele.dataset["id"] = this;
+            ele.dataset["name"] = name;
+            ele.dataset["nd"] = nd;
+            modal.show();
+        }
+        document.getElementById("move").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const ele = modal._element;
+            const iframe = ele.getElementsByTagName("iframe")[0].contentWindow;
+            const bciframe = iframe.document.querySelector("ol.breadcrumb");
+
+            const restore = loading(event.submitter, "Moving&hellip;");
+
+            const src = ele.dataset["id"];
+            for (const child of bciframe.children) {
+                if (child.dataset["id"] == src) {
+                    createAlert('warning', `Cannot move directory into itself!`);
+                    restore();
+                    return;
+                }
+            }
+
+            const target = bciframe.querySelector("li.breadcrumb-item.active").dataset["id"];
+            const ren = encodeURIComponent(e.target[0].value);
+
+            try {
+                const resp = await fetch(
+                    `/storage/rename`, {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `parent=${current_dir()}&name=${ele.dataset["name"]}&target=${target}%2F${ren}`,
+                });
+                if (!resp.ok) {
+                    createAlert('warning', await resp.text());
+                    return;
+                }
+                createAlert('success', `Moved file ${ele.dataset["nd"]}!`);
+            } catch (e) {
+                createAlert('danger', e);
+            } finally {
+                await list_dir();
+                modal.hide();
+                restore();
+            }
+        });
+    </script>
+</body>
+
+</html>
