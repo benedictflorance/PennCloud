@@ -5,3 +5,6 @@ server: http_server.cpp index.cpp ../kvstore/libkvstore.a
 
 load_balancer: balancer/load_balance.cpp ../kvstore/libkvstore.a
 	clang++ -O3 -std=c++17 -Wall -lpthread -o load_balancer $^
+
+smtp: smtp.cpp
+	clang++ -O3 -std=c++17 -Wall  -lpthread -o smtp $^
