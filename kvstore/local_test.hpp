@@ -44,7 +44,6 @@ class KVstore {
 		}
 		return false;
 	}
-
 	void kill(int server_index) { status[server_index] = false; }
 	void resurrect(int server_index) { status[server_index] = true; }
 	std::vector<bool> list_server_status() { return status; }

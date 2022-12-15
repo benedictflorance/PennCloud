@@ -14,7 +14,7 @@
 #include "account.hpp"
 #include "console.hpp"
 #include "storage.hpp"
-
+#include "webmail.hpp"
 static std::unique_ptr<std::istream> index_page(http::Response &resp) {
 	resp.resp_headers.emplace("Content-Type", "text/html");
 	const std::string &username = resp.session.get_username();
@@ -77,6 +77,11 @@ int main() {
 	http::register_handler("/storage/download", http::Method::GET, get_file);
 	http::register_handler("/storage/create", http::Method::POST, create_storage);
 	http::register_handler("/storage/rename", http::Method::POST, rename_storage);
+
+	http::register_handler("/webmail/listmail", http::Method::GET, list_emails);
+	http::register_handler("/webmail/getmail", http::Method::GET, get_email);
+	http::register_handler("/webmail/send", http::Method::POST, send_email);
+	http::register_handler("/webmail/delete", http::Method::GET, delete_email);
 
 	const int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == -1) {
