@@ -19,7 +19,7 @@
 #include <chrono>
 #include <ctime>    
 #include <sys/file.h>
-#include "../kvstore/local_test.hpp"
+#include "../kvstore/client_wrapper.h"
 using namespace std;
 
 /*
@@ -41,12 +41,12 @@ const char* new_connection_message = "New connection\r\n";
 const char* closing_message = "Connection closed\r\n";
 // CONNECTION ESTABLISHMENT
 // 	S: 220
-const char* service_ready_message = "220 localhost Service ready\r\n";
+const char* service_ready_message = "220 penncloud Service ready\r\n";
 // 	F: 421
-const char* shutdown_message = "421 localhost Service not available, closing transmission channel\r\n";
+const char* shutdown_message = "421 penncloud Service not available, closing transmission channel\r\n";
 // HELO
 // 	S: 250
-const char*  helo_response_message = "250 localhost\r\n";
+const char*  helo_response_message = "250 penncloud\r\n";
 const char*  ok_message = "250 OK\r\n";
 // 	E: 500, 501, 504, 421
 const char* syntax_error_message = "500 Syntax error, command unrecognized\r\n";
@@ -61,10 +61,10 @@ const char* insufficient_storage_message = "452 Requested action not taken: insu
 // 	E: 500, 501, 421
 // RCPT
 // 	S: 250, 251
-const char* nonlocal_message = "251 User not local; will forward to nonlocal@localhost\r\n";
+const char* nonlocal_message = "251 User not local; will forward to nonlocal@penncloud\r\n";
 // 	F: 550, 551, 552, 553, 450, 451, 452
 const char* mailbox_notfound_message = "550 Requested action not taken: mailbox unavailable [mailbox not found, no access]\r\n";
-const char* nonlocal_failure_message = "551 User not local; please try nonlocal@localhost\r\n";
+const char* nonlocal_failure_message = "551 User not local; please try nonlocal@penncloud\r\n";
 const char* exceeded_storage_message = "552 Requested mail action aborted: exceeded storage allocation\r\n";
 const char* mailbox_notallowed_message = "553 Requested action not taken: mailbox name not allowed [mailbox syntax incorrect]\r\n";
 const char* mailbox_busy_message = "450 Requested mail action not taken: mailbox unavailable [mailbox busy]\r\n";
@@ -86,7 +86,7 @@ const char* transaction_failure_message = "554 Transaction failed\r\n";
 // QUIT
 // 	S: 221
 // 	E: 500       
-const char* trans_closing_message = "221 localhost Service closing transmission channel\r\n";
+const char* trans_closing_message = "221 penncloud Service closing transmission channel\r\n";
 
 void signal_handler(int arg)
 {
@@ -287,9 +287,14 @@ string process_data_command(int &client_socket, char* net_buffer, int full_comma
 		for(auto mailbox: forward_path_buffer)
 		{	int inc = 0;
 			const std::time_t dt = std::time(nullptr);
-			const std::string ckey =
-			std::to_string(static_cast<uint64_t>(dt) * 10 + inc++) + "/" + reverse_path_buffer + "/" + "Placeholder Subject";
-			kvstore.put("MAILBOX_" + mailbox, ckey, mail_data_buffer);
+			size_t content_begin = mail_data_buffer.find("\r\n\r\n");
+			size_t sub_start = mail_data_buffer.find("Subject: ");
+			size_t sub_end = mail_data_buffer.substr(sub_start + 9).find("\r\n");
+			std::string subject = mail_data_buffer.substr(sub_start + 9, sub_end);
+			const std::string ckey = std::to_string(static_cast<uint64_t>(dt) * 1000 + inc++) + "/" + reverse_path_buffer + "/" + subject;
+
+			std::string content = mailbox + "@penncloud" + "\r\n" + mail_data_buffer.substr(content_begin + 4);
+			kvstore.put("MAILBOX_" + mailbox, ckey, content);
 			wrote_atleast_one_email = true;
 		}
 		if(wrote_atleast_one_email)
