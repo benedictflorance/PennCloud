@@ -1,4 +1,4 @@
-TARGETS = tablet_server tablet_client master libkvstore.a #client_wrapper #
+TARGETS = tablet_server tablet_client master libkvstore.a #client_wrapper
 
 all: $(TARGETS)
 

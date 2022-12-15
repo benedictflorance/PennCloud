@@ -116,6 +116,12 @@ void process_request(string req, string rowk, string colk, string v1, string v2)
 	else if (strcasecmp(request.type().c_str(), "DELETE") == 0){
 		process_delete_request(request, response);
 	}
+    else if (strcasecmp(request.type().c_str(), "CREATE") == 0){
+		process_create_request(request, response);
+	}
+    else if (strcasecmp(request.type().c_str(), "RENAME") == 0){
+		process_rename_request(request, response);
+	}
 }
 
 

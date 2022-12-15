@@ -156,8 +156,15 @@ void process_cput_request(PennCloud::Request &request, PennCloud::Response &resp
             if(kv_store[request.rowkey()].find(request.columnkey()) != kv_store[request.rowkey()].end())
             {
                 if(kv_store[request.rowkey()][request.columnkey()] == request.value1())
-                    kv_store[request.rowkey()][request.columnkey()] = request.value2();              
-                response.set_status("+OK");
+                {
+                    kv_store[request.rowkey()][request.columnkey()] = request.value2();   
+                    response.set_status("+OK");
+                }           
+                else
+                {
+                    response.set_status(incorrect_old_val_message.first);
+                    response.set_description(incorrect_old_val_message.second);
+                }
             }
             else
             {

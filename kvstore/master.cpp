@@ -60,6 +60,7 @@ unordered_map<int,bool> server_status;
 //struct for heartbeats of each tablet server
 typedef struct Heartbeat{
   int counter;
+  int server_index;
   string status = "ALIVE";
   long long timestamp;
 }Heartbeat;
@@ -398,24 +399,26 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
       
       string tablet_server_index = argument.substr(bracket_start+1,bracket_end-1);
       cout<<"Received kill for "<<tablet_server_index<<endl;
-      server_status[stoi(tablet_server_index)] = false;
-
-      int start, end;
-      bool primary_crash = false;
-      for(auto &nested_pair: rowkey_range){
-        vector<int> &current_group =   nested_pair.second.second;
-        auto it = find(current_group.begin(),current_group.end(),stoi(tablet_server_index));
-        if(it!=current_group.end()){
-          start = nested_pair.first;
-          end = nested_pair.second.first;
-          current_group.erase(it);
-          if(rkey_to_primary[toKey(start, end)] == stoi(tablet_server_index)){
-              rkey_to_primary[toKey(start, end)] = current_group[0]; 
-              primary_crash = true;
+      if(server_status[stoi(tablet_server_index)])
+      {
+        server_status[stoi(tablet_server_index)] = false;
+        int start, end;
+        bool primary_crash = false;
+        for(auto &nested_pair: rowkey_range){
+          vector<int> &current_group =   nested_pair.second.second;
+          auto it = find(current_group.begin(),current_group.end(),stoi(tablet_server_index));
+          if(it!=current_group.end()){
+            start = nested_pair.first;
+            end = nested_pair.second.first;
+            current_group.erase(it);
+            if(rkey_to_primary[toKey(start, end)] == stoi(tablet_server_index)){
+                rkey_to_primary[toKey(start, end)] = current_group[0]; 
+                primary_crash = true;
+            }
           }
         }
+        assign_new_primary(start, end, tablet_server_index);
       }
-      assign_new_primary(start, end, tablet_server_index);
     }
     else if (lower_case.find(resurrect)!=string::npos){
       // capture the string before \r\n and extract argument
@@ -437,30 +440,33 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
       
       string tablet_server_index = argument.substr(bracket_start+1,bracket_end-1);
       cout<<"Received unkill for "<<tablet_server_index<<endl;
-      server_status[stoi(tablet_server_index)] = true;
+      if(!server_status[stoi(tablet_server_index)])
+      {
+        server_status[stoi(tablet_server_index)] = true;
 
-      vector<pair<int, int>> matching_rowkeys;
-      int start, end;
-      for(auto &nested_pair: original_rowkey_range){
-        vector<int> &current_group =   nested_pair.second.second;
-        auto it = find(current_group.begin(),current_group.end(), stoi(tablet_server_index));
-        if(it != current_group.end()){
-          start = nested_pair.first;
-          end = nested_pair.second.first;
-          matching_rowkeys.push_back(make_pair(nested_pair.first, nested_pair.second.first));
+        vector<pair<int, int>> matching_rowkeys;
+        int start, end;
+        for(auto &nested_pair: original_rowkey_range){
+          vector<int> &current_group =   nested_pair.second.second;
+          auto it = find(current_group.begin(),current_group.end(), stoi(tablet_server_index));
+          if(it != current_group.end()){
+            start = nested_pair.first;
+            end = nested_pair.second.first;
+            matching_rowkeys.push_back(make_pair(nested_pair.first, nested_pair.second.first));
+          }
         }
+        for(auto &nested_pair: rowkey_range){
+          vector<int> &current_group =   nested_pair.second.second;
+          auto it = find(current_group.begin(),current_group.end(), stoi(tablet_server_index));
+          int rkey_start = nested_pair.first, rkey_end = nested_pair.second.first;
+          if(find(matching_rowkeys.begin(), matching_rowkeys.end(), pair<int, int> (rkey_start, rkey_end)) != matching_rowkeys.end())
+          {
+            current_group.push_back(stoi(tablet_server_index));
+          }
+
+        }      
+        resurrect_server(start, end, tablet_server_index);        
       }
-      for(auto &nested_pair: rowkey_range){
-        vector<int> &current_group =   nested_pair.second.second;
-        auto it = find(current_group.begin(),current_group.end(), stoi(tablet_server_index));
-        int rkey_start = nested_pair.first, rkey_end = nested_pair.second.first;
-        if(find(matching_rowkeys.begin(), matching_rowkeys.end(), pair<int, int> (rkey_start, rkey_end)) != matching_rowkeys.end())
-        {
-          current_group.push_back(stoi(tablet_server_index));
-        }
-
-      }      
-      resurrect_server(start, end, tablet_server_index);
     }
     else if(lower_case.find(alive) != string::npos){
         //check which server it is
@@ -476,6 +482,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
         //if it is the first heartbeat from the tablet server
         if(heartbeat.find(str)==heartbeat.end()){
             Heartbeat temp_h;
+            temp_h.server_index = stoi(argument);
             temp_h.counter =0;
             temp_h.status = "ALIVE";
             heartbeat.insert({str,temp_h});     
@@ -625,10 +632,12 @@ void alive(){
                 if(v){
                     cout<<"DEAD server detected "<<h.first<<endl;
                 }
+                server_status[current_h.server_index] = false;
                 h.second.status = "DEAD";
             }
             else{
                 h.second.status = "ALIVE";
+                server_status[current_h.server_index] = true;
             }
         }
     }   

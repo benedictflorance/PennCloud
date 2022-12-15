@@ -30,7 +30,8 @@ void send_heartbeat(){
         inet_ntop(PF_INET, &tablet_addresses[curr_server_index], str, INET_ADDRSTRLEN);
         string ip(str);
         string alive = "ALIVE-" + to_string(curr_server_index)+ "\r\n";
-		write(socket_to_master, alive.c_str(), strlen(alive.c_str()));
+        if(!is_dead)
+		    write(socket_to_master, alive.c_str(), strlen(alive.c_str()));
 	}
 }
 void ask_secondaries_to_checkpoint()
@@ -72,7 +73,7 @@ void checkpoint_kvstore_primary()
 {
 	while(true){
 		auto t = UpdateManager::start();
-		this_thread::sleep_for(3000s);
+		this_thread::sleep_for(120s);
         // Before starting to checkpoint, send start checkpoint command to other secondaries
         ask_secondaries_to_checkpoint();
         checkpoint_kvstore_secondary();
