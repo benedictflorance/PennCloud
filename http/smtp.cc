@@ -221,11 +221,12 @@ string process_rcpt_to_command(int &client_socket, char* net_buffer, int full_co
 		{
 			string username = email.substr(0, at_index-0);
 			string hostname = email.substr(at_index+1, email.length()-at_index-1);
-			if(strcasecmp(hostname.c_str(), "localhost") != 0)
+			vector<string> rowkeys = kvstore.list_rowkeys();
+			if(strcasecmp(hostname.c_str(), "penncloud") != 0)
 			{
 				response = nonlocal_failure_message;
 			}
-			else if(mailboxes.find(username + ".mbox") == mailboxes.end())
+			else if(rowkeys.find("MAILBOX_" + username) == mailboxes.end())
 			{
 				response = mailbox_notfound_message;
 			}
