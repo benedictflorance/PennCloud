@@ -12,7 +12,6 @@
 #include <signal.h>
 #include <sys/socket.h>
 
-#include "webmail.hpp"
 #include "account.hpp"
 #include "console.hpp"
 #include "storage.hpp"
@@ -58,7 +57,10 @@ int main(int argc, char *argv[]) {
 		return std::make_unique<std::ifstream>("static/mail.html");
 	});
 	http::register_handler("/console", http::Method::GET, [](http::Response &resp) {
-		resp.assert_logged_in();
+		if (resp.session.get_username() != "admin") {
+			resp.resp_headers.emplace("Location", "/");
+			throw http::Exception(http::Status::FOUND);
+		}
 		resp.resp_headers.emplace("Content-Type", "text/html");
 		return std::make_unique<std::ifstream>("static/console.html");
 	});

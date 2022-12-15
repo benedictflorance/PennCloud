@@ -45,7 +45,7 @@
 
     <div class="col-10 col-md-6 col-xl-4 m-auto">
         <h1 class="mb-3" style="font-weight: 800;">PennCloud</h1>
-        <h3 class="mb-4">Welcome, {{username}}!</h3>
+        <h3 class="mb-4" id="welcome">Welcome, {{username}}!</h3>
         <div class="row">
             <div class="col-sm">
                 <div class="card mb-3">
@@ -75,7 +75,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-sm">
+            <div class="col-sm d-none" id="admin-card">
                 <div class="card">
                     <div class="card-body">
                         <div class="mx-auto mb-3" style="width: 7em;">
@@ -159,6 +159,10 @@ ${content}
                 restore();
             }
         });
+
+        if (document.getElementById('welcome').textContent === "Welcome, admin!") {
+            document.getElementById('admin-card').classList.remove('d-none');
+        }
     </script>
 </body>
 

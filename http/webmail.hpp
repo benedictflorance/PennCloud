@@ -56,7 +56,7 @@ static std::unique_ptr<std::istream> get_email(http::Response &resp) {
 }
 
 static std::unique_ptr<std::istream> send_email(http::Response &resp) {
-	static unsigned char inc = 0;
+	static unsigned short inc = 0;
 
 	const std::string from = resp.get_username_api() + "@penncloud";
 
@@ -77,8 +77,8 @@ static std::unique_ptr<std::istream> send_email(http::Response &resp) {
 	const std::time_t dt = std::time(nullptr);
 
 	const std::string ckey =
-		std::to_string(static_cast<uint64_t>(dt) * 10 + inc++) + "/" + from + "/" + bodyc.substr(0, pos);
-	if (inc == 10)
+		std::to_string(static_cast<uint64_t>(dt) * 1000 + inc++) + "/" + from + "/" + bodyc.substr(0, pos);
+	if (inc == 1000)
 		inc = 0;
 
 	std::vector<std::pair<std::string, std::string_view>> to_emails;

@@ -8,6 +8,9 @@
     <title>PennCloud | Webmail</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+        crossorigin="anonymous"></script>
     <style>
         button>svg {
             height: var(--bs-btn-font-size);
@@ -18,16 +21,32 @@
         button:hover>svg {
             fill: var(--bs-btn-hover-color);
         }
+
+        dl {
+            display: grid;
+            grid-template-columns: max-content auto;
+        }
+
+        dt {
+            grid-column-start: 1;
+            margin-right: 1em;
+        }
+
+        dd {
+            grid-column-start: 2;
+        }
     </style>
 </head>
 
 <body class="overflow-hidden">
+    <div id="alert-container" class="position-fixed" style="top: 2em; right: 2em; z-index: 2050;"></div>
+
     <div class="row g-0" style="height: calc(100vh - 6rem);">
         <div class="col-6 col-lg-5 col-xl-4 col-xxl-3 border-end d-flex flex-column h-100">
             <header class="d-flex p-3 align-items-center justify-content-between text-white"
                 style="background-color: var(--bs-info);">
                 <h3 class="user-select-none m-0">Webmail Service</h3>
-                <button type="button" class="btn btn-outline-light btn-lg d-flex align-items-center">
+                <button type="button" class="btn btn-outline-light btn-lg d-flex align-items-center" id="compose-btn">
                     <svg xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 512 512"><!--! Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
                         <path
@@ -35,175 +54,45 @@
                     </svg><b class="ms-2">Compose</b>
                 </button>
             </header>
-            <div class="list-group list-group-flush overflow-auto">
-                <a href="#" class="list-group-item list-group-item-action active py-3 lh-sm" aria-current="true">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <strong class="mb-1">CIS5050: Your score on the second midterm</strong>
-                        <small>Sat</small>
-                    </div>
-                    <div class="col-10 mb-1 small">Dear Hanbang, You failed miserably on the &hellip;
-                    </div>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <strong class="mb-1">List group item heading</strong>
-                        <small class="text-muted">Tues</small>
-                    </div>
-                    <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.
-                    </div>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <strong class="mb-1">List group item heading</strong>
-                        <small class="text-muted">Mon</small>
-                    </div>
-                    <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.
-                    </div>
-                </a>
-
-                <a href="#" class="list-group-item list-group-item-action py-3 lh-sm" aria-current="true">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <strong class="mb-1">List group item heading</strong>
-                        <small class="text-muted">Wed</small>
-                    </div>
-                    <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.
-                    </div>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <strong class="mb-1">List group item heading</strong>
-                        <small class="text-muted">Tues</small>
-                    </div>
-                    <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.
-                    </div>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <strong class="mb-1">List group item heading</strong>
-                        <small class="text-muted">Mon</small>
-                    </div>
-                    <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.
-                    </div>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action py-3 lh-sm" aria-current="true">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <strong class="mb-1">List group item heading</strong>
-                        <small class="text-muted">Wed</small>
-                    </div>
-                    <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.
-                    </div>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <strong class="mb-1">List group item heading</strong>
-                        <small class="text-muted">Tues</small>
-                    </div>
-                    <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.
-                    </div>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <strong class="mb-1">List group item heading</strong>
-                        <small class="text-muted">Mon</small>
-                    </div>
-                    <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.
-                    </div>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action py-3 lh-sm" aria-current="true">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <strong class="mb-1">List group item heading</strong>
-                        <small class="text-muted">Wed</small>
-                    </div>
-                    <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.
-                    </div>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <strong class="mb-1">List group item heading</strong>
-                        <small class="text-muted">Tues</small>
-                    </div>
-                    <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.
-                    </div>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action py-3 lh-sm">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <strong class="mb-1">List group item heading</strong>
-                        <small class="text-muted">Mon</small>
-                    </div>
-                    <div class="col-10 mb-1 small">Some placeholder content in a paragraph below the heading and date.
-                    </div>
-                </a>
+            <div class="list-group list-group-flush overflow-auto" id="mails">
+                <div class="d-flex" style="min-height: 20vh">
+                    <span class="spinner-border spinner-border-lg m-auto"></span>
+                </div>
             </div>
         </div>
-        <div class="col-6 col-lg-7 col-xl-8 col-xxl-9 card border-0 h-100">
+        <div class="col-6 col-lg-7 col-xl-8 col-xxl-9 h-100 d-flex d-none" id="loading-mail">
+            <span class="spinner-border spinner-border-lg m-auto"></span>
+        </div>
+        <div class="col-6 col-lg-7 col-xl-8 col-xxl-9 card border-0 h-100 d-none" id="mail-content">
             <div class="card-header px-4">
-                <h4>CIS5050: Your score on the second midterm</h4>
-                <span>from: Linh Phan &lt;linhphan@cis.upenn.edu&gt;</span>
-                <br>
-                <span>to: Hanbang Wang &lt;hanbangw@seas.upenn.edu&gt;</span><br>
-                <span>date: 3:41 AM (12 hours ago)</span>
+                <h4></h4>
+                <dl class="mb-0 mt-2">
+                    <dt>From</dt>
+                    <dd></dd>
+                    <dt>To</dt>
+                    <dd></dd>
+                    <dt>Date</dt>
+                    <dd></dd>
+                </dl>
             </div>
-            <div class="card-body overflow-auto px-4">
-                <p>Dear Hanbang,</p>
-                <p>You failed miserably on the midterm.<br>Please come to my office.<br><br>Thank you,<br><br>&nbsp;
-                    &nbsp; &nbsp; &nbsp; - Linh<br><br><br>=== Wang, Hanbang (hanbangw)<br>Question 1 &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp;0/ 10<br>Question 2 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 0/ 10<br>Question 3 &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; 0/ 10<br>Question 4 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 0/ 12<br>Question 5 &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; 0/ 12<br>Question 6 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;0/ 10<br>Question 7
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;0/ &nbsp;6<br>Question 8 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;0/
-                    10<br>------------------------------<wbr>-----------------------<br>Main part &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp;0/ 80<br><br>Question 9 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; -100/
-                    +5<br>------------------------------<wbr>-----------------------<br>Extra credit &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; -100/ +5<br><br>TOTAL &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;-100/ 80 +
-                    &nbsp;2<br><br>Comments:&nbsp;</p>
-                <p>What are you doing?</p>
-                <p>Dear Hanbang,</p>
-                <p>You failed miserably on the midterm.<br>Please come to my office.<br><br>Thank you,<br><br>&nbsp;
-                    &nbsp; &nbsp; &nbsp; - Linh<br><br><br>=== Wang, Hanbang (hanbangw)<br>Question 1 &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp;0/ 10<br>Question 2 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 0/ 10<br>Question 3 &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; 0/ 10<br>Question 4 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 0/ 12<br>Question 5 &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; 0/ 12<br>Question 6 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;0/ 10<br>Question 7
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;0/ &nbsp;6<br>Question 8 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;0/
-                    10<br>------------------------------<wbr>-----------------------<br>Main part &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp;0/ 80<br><br>Question 9 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; -100/
-                    +5<br>------------------------------<wbr>-----------------------<br>Extra credit &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; -100/ +5<br><br>TOTAL &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;-100/ 80 +
-                    &nbsp;2<br><br>Comments:&nbsp;</p>
-                <p>What are you doing?</p>
-            </div>
+            <pre class="card-body overflow-auto px-4 fs-5" style="white-space: pre-wrap;"></pre>
             <div class="card-footer text-muted d-flex flex-row-reverse">
-                <button type="button" class="btn btn-outline-danger btn-lg ms-2 d-flex align-items-center">
+                <button type="button" class="btn btn-outline-danger btn-lg ms-2 d-flex align-items-center" id="del-btn">
                     <svg xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 448 512"><!--! Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
                         <path
                             d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z" />
                     </svg><span class="ms-2">Delete</span>
                 </button>
-                <button type="button" class="btn btn-outline-primary btn-lg d-flex align-items-center">
+                <button type="button" class="btn btn-outline-success btn-lg ms-2 d-flex align-items-center"
+                    id="fwd-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"><!--! Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+                        <path
+                            d="M307 34.8c-11.5 5.1-19 16.6-19 29.2v64H176C78.8 128 0 206.8 0 304C0 417.3 81.5 467.9 100.2 478.1c2.5 1.4 5.3 1.9 8.1 1.9c10.9 0 19.7-8.9 19.7-19.7c0-7.5-4.3-14.4-9.8-19.5C108.8 431.9 96 414.4 96 384c0-53 43-96 96-96h96v64c0 12.6 7.4 24.1 19 29.2s25 3 34.4-5.4l160-144c6.7-6.1 10.6-14.7 10.6-23.8s-3.8-17.7-10.6-23.8l-160-144c-9.4-8.5-22.9-10.6-34.4-5.4z" />
+                    </svg><span class="ms-2">Forward</span>
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-lg d-flex align-items-center" id="rpl-btn">
                     <svg xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 512 512"><!--! Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
                         <path
@@ -212,11 +101,289 @@
                 </button>
             </div>
         </div>
+        <div class="col-6 col-lg-7 col-xl-8 col-xxl-9 card border-0 h-100 d-none" id="compose-content">
+            <div class="card-header px-4">
+                <input type="text" class="form-control fs-4 mb-3" placeholder="Subject" id="input-sub">
+                <label class="form-label fs-5">Send To:</label>
+                <form class="input-group"><input type="email" class="form-control" placeholder="Email" required></form>
+            </div>
+            <div class="card-body overflow-auto px-4"><textarea class="w-100 h-100 fs-5 form-control"
+                    style="resize: none; font-family: var(--bs-font-monospace);"></textarea>
+            </div>
+            <div class="card-footer text-muted d-flex flex-row-reverse">
+                <button type="button" class="btn btn-outline-primary btn-lg d-flex align-items-center" id="send-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"><!--! Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+                        <path
+                            d="M498.1 5.6c10.1 7 15.4 19.1 13.5 31.2l-64 416c-1.5 9.7-7.4 18.2-16 23s-18.9 5.4-28 1.6L284 427.7l-68.5 74.1c-8.9 9.7-22.9 12.9-35.2 8.1S160 493.2 160 480V396.4c0-4 1.5-7.8 4.2-10.7L331.8 202.8c5.8-6.3 5.6-16-.4-22s-15.7-6.4-22-.7L106 360.8 17.7 316.6C7.1 311.3 .3 300.7 0 288.9s5.9-22.8 16.1-28.7l448-256c10.7-6.1 23.9-5.5 34 1.4z" />
+                    </svg><span class="ms-2">Send</span>
+                </button>
+            </div>
+        </div>
     </div>
     <div class="p-3 text-center border-top" style="background-color: whitesmoke">
         <p><a href="/">PennCloud</a> &copy; 2022</p>
         <p class="text-muted mb-0">Created by Andrew, Benedict, Hanbang & Namita</p>
     </div>
+
+    <script>
+        const alertContainer = document.getElementById("alert-container");
+
+        function createAlert(type, content, timeout = 3000) {
+            const alert = `<div class="alert alert-${type} alert-dismissible fade show">
+${content}
+<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>`;
+            alertContainer.insertAdjacentHTML("afterbegin", alert);
+            const e = new bootstrap.Alert(alertContainer.firstElementChild);
+            if (timeout > 0)
+                setTimeout(() => e.close(), timeout);
+            return e;
+        }
+
+        function loading(element, text) {
+            const original = element.innerHTML;
+            element.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> ${text}`;
+            element.disabled = true;
+            return function () {
+                element.innerHTML = original;
+                element.disabled = false;
+            }
+        }
+
+        const mails = document.getElementById("mails");
+        const mail_content = document.getElementById("mail-content");
+        const loading_mail = document.getElementById("loading-mail");
+        const compose_content = document.getElementById("compose-content");
+
+        function parse_key(key) {
+            const [t, from, sub] = key.split("/");
+            return [new Date(+t), from, decodeURIComponent(sub)];
+        }
+
+        function add_email_to(inp, val) {
+            inp.insertAdjacentHTML("beforebegin", `<span class="input-group-text">${val}<button type="button" class="btn-close"></button></span>`);
+            inp.previousElementSibling.lastElementChild.addEventListener('click', el => el.target.parentElement.remove());
+        }
+
+        compose_content.getElementsByTagName('form')[0].addEventListener('submit', function (e) {
+            e.preventDefault();
+            const inp = e.target.lastElementChild;
+            const val = inp.value;
+            inp.value = "";
+            for (let prev = inp.previousElementSibling; prev; prev = prev.previousElementSibling)
+                if (prev.textContent === val)
+                    return;
+            add_email_to(inp, val);
+        });
+
+        function get_current_mail() {
+            return mails.querySelector(".list-group-item.active").dataset["key"];
+        }
+
+        function switch_tab(i) {
+            const tabs = [loading_mail, mail_content, compose_content];
+            tabs.forEach(function (e, j) {
+                if (i == j)
+                    e.classList.remove("d-none");
+                else
+                    e.classList.add("d-none");
+            });
+        }
+
+        document.getElementById("send-btn").addEventListener("click", async function () {
+            const subject = document.getElementById("input-sub");
+            if (subject.value === "") {
+                createAlert('warning', "Please enter a subject");
+                return;
+            }
+
+            const form = compose_content.getElementsByTagName('form')[0];
+            if (form.lastElementChild.value !== "") {
+                form.requestSubmit();
+                if (form.lastElementChild.value !== "") return;
+            }
+
+            const to = [...form.children].filter(e => e.tagName === "SPAN").map(e => e.textContent);
+            if (to.length === 0) {
+                createAlert('warning', "Please enter at least one recipient");
+                return;
+            }
+
+            const textarea = compose_content.getElementsByTagName('textarea')[0];
+
+            const restore = loading(this, "Sending...");
+            try {
+                const resp = await fetch("/mail/send", {
+                    method: "POST",
+                    body: encodeURIComponent(subject.value) + "\n" + to.join(" ") + "\n" + textarea.value,
+                });
+                if (!resp.ok) {
+                    createAlert('warning', await resp.text());
+                    return;
+                }
+
+                await list_mails();
+                compose_content.classList.add('d-none');
+                while (form.firstElementChild.tagName === "SPAN")
+                    form.firstElementChild.remove();
+                textarea.value = "";
+                subject.value = "";
+                createAlert('success', "Email sent successfully");
+            } catch (e) {
+                createAlert('danger', e);
+            } finally {
+                restore();
+            }
+        });
+
+        document.getElementById("compose-btn").addEventListener("click", function () {
+            mails.querySelector(".list-group-item.active")?.classList.remove('active');
+
+            const form = compose_content.getElementsByTagName('form')[0];
+            while (form.firstElementChild.tagName === "SPAN")
+                form.firstElementChild.remove();
+            compose_content.getElementsByTagName('textarea')[0].value = "";
+            document.getElementById("input-sub").value = "";
+
+            switch_tab(2);
+        });
+
+        document.getElementById("fwd-btn").addEventListener("click", function () {
+            const active = mails.querySelector(".list-group-item.active");
+            if (!active) return;
+            active.classList.remove('active');
+
+            const form = compose_content.getElementsByTagName('form')[0];
+            while (form.firstElementChild.tagName === "SPAN")
+                form.firstElementChild.remove();
+
+            const [t, from, sub] = parse_key(active.dataset["key"]);
+            const to = mail_content.children[0].lastElementChild.children[3].textContent;
+
+            switch_tab(2);
+
+            document.getElementById("input-sub").value = "Fwd: " + sub;
+            compose_content.getElementsByTagName('textarea')[0].value = "\n\n---------- Forwarded message ----------\n" +
+                "From: <" + from + ">\n" +
+                "Date: " + t.toLocaleString() + "\n" +
+                "Subject: " + sub + "\n" +
+                "To: " + to + "\n" +
+                "\n" + mail_content.children[1].textContent;
+        });
+
+        document.getElementById("rpl-btn").addEventListener("click", function () {
+            const active = mails.querySelector(".list-group-item.active");
+            if (!active) return;
+            active.classList.remove('active');
+
+            const form = compose_content.getElementsByTagName('form')[0];
+            while (form.firstElementChild.tagName === "SPAN")
+                form.firstElementChild.remove();
+
+            const [t, from, sub] = parse_key(active.dataset["key"]);
+
+            add_email_to(form.lastElementChild, from);
+
+            switch_tab(2);
+
+            document.getElementById("input-sub").value = "Re: " + sub;
+            compose_content.getElementsByTagName('textarea')[0].value = "\n\nOn " + t.toLocaleString() + ", <" + from + "> wrote:\n" +
+                mail_content.children[1].textContent.split('\n').map(e => "> " + e).join('\n');
+        });
+
+        document.getElementById("del-btn").addEventListener("click", async function () {
+            const restore = loading(this, "Deleting...");
+            try {
+                const resp = await fetch("/mail/delete", {
+                    method: "POST",
+                    body: get_current_mail(),
+                });
+                if (!resp.ok) {
+                    createAlert('warning', await resp.text());
+                    return;
+                }
+
+                await list_mails();
+                mail_content.classList.add('d-none');
+            } catch (e) {
+                createAlert('danger', e);
+            } finally {
+                restore();
+            }
+        });
+
+        async function load_mail(e) {
+            const btn = e.target.closest('button');
+            mails.querySelector(".list-group-item.active")?.classList.remove('active');
+
+            btn.classList.add('active');
+
+            const buttons = mails.getElementsByTagName('button');
+            for (const button of buttons) {
+                button.disabled = true;
+            }
+            switch_tab(0);
+
+            const key = btn.dataset["key"];
+            try {
+                const resp = await fetch("/mail/get?key=" + key);
+                if (!resp.ok) {
+                    createAlert('warning', await resp.text());
+                    return;
+                }
+                const mail = await resp.text();
+
+                const [t, from, sub] = parse_key(key);
+                const line = mail.indexOf('\n');
+                const to = mail.substring(0, line).split(" ");
+                const body = mail.substring(line + 1);
+
+                const header = mail_content.children[0];
+                header.firstElementChild.textContent = sub;
+                const l = header.lastElementChild.children;
+                l[1].textContent = '<' + from + '>';
+                l[3].textContent = to.map(s => '<' + s + '>').join(", ");
+                l[5].textContent = t.toString();
+
+                mail_content.children[1].textContent = body;
+
+                switch_tab(1);
+            } catch (e) {
+                createAlert('danger', e);
+            } finally {
+                for (const button of buttons) {
+                    button.disabled = false;
+                }
+            }
+        }
+
+        async function list_mails() {
+            try {
+                const resp = await fetch("/mail/list");
+                if (!resp.ok) {
+                    createAlert('warning', await resp.text());
+                    return;
+                }
+                const keys = await resp.json();
+                mails.replaceChildren();
+                for (const key of keys) {
+                    const [t, from, sub] = parse_key(key);
+                    mails.insertAdjacentHTML("beforeend", `<button type="button" class="list-group-item list-group-item-action">
+<div class="d-flex align-items-center justify-content-between"><strong class="mb-1 text-truncate">${sub}</strong><small>${t.toLocaleString()}</small></div>
+<div class="text-truncate mb-1 small">${from}</div>
+</button>`);
+                    const c = mails.lastElementChild;
+                    c.dataset["key"] = key;
+                    c.addEventListener("click", load_mail);
+                }
+            } catch (e) {
+                createAlert('danger', e);
+            }
+        }
+
+        list_mails();
+    </script>
 </body>
 
 </html>
