@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <cstring>
 
 class KVstore {
 	std::unordered_map<std::string, std::map<std::string, std::string, std::greater<std::string>>> kvstore;

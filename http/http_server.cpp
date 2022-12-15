@@ -59,7 +59,6 @@ void handle_socket(const int s) {
 
 	std::string init_req;
 	if (!std::getline(istream, init_req) || init_req.empty() || init_req.back() != '\r') {
-		// TODO?
 		return;
 	}
 	init_req.pop_back();
@@ -67,20 +66,17 @@ void handle_socket(const int s) {
 
 	const std::size_t space1 = sv.find(' ');
 	if (space1 == std::string_view::npos) {
-		// TODO?
 		return;
 	}
 
 	const auto method_p = method_map.find(sv.substr(0, space1));
 	if (method_p == method_map.end()) {
-		// TODO?
 		return;
 	}
 	const Method method = method_p->second;
 
 	const std::size_t space2 = sv.find(' ', space1 + 1);
 	if (space2 == std::string_view::npos) {
-		// TODO?
 		return;
 	}
 
@@ -99,7 +95,7 @@ void handle_socket(const int s) {
 	Headers headers;
 	while (std::getline(istream, line)) {
 		if (line.empty() || line.back() != '\r') {
-			// TODO?
+
 			return;
 		}
 		line.pop_back();
@@ -108,7 +104,7 @@ void handle_socket(const int s) {
 		}
 		const std::size_t colon = line.find(':');
 		if (colon == std::string_view::npos) {
-			// TODO?
+
 			return;
 		}
 		std::string key = line.substr(0, colon);
