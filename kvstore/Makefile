@@ -6,7 +6,7 @@ tablet_server: tablet_server.cpp request.pb.cc response.pb.cc utils/*
 	g++ $< request.pb.cc response.pb.cc -lpthread -w -lprotobuf -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib -lcrypto -std=c++17 -g -o $@
 
 tablet_client: tablet_client.cpp request.pb.cc response.pb.cc utils/*
-	g++ $< request.pb.cc response.pb.cc -lpthread -w -lprotobuf  -std=c++17 -g -o $@
+	g++ $< request.pb.cc response.pb.cc -lpthread -w -lprotobuf -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib -lcrypto -std=c++17 -g -o $@
 
 # client_wrapper: client_wrapper.cpp request.pb.cc response.pb.cc utils/*
 # 	g++ $< request.pb.cc response.pb.cc -lpthread -w -lprotobuf -std=c++17 -g -o $@

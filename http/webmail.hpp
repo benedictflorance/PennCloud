@@ -1,5 +1,5 @@
 #pragma once
-#include "../kvstore/local_test.hpp"
+#include "../kvstore/client_wrapper.h"
 
 #include "http.hpp"
 #include "util.hpp"
@@ -103,7 +103,7 @@ static std::unique_ptr<std::istream> send_email(http::Response &resp) {
 		} else {
 			std::string reconstruct = to + "@";
 			reconstruct += domain;
-			bool suceed = send_email(from, reconstruct, ser);
+			bool suceed = send_nonlocal_email("here@localhost", reconstruct, ser);
 			if(!suceed) {
 				throw http::Exception(http::Status::BAD_REQUEST, "Email to " + reconstruct + " failed to send");
 			}

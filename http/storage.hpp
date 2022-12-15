@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../kvstore/local_test.hpp"
+#include "../kvstore/client_wrapper.h"
 #include "http.hpp"
 
 #include <iomanip>

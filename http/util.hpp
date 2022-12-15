@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../kvstore/local_test.hpp"
+#include "../kvstore/client_wrapper.h"
 
 #include <iomanip>
 #include <memory>
 #include <sstream>
 
-KVstore kvstore;
+// KVstore kvstore;
 
 static inline void to_json_val(std::ostream &s, const std::string &t) { s << std::quoted(t); }
 static inline void to_json_val(std::ostream &s, bool t) { s << (t ? "true" : "false"); }

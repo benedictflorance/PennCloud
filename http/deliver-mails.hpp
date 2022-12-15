@@ -20,45 +20,14 @@
 #include <resolv.h>
 #include <netdb.h>
 #include <map>
-#include "../kvstore/local_test.hpp"
-#include "mail.pb.h"
+#include "../kvstore/client_wrapper.h"
 #define N 4096
 using namespace std;
 using namespace std::this_thread;     
 using namespace std::chrono_literals; 
-const int BUFFER_SIZE = 10000;
+const int BUFFER_SIZE = 1000000;
+bool verbose = true;
 
-class EMail
-{
-  public:
-    std::string email_str;
-    bool is_sent;
-    EMail(std::string email_str, bool is_sent) : email_str(email_str), is_sent(is_sent) {}
-};
-/*
-			Global Variables
-*/
-string mailbox_directory;
-string mailbox = "MAILBOX_.mqueue";
-pthread_mutex_t mutex;
-bool verbose = false;
-FILE* fout;
-vector<EMail> emails;
-bool mailbox_loaded = false;
-std::vector<std::string> emailkeys;
-bool shutdown = true;
-void load_user_mailbox()
-{
-    string line;
-    int email_start = 0;
-    // File read: line ends with \n, but for socket writing we'll have to change this to \r\n
-    //Crawl the keys
-    emailkeys = kvstore.list_colkeys(mailbox);
-    for(int i = 0; i < emailkeys.size(); i++) {
-        std::string email_str = kvstore.get(mailbox, emailkeys[i]);
-        emails.push_back(EMail(email_str, false));
-    }
-}
 void get_ip_addresses(string domain_name, map<int, string> &priority2ip)
 {
     u_char nsbuf[N];
@@ -106,7 +75,7 @@ void get_ip_addresses(string domain_name, map<int, string> &priority2ip)
 }
 // This function could be shortened using a helper function to send command and read response, 
 // instead of repeating code but not altering it due to lack of time.
-bool send_email(string sender, string receiver, string email)
+bool send_nonlocal_email(string sender, string receiver, string email)
 {   
     if(receiver.find("@") == string::npos)
         return false;
@@ -257,7 +226,9 @@ bool send_email(string sender, string receiver, string email)
         response.clear();
         command = ".\r\n";
         write(sockfd, command.c_str(), strlen(command.c_str()));
+        cout<<"Before reading"<<endl;
         read(sockfd, response_buffer, BUFFER_SIZE);
+        cout<<"After reading"<<endl;
         response = string(response_buffer);
         if(response.length() < 3 || response.substr(0, 3) != "250")
         {
@@ -298,68 +269,4 @@ bool send_email(string sender, string receiver, string email)
         close(sockfd);
     }
     return sentEmail;
-}
-/*void send_emails()
-{
-    int sent_emails = 0;
-    for(int i = 0; i < emails.size(); i++)
-    {
-        PennCloud::Mail mail;
-        mail.ParseFromString(emails[i].email_str);
-        string email = "", line, begin_pattern = "<BEGINMAIL>";
-        string sender, receiver;
-        sender = mail.from();
-        receiver = mail.to();
-        if(verbose)
-        {
-            cerr<<"Sender: "<<sender<<endl;
-            cerr<<"Receiver: "<<receiver<<endl;
-        }
-        bool first_message = true;
-        // File read: line ends with \n, but for socket writing we'll have to change this to \r\n
-        email = "Subject: " + mail.subject() + "\r\nDate: " + mail.time() + "\r\n" + mail.content();
-        bool isSent = send_email(sender, receiver, email);
-        if(verbose)
-        {
-            cerr<<"Email Sent? "<<isSent<<endl;
-        }
-        if(isSent)
-        {
-            emails[i].is_sent = true;
-            sent_emails++;
-        }
-    }
-    if(verbose)
-    {
-        cerr<<"Total emails in mqueue: "<<emails.size()<<endl;
-        cerr<<"Delivered emails: "<<sent_emails<<endl;
-        cerr<<"Undelivered emails: "<<emails.size() - sent_emails<<endl;
-    }
-}*/
-void start_quit_routine()
-{
-    for(int i = 0; i < emailkeys.size(); i++)
-    {
-        if(emails[i].is_sent)
-        {
-            kvstore.dele(mailbox, emailkeys[i]);
-        }
-    }
-    if(verbose)
-        cerr<<"Shutting down!";
-    sleep_for(1s);
-    if(fout)
-        fclose(fout);
-    fout = NULL;
-    exit(0);
-}
-void signal_handler(int arg)
-{
-    if(mailbox_loaded)
-    {
-        if(verbose)
-            cerr<<"Interrupt received. Mailbox loaded, so executing quit routine!"<<endl;
-        start_quit_routine();
-        shutdown = false;
-    }
 }

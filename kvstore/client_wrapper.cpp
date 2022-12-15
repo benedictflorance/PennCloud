@@ -315,7 +315,7 @@ std::vector<std::string> KVstore::list_rowkeys(){
     std::vector<std::string> row_keys_vec;
     rkey_initial.push_back("0");
     rkey_initial.push_back("a");
-    rkey_initial.push_back("z");
+    rkey_initial.push_back("b");
     for(int rkey = 0; rkey < rkey_initial.size();rkey ++){
         std::pair<std::string, std::string> result = process_kvstore_request("LIST_ROWKEY", rkey_initial[rkey], empty, empty, empty);
         PennCloud::Response response;
@@ -383,10 +383,10 @@ void test()
     // std::cout<<response_str;
 
     // kv_test.put("abccc", "password", "frontend");
-    // kv_test.put("abccc", "bb", "frontend");
-    // kv_test.put("abccc", "zz", "frontend");
-    // kv_test.put("abccc", "aa", "frontend");
-    // kv_test.list_colkeys("abccc");
+    // kv_test.put("2342r3", "bb", "frontend");
+    // kv_test.put("awqasdfccc", "zz", "frontend");
+    // kv_test.put("13fwfr", "aa", "frontend");
+    // kv_test.list_rowkeys();
 
     // std::vector<bool> test_map = kv_test.list_server_status();
     // kv_test.resurrect(0);

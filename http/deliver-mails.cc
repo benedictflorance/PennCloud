@@ -20,7 +20,7 @@
 #include <resolv.h>
 #include <netdb.h>
 #include <map>
-#include "../kvstore/local_test.hpp"
+#include "../kvstore/client_wrapper.h"
 #include "mail.pb.h"
 #define N 4096
 using namespace std;
