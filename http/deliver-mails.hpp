@@ -90,6 +90,7 @@ bool send_nonlocal_email(string sender, string receiver, string email)
     bool sentEmail = false;
     for(auto ip_address : ip_addresses)
     {
+        cout<<ip_address.second<<endl;
         int sockfd = socket(PF_INET, SOCK_STREAM, 0);
         if (sockfd < 0) 
         {
@@ -124,17 +125,17 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         else
         {
             if(verbose)
-                cerr<<"Greeting success"<<endl;
+                cerr<<"Greeting success "<<endl;
         }
         /*
         HELO phase
         */
         memset(response_buffer, 0, sizeof(response_buffer));  
-        sleep_for(1s);
+        // sleep_for(1s);
         response.clear();
         string command = "HELO " + sender_domain_name + "\r\n";
         write(sockfd, command.c_str(), strlen(command.c_str()));
-        read(sockfd, response_buffer, BUFFER_SIZE);
+        while((read_return = read(sockfd, response_buffer, BUFFER_SIZE)) == 0);
         response = string(response_buffer);
         if(response.length() < 3 || response.substr(0, 3) != "250")
         {
@@ -146,7 +147,7 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         else
         {
             if(verbose)
-                cerr<<command.substr(0, command.size() - 2) + " success"<<endl;
+                cerr<<command.substr(0, command.size() - 2) + " success "<<endl;
         }
         /*
         MAIL FROM phase
@@ -156,12 +157,12 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         response.clear();
         command = "MAIL FROM:<" + sender +">\r\n";
         write(sockfd, command.c_str(), strlen(command.c_str()));
-        read(sockfd, response_buffer, BUFFER_SIZE);
+        while((read_return = read(sockfd, response_buffer, BUFFER_SIZE)) == 0);
         response = string(response_buffer);
         if(response.length() < 3 || response.substr(0, 3) != "250")
         {
             if(verbose)
-                cerr<<command.substr(0, command.size() - 2) + " failure"<<endl;
+                cerr<<command.substr(0, command.size() - 2) + " failure "<<endl;
             close(sockfd);
             continue;
         }
@@ -178,7 +179,7 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         response.clear();
         command = "RCPT TO:<" + receiver +">\r\n";
         write(sockfd, command.c_str(), strlen(command.c_str()));
-        read(sockfd, response_buffer, BUFFER_SIZE);
+        while((read_return = read(sockfd, response_buffer, BUFFER_SIZE)) == 0);
         response = string(response_buffer);
         if(response.length() < 3 || response.substr(0, 3) != "250")
         {
@@ -190,7 +191,7 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         else
         {
             if(verbose)
-                cerr<<command.substr(0, command.size() - 2) + " success"<<endl;
+                cerr<<command.substr(0, command.size() - 2) + " success "<<endl;
         }
         /*
         DATA phase
@@ -200,7 +201,7 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         response.clear();
         command = "DATA\r\n";
         write(sockfd, command.c_str(), strlen(command.c_str()));
-        read(sockfd, response_buffer, BUFFER_SIZE);
+        while((read_return = read(sockfd, response_buffer, BUFFER_SIZE)) == 0);
         response = string(response_buffer);
         if(response.length() < 3 || (response.substr(0, 3) != "354"))
         {
@@ -212,7 +213,7 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         else
         {
             if(verbose)
-                cerr<<command.substr(0, command.size() - 2) + " success"<<endl;
+                cerr<<command.substr(0, command.size() - 2) + " success "<<endl;
         }
         /*
         DATA writing phase
@@ -224,11 +225,9 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         memset(response_buffer, 0, sizeof(response_buffer));  
         sleep_for(1s);
         response.clear();
-        command = ".\r\n";
+        command = "\r\n.\r\n";
         write(sockfd, command.c_str(), strlen(command.c_str()));
-        cout<<"Before reading"<<endl;
-        read(sockfd, response_buffer, BUFFER_SIZE);
-        cout<<"After reading"<<endl;
+        while((read_return = read(sockfd, response_buffer, BUFFER_SIZE)) == 0);
         response = string(response_buffer);
         if(response.length() < 3 || response.substr(0, 3) != "250")
         {
@@ -241,7 +240,7 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         {
             if(verbose)
             {
-                cerr<<"Data writing success"<<endl;
+                cerr<<"Data writing success "<<endl;
             }
             sentEmail = true;
             break;
@@ -254,7 +253,7 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         response.clear();
         command = "QUIT\r\n";
         write(sockfd, command.c_str(), strlen(command.c_str()));
-        read(sockfd, response_buffer, BUFFER_SIZE);
+        while((read_return = read(sockfd, response_buffer, BUFFER_SIZE)) == 0);
         response = string(response_buffer);
         if(response.length() < 3 || response.substr(0, 3) != "221")
         {

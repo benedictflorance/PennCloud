@@ -103,7 +103,15 @@ static std::unique_ptr<std::istream> send_email(http::Response &resp) {
 		} else {
 			std::string reconstruct = to + "@";
 			reconstruct += domain;
-			bool suceed = send_nonlocal_email("here@localhost", reconstruct, ser);
+			// Construct headers
+			std::string subject = bodyc.substr(0, pos + 1);
+			auto time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
+			string date = string(ctime(&time_now));
+			const std::string from_str = "From: FromName <" + from + ">\r\n";
+			const std::string to_str = "To: ToName <" + to + ">\r\n";
+			const std::string date_str = "Date: " + date + "\r\n";
+			const std::string subject_str = "Subject: " + subject + "\r\n";
+			bool suceed = send_nonlocal_email(from, reconstruct, from_str + to_str + date_str + subject_str + ser);
 			if(!suceed) {
 				throw http::Exception(http::Status::BAD_REQUEST, "Email to " + reconstruct + " failed to send");
 			}
