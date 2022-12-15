@@ -5,6 +5,8 @@
 #include <memory>
 #include <thread>
 #include <unordered_map>
+#include <mutex>
+#include <atomic>
 
 namespace http {
 enum class Method {
@@ -33,8 +35,9 @@ struct Status : std::string_view {
 };
 
 class Session {
+	std::mutex lock;
 	const std::string session_id;
-	std::string username;
+	std::atomic<std::string> username;
 
   public:
 	Session(const Session &) = delete;

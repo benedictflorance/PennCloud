@@ -157,6 +157,8 @@ const Status Status::HTTP_VERSION_NOT_SUPPORTED = "505 HTTP Version Not Supporte
 
 std::pair<Session &, bool> Session::get_session(const std::string &cookie) {
 	static std::unordered_map<std::string, Session> sessions;
+	static std::mutex lock;
+	std::lock_guard<std::mutex> _(lock);
 
 	const auto it = sessions.find(cookie);
 	if (it != sessions.end()) {
@@ -289,9 +291,9 @@ std::unordered_map<std::string, std::string> Response::parse_www_form() {
 
 std::string Session::get_username() const { return username; }
 
-void Session::set_username(const std::string &username) {
-	kvstore.put("SESSION", session_id, username);
-	this->username = username;
+void Session::set_username(const std::string &name) {
+	kvstore.put("SESSION", session_id, name);
+	username = name;
 }
 
 } // namespace http
