@@ -370,17 +370,17 @@ void test()
 
     //Storage rename testing
     std::string response_str;
-    response_str = kv_test.storage_rename("abc", "cab", "abc", "Def");
-    kv_test.put("abc", "password", "frontend");
-    response_str = kv_test.storage_rename("abc", "cab", "abc", "Def");
-    kv_test.put("abc", "cab", "frontend");
-    response_str = kv_test.storage_rename("abc", "cab", "abc", "Def");
-    kv_test.put("abc", "cab", "/abc:");
-    response_str = kv_test.storage_rename("abc", "cab", "inode", "Def");
-    kv_test.put("abc", "cab", "/abc/inode:");
-    response_str = kv_test.storage_rename("abc", "cab", "inode", "Def");
-    response_str = kv_test.storage_rename("abc", "cab", "def", "Def"); //abc-c -> 1, content = "def:1:d/", abc-cab -> content, abc-1 -> "/" return 1
-    std::cout<<response_str;
+    // response_str = kv_test.storage_rename("abc", "cab", "abc", "Def");
+    // kv_test.put("abc", "password", "frontend");
+    // response_str = kv_test.storage_rename("abc", "cab", "abc", "Def");
+    // kv_test.put("abc", "cab", "frontend");
+    // response_str = kv_test.storage_rename("abc", "cab", "abc", "Def");
+    // kv_test.put("abc", "cab", "/abc:");
+    // response_str = kv_test.storage_rename("abc", "cab", "inode", "Def");
+    // kv_test.put("abc", "cab", "/abc/inode:");
+    // response_str = kv_test.storage_rename("abc", "cab", "inode", "Def");
+    // response_str = kv_test.storage_rename("abc", "cab", "def", "Def"); //abc-c -> 1, content = "def:1:d/", abc-cab -> content, abc-1 -> "/" return 1
+    // std::cout<<response_str;
 
     // kv_test.put("abccc", "password", "frontend");
     // kv_test.put("abccc", "bb", "frontend");
@@ -415,14 +415,12 @@ void test()
 
 
 
-
+    // bool is_success;
     // is_success = kv_test.cput("Shanbang", "password", "", "backend");
     // std::cout<<is_success<<std::endl; // Expected 0
-    // is_success = kv_test.cput("15hanbang", "password", "", "backend");
+    // is_success = kv_test.cput("Shanbang", "password", "someshit", "frontend");
+    // std::cout<<is_success<<std::endl; // Expected 0
+    // is_success = kv_test.cput("Shanbang", "password", "backend", "frontend");
     // std::cout<<is_success<<std::endl; // Expected 1
-    // response_str = kv_test.get("Shanbang", "password");
-    // std::cout<<response_str<<std::endl; // Expected frontend
-    // kv_test.put("Shanbang", "password","");
-    // response_str = kv_test.get("Shanbang", "password"); // Expected ""
-    // std::cout<<response_str<<std::endl;
+
 }
