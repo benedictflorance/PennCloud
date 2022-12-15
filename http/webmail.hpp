@@ -8,7 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-
+#include "deliver-mails.hpp"
 static inline std::vector<std::string_view> split(const std::string_view &s) {
 	std::vector<std::string_view> res;
 	std::size_t start = 0;
@@ -91,7 +91,6 @@ static std::unique_ptr<std::istream> send_email(http::Response &resp) {
 				throw http::Exception(http::Status::BAD_REQUEST, "User " + p.first + " does not exist");
 			}
 		} else {
-			// TODO
 		}
 		to_emails.emplace_back(std::move(p));
 	}
@@ -102,7 +101,12 @@ static std::unique_ptr<std::istream> send_email(http::Response &resp) {
 		if (domain == "penncloud") {
 			kvstore.put("MAILBOX_" + to, ckey, ser);
 		} else {
-			// TODO
+			std::string reconstruct = to + "@";
+			reconstruct += domain;
+			bool suceed = send_email(from, reconstruct, ser);
+			if(!suceed) {
+				throw http::Exception(http::Status::BAD_REQUEST, "Email to " + reconstruct + " failed to send");
+			}
 		}
 	}
 
