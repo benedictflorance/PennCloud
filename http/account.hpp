@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../kvstore/client_wrapper.h"
+#include "../kvstore/local_test.hpp"
 #include "http.hpp"
 
 static std::unique_ptr<std::istream> login(http::Response &resp) {

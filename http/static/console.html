@@ -139,10 +139,9 @@ ${load !== 65535 ? `Load: ${load}` : "Offline"}
 </li>`
                     ele.insertAdjacentHTML("beforeend", html);
                 }
+                setTimeout(fetch_frontend_status, 2000);
             } catch (error) {
                 createAlert("danger", "Failed to fetch backend status. Please try again later.")
-            } finally {
-                setTimeout(fetch_frontend_status, 2000);
             }
         }
 
@@ -193,7 +192,7 @@ ${load !== 65535 ? `Load: ${load}` : "Offline"}
             ele.placeholder = "Loading...";
 
             try {
-                const response = await fetch('/kvstore/get?' + new URLSearchParams({ rkey: this, ckey: target.textContent }));
+                const response = await fetch(`/kvstore/get?rkey=${this}&ckey=${target.textContent}`);
                 if (!response.ok) {
                     createAlert("warning", await response.text());
                     return;
@@ -218,7 +217,7 @@ ${load !== 65535 ? `Load: ${load}` : "Offline"}
             const rkey = target.textContent;
 
             try {
-                const response = await fetch('/kvstore/listc?' + new URLSearchParams({ rkey }));
+                const response = await fetch(`/kvstore/listc?rkey=${rkey}`);
                 if (!response.ok) {
                     createAlert("warning", await response.text());
                     return;

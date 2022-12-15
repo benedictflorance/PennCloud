@@ -11,7 +11,7 @@
 #include <ext/stdio_filebuf.h>
 #include <sys/socket.h>
 
-#include "../kvstore/client_wrapper.h"
+#include "../kvstore/local_test.hpp"
 
 namespace http {
 std::unordered_map<std::string_view, std::unordered_map<Method, HandlerFunc>> handlers;
@@ -215,6 +215,22 @@ no_cookie:
 Response::Response(const std::string_view &p, Headers &&rh, std::istream &rb)
 	: req_headers(std::move(rh)), req_body(rb), session(get_session(this)), params(p) {}
 
+std::string Response::dump_body() {
+	std::size_t content_length = 0;
+	{
+		const auto it = req_headers.find("content-length");
+		if (it == req_headers.end()) {
+			throw http::Exception(http::Status::BAD_REQUEST, "missing content-length");
+		}
+		content_length = std::stoul(it->second);
+	}
+
+	std::string body;
+	body.resize(content_length);
+	req_body.read(body.data(), content_length);
+	return body;
+}
+
 std::string Response::get_username_api() {
 	const std::string &name = session.get_username();
 	if (name.empty()) {
@@ -267,19 +283,8 @@ std::unordered_map<std::string, std::string> Response::get_params() { return par
 
 std::unordered_map<std::string, std::string> Response::parse_www_form() {
 	assert_content_type("application/x-www-form-urlencoded");
-	std::size_t content_length = 0;
-	{
-		const auto it = req_headers.find("content-length");
-		if (it == req_headers.end()) {
-			throw http::Exception(http::Status::BAD_REQUEST, "missing content-length");
-		}
-		content_length = std::stoul(it->second);
-	}
-
-	std::string content;
-	content.resize(content_length);
-	req_body.read(content.data(), content_length);
-	return parse_params(content);
+	const std::string body = dump_body();
+	return parse_params(body);
 }
 
 std::string Session::get_username() const { return username; }

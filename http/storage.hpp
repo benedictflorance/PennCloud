@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../kvstore/client_wrapper.h"
+#include "../kvstore/local_test.hpp"
 #include "http.hpp"
 
 #include <iomanip>
@@ -117,20 +117,7 @@ static std::unique_ptr<std::istream> create_storage(http::Response &resp) {
 		throw http::Exception(http::Status::BAD_REQUEST, "Failed to create " + name->second + ": " + ctr);
 	}
 	if (!is_dir) {
-		std::size_t content_length = 0;
-		{
-			const auto it = resp.req_headers.find("content-length");
-			if (it == resp.req_headers.end()) {
-				throw http::Exception(http::Status::BAD_REQUEST, "missing content-length");
-			}
-			content_length = std::stoul(it->second);
-		}
-
-		std::string content;
-		content.resize(content_length + 1);
-		content[0] = 'f';
-		resp.req_body.read(content.data() + 1, content_length);
-		kvstore.put(rkey, ctr, content);
+		kvstore.put(rkey, ctr, "f" + resp.dump_body());
 	}
 
 	return std::make_unique<std::istringstream>(ctr);

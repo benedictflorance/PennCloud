@@ -59,6 +59,7 @@ struct Response {
 	Session &session;
 	Status status = Status::OK;
 
+	std::string dump_body();
 	std::string get_username_api();
 	void assert_logged_in();
 	void assert_content_type(const std::string &content_type);

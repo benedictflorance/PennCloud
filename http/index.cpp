@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <sys/socket.h>
 
+#include "webmail.hpp"
 #include "account.hpp"
 #include "console.hpp"
 #include "storage.hpp"
@@ -90,10 +91,11 @@ int main(int argc, char *argv[]) {
 	http::register_handler("/storage/create", http::Method::POST, create_storage);
 	http::register_handler("/storage/rename", http::Method::POST, rename_storage);
 
-	http::register_handler("/webmail/listmail", http::Method::GET, list_emails);
-	http::register_handler("/webmail/getmail", http::Method::GET, get_email);
-	http::register_handler("/webmail/send", http::Method::POST, send_email);
-	http::register_handler("/webmail/delete", http::Method::GET, delete_email);
+	http::register_handler("/mail/send", http::Method::POST, send_email);
+	http::register_handler("/mail/list", http::Method::GET, list_emails);
+	http::register_handler("/mail/get", http::Method::GET, get_email);
+	http::register_handler("/mail/delete", http::Method::POST, delete_email);
+
 	std::thread(&Info::balancer, &master_info, port + 10000).detach();
 
 	const int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
