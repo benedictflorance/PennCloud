@@ -116,15 +116,14 @@ void process_client_thread(int client_socket)
 	char length_buffer[LENGTH_BUFFER_SIZE];
 	while(true)
 	{	
-		if(shutdown_flag)
+		memset(length_buffer, 0, sizeof(length_buffer));
+		int client_shutdown = read(client_socket, length_buffer, 10);
+		if(shutdown_flag || client_shutdown == 0)
 		{
 			if(verbose)
 					cerr<<"["<<client_socket<<"] "<<closing_message<<endl;
-			write(client_socket, shutdown_message, strlen(shutdown_message));
 			pthread_exit(NULL);
 		}
-		memset(length_buffer, 0, sizeof(length_buffer));
-		do_read(client_socket, length_buffer, 10);
 		int request_length;
 		try
 		{
@@ -418,7 +417,7 @@ int create_server()
 		return -1;
 	}
 
-	//create a thread for sending heartbeats to the master
+	// create a thread for sending heartbeats to the master
 	thread send_heartbeats(send_heartbeat);
 	send_heartbeats.detach();
 	if(isPrimary)
