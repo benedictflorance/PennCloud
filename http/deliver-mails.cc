@@ -46,6 +46,7 @@ FILE* fout;
 vector<EMail> emails;
 bool mailbox_loaded = false;
 std::vector<std::string> emailkeys;
+bool shutdown = true;
 void load_user_mailbox()
 {
     string line;
@@ -359,6 +360,7 @@ void signal_handler(int arg)
         if(verbose)
             cerr<<"Interrupt received. Mailbox loaded, so executing quit routine!"<<endl;
         start_quit_routine();
+        shutdown = false;
     }
 }
 int main(int argc, char *argv[])
@@ -393,28 +395,12 @@ int main(int argc, char *argv[])
 	// On the command line, your server should accept the name of a directory that contains the mailboxes of the
 	// local users. Each file in this directory should store the email for one local user; a file with the name
 	// user.mbox would contain the messages for the user with the email address user@localhost.
-	if(argc == optind)
-	{
-		cerr<<"Mailbox directory not provided!";
-		return -1;
-	}
-	mailbox_directory = argv[optind];
-    fout = fopen((mailbox_directory + "/" + mailbox).c_str(), "rw");
-    int flock_return = flock(fileno(fout), LOCK_EX | LOCK_NB);
-    if(flock_return == 0)
-    {
-        if(verbose)
-            cerr<<"Acquired lock!"<<endl;
+    while(shutdown) {
         load_user_mailbox();
         mailbox_loaded = true;
         send_emails();
         start_quit_routine();
-    }
-    else
-    {
-        if(verbose)
-            cerr<<"Unable to acquire lock to mqueue"<<endl;
-        return -1;
+        sleep(10);
     }
     return 0;
 }
