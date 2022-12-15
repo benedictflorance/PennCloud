@@ -164,6 +164,7 @@ void load_kvstore_from_disk(string ip_addr = curr_ip_addr)
             }
         }
     }
+    recovered_version = max_version;
     if(latest_checkpt != "")
     {
         string check_filename = latest_checkpt;

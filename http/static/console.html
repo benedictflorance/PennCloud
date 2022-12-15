@@ -33,10 +33,8 @@
             <div class="row flex-fill">
                 <div class="col-sm mb-3">
                     <h4>Frontend Servers</h4>
-                    <ol class="list-group overflow-auto">
-                        <li class="list-group-item list-group-item-success"></li>
-                        <li class="list-group-item list-group-item-danger"></li>
-                        <li class="list-group-item list-group-item-success"></li>
+                    <ol class="list-group overflow-auto" id="hservers">
+                        <span class="spinner-border spinner-border-lg m-auto"></span>
                     </ol>
                 </div>
                 <div class="col-sm mb-3">
@@ -124,7 +122,30 @@ ${content}
             }
         }
 
-        let fetch_b;
+        async function fetch_frontend_status() {
+            try {
+                const response = await fetch('/hstatus');
+                if (!response.ok) {
+                    createAlert("warning", await response.text());
+                    return;
+                }
+                const data = await response.json();
+                const ele = document.getElementById("hservers");
+                ele.replaceChildren();
+                for (const i in data) {
+                    const load = data[i];
+                    const html = `<li class="list-group-item list-group-item-${load !== 65535 ? "success" : "danger"} d-flex justify-content-between align-items-center">
+${load !== 65535 ? `Load: ${load}` : "Offline"}
+</li>`
+                    ele.insertAdjacentHTML("beforeend", html);
+                }
+            } catch (error) {
+                createAlert("danger", "Failed to fetch backend status. Please try again later.")
+            } finally {
+                setTimeout(fetch_frontend_status, 2000);
+            }
+        }
+
         async function fetch_backend_status() {
             try {
                 const response = await fetch('/bstatus');
@@ -234,6 +255,7 @@ ${content}
             }
         }
 
+        fetch_frontend_status();
         fetch_backend_status();
         list_row_keys();
     </script>
