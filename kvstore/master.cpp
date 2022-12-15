@@ -35,6 +35,7 @@
 
 using namespace std;
 #include "utils/hash.h"
+#include "utils/MD5.h"
 
 // boolean for the v flag (debugging)
 bool v = false;
@@ -351,7 +352,8 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
       int end = argument.find(')');
       
       row_key = argument.substr(start+1,end-1);
-      int initial = (int)row_key[0];
+      int initial = (int)(compute_hash(row_key)[0]);
+      cout<<"Initial: "<<char(initial)<<endl;
 
       for(auto nested_pair: rowkey_range){
         pair<int, vector<int> > pair = nested_pair.second;
@@ -366,8 +368,8 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
             int index = (int)(rand() % (tablet_servers_size));
             string tablet_address = tablet_addresses[row_key_tablet_server[index]];
             if(v){
-                fprintf(stderr, "[%d] Generated Index Is: %d", comm_fd,index);
-                fprintf(stderr, "[%d] Selected Tablet Server Is: %s", comm_fd,tablet_address.c_str());
+                fprintf(stderr, "[%d] Generated Index Is: %d \n", comm_fd,index);
+                fprintf(stderr, "[%d] Selected Tablet Server Is: %s \n", comm_fd,tablet_address.c_str());
             }
 
             do_write(comm_fd, (char *)tablet_address.c_str(), tablet_address.size());

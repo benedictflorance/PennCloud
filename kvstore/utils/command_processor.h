@@ -6,11 +6,11 @@ void process_delete_request(PennCloud::Request &request, PennCloud::Response &re
 
 bool is_rowkey_accepted(string rowkey)
 {
-    int start_letter = rowkey[0];
+    int start_letter = (int)(compute_hash(rowkey)[0]);
     for(int i = 0; i < rowkey_range.size(); i++)
     {
-        if(rowkey[0] >= toRowKeyRange(rowkey_range[i]).first && 
-            rowkey[0] <= toRowKeyRange(rowkey_range[i]).second)
+        if(start_letter >= toRowKeyRange(rowkey_range[i]).first && 
+            start_letter <= toRowKeyRange(rowkey_range[i]).second)
             return true;
     }
     return false;
@@ -107,6 +107,7 @@ void create_nonexistent_mutex(string rowkey)
 }
 void process_put_request(PennCloud::Request &request, PennCloud::Response &response)
 {
+
     if(!request.has_rowkey() || !request.has_columnkey() || !request.has_value1())
     {
         response.set_status(param_unset_message.first);

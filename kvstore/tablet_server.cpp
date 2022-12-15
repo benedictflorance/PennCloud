@@ -1,5 +1,6 @@
 #include "utils/globalvars.h"
 #include "utils/hash.h"
+#include "utils/MD5.h"
 #include "utils/command_processor.h"
 #include "utils/tools.h"
 #include "utils/log.h"
@@ -8,6 +9,7 @@
 #include "utils/background_daemons.h"
 #include "utils/replication.h"
 #include "utils/recovery.h"
+
 
 void process_client_thread(int client_socket);
 int create_server();
@@ -202,7 +204,7 @@ void process_client_thread(int client_socket)
 				number_of_acks[request.uniqueid()]++;
 				cout<<"Number of ACKs received: " << number_of_acks[request.uniqueid()]<<endl;
 				//if message received from all secondaries
-				int num_of_secondaries, start_letter = request.rowkey()[0];
+				int num_of_secondaries, start_letter = (int)(compute_hash(request.rowkey())[0]);
 				int key;
 				for(int i = 0; i < rowkey_range.size(); i++)
 				{
@@ -327,7 +329,7 @@ void process_client_thread(int client_socket)
 							string preprocessed_response = update_kv_store(new_request_str);
 							request.set_preprocessed_response(preprocessed_response);
 							request.SerializeToString(&new_request_str);
-							int start_letter = request.rowkey()[0];
+							int start_letter = (int)(compute_hash(request.rowkey())[0]);
 							int key;
 							for(int i = 0; i < rowkey_range.size(); i++)
 							{

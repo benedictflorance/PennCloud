@@ -54,7 +54,7 @@ string get_time(){
 vector<int> find_my_replica_group(string request_str){
     PennCloud::Request request;
     request.ParseFromString(request_str);
-    int start_letter = request.rowkey()[0];
+    int start_letter = (int)(compute_hash(request.rowkey())[0]);
     vector<int> my_tablet_server_group;
     for(int i = 0; i < rowkey_range.size(); i++){
         if(start_letter >= toRowKeyRange(rowkey_range[i]).first && start_letter <= toRowKeyRange(rowkey_range[i]).second){
@@ -68,7 +68,7 @@ vector<int> find_my_replica_group(string request_str){
 pair<int,int> find_rowkey_range(string request_str){
     PennCloud::Request request;
     request.ParseFromString(request_str);
-    int start_letter = request.rowkey()[0];
+    int start_letter = (int)(compute_hash(request.rowkey())[0]);
     pair<int,int> rkey_range;
     for(int i = 0; i < rowkey_range.size(); i++){
         if(start_letter >= toRowKeyRange(rowkey_range[i]).first && start_letter <= toRowKeyRange(rowkey_range[i]).second){
