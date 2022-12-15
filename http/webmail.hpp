@@ -12,11 +12,31 @@
 #include "mail.pb.h"
 #include <openssl/md5.h>
 #include <iomanip>
-
+#define MAX_PUT 10000
+#define MAX_BUF 1000
 std::string user = "0";
 const std::string files = "_files"; 
 std::vector<std::string> filelist;
 std::vector<PennCloud::Mail> emails;
+
+void split(const std::string& str, const std::string& delim, std::vector<std::string>& parts) {
+  size_t start, end = 0;
+  while (end < str.size()) {
+    start = end;
+    while (start < str.size() && (delim.find(str[start]) != std::string::npos)) {
+      start++;  // skip initial whitespace
+    }
+    end = start;
+    while (end < str.size() && (delim.find(str[end]) == std::string::npos)) {
+      end++; // skip to end of word
+    }
+    if (end-start != 0) {  // just ignore zero-length strings.
+      parts.push_back(std::string(str, start, end-start));
+    }
+  }
+}
+
+
 void computeDigest(char *data, int dataLengthBytes, unsigned char *digestBuffer)
 {
 
@@ -175,111 +195,90 @@ static std::unique_ptr<std::istream> list_emails(http::Response &resp) {
 		return std::make_unique<std::ifstream>("static/login.html");
 	}
 	std::string cur_user = resp.session.get_username();
-	std::string email_val = kvstore.get(cur_user, "__.mbox");
-	getmails(email_val, emails);
+	std::vector<std::string> emails = kvstore.list_colkeys("MAILBOX_" + cur_user);
 	std::string json = "[";
 	for(int i = 0; i < emails.size(); i++) {
 		char put[1000];
-		sprintf(put, R"({"to" : %s, "subject" : "%s",  "date" : "%s", "key" : "%s"})", emails[i].to(), emails[i].subject(), 
-		emails[i].date(), urlEncode(emails[i].key()));
+		std::vector<std::string> splitted;
+		 split(emails[i], " ", splitted);
+		sprintf(put, R"({"from" : "%s", "subject" : "%s",  "time" : "%s"})", splitted[0], splitted[1], 
+		splitted[2]);
 		json += put;
 		if(i != emails.size() - 1) json += ",";
 	}
 	json += "]";
-	std::string link =  R"(<br /><a href="/compose">Compose Email</a>)";
 	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
-	//*ss << "Welcome, " << session.get_username() << "!";
 	*ss << json;
 	return ss;
 }
 
 static std::unique_ptr<std::istream> get_email(http::Response &resp) {
-	const std::unordered_map<std::string, std::string> params = resp.get_params();
-	std::string username;
-	if(params.find("index") == params.end()) {
-			throw http::Exception(http::Status::BAD_REQUEST, "Bad Request");
-	}
+	std::string username = resp.session.get_username();
+	std::string index;
+	resp.req_body >> index;
 	int val = -1;
-	std::string value = urlDecode(params.find("index")->second);
-	if (resp.session.get_username().empty()) {
-		resp.resp_headers.emplace("Content-Type", "text/html");
-		return std::make_unique<std::ifstream>("static/login.html");
-	}
-	username = resp.session.get_username();
-	std::string message = kvstore.get(username, "__" + value);
+	char put[MAX_PUT];
+	std::string email_buf = kvstore.get("MAILBOX_" + username, index);
+	PennCloud::Mail email;
+	email.ParseFromString(email_buf);
+	sprintf(put, R"({"from" : "%s", "to": "%s", "subject" : "%s",  "time" : "%s", "content": "%s})", 
+	email.from().c_str(), email.to().c_str(), email.subject().c_str(), email.time().c_str(), email.content().c_str());
 	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
-	*ss << message;
+	*ss << put;
 	return ss;
 }
 
-static std::unique_ptr<std::istream> send_emails(http::Response &resp) {
-	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
-	std::ifstream file( "static/compose.html" );
-	std::ifstream filse( "static/compose.html" );
-    if ( file )
-    {
-	return std::make_unique<std::ifstream>("static/compose.html");
-    }
-	//*ss << "Welcome, " << session.get_username() << "!";
-	return std::make_unique<std::ifstream>("static/compose.html");
-}
 
 static std::unique_ptr<std::istream> send_email(http::Response &resp) {
-	resp.session.set_username(user);
+	char buf[MAX_BUF];
+	std::vector<std::string> email_vec;
+	std::string subject, emails, content;
 	std::string username = resp.session.get_username();
+	resp.req_body.getline(buf, MAX_BUF);
+	emails = buf;
+	resp.req_body.getline(buf, MAX_BUF);
+	subject = buf;
+	std::ostringstream std_input;
+	std_input << resp.req_body.rdbuf();
+	content = std_input.str();
+	split(emails, " ", email_vec);
 	if (resp.session.get_username().empty()) {
 		resp.resp_headers.emplace("Content-Type", "text/html");
 		return std::make_unique<std::ifstream>("static/login.html");
 	}
    	time_t now = time(0);
   	char* dt = ctime(&now);
-	std::unordered_map<std::string, std::string> value = resp.parse_www_form();
 	PennCloud::Mail putmail;
-	std::string password, request_str;
-	std::pair<std::string, std::string> email = split_email(value["to"]);
-	putmail.set_to(email.first);
-	putmail.set_subject(value["subject"]);
-	putmail.set_date(dt);
-	putmail.set_from(username);
-	std::string hash = compute_hash(value["subject"], value["message"]);
-	putmail.set_key(hash);
-	emails.push_back(putmail);
-	putmail.SerializeToString(&request_str);
-    char req_length[11];
-    snprintf (req_length, 11, "%10d", request_str.length()); 
-	std::string original = kvstore.get(email.first, "__.mbox");
-	original += std::string(req_length) + request_str;
-	kvstore.put(email.first, "__.mbox", original);
-	kvstore.put(email.first, "__" + hash, value["message"]);
+	std::string password, request_str, ckey;
+	for(int i = 0; i < email_vec.size(); i++) {
+		std::pair<std::string, std::string> to_email = split_email(email_vec[i]);
+		putmail.set_to(email_vec[i]);
+		putmail.set_subject(subject);
+		putmail.set_time(dt);
+		putmail.set_from(username + "@localhost");
+		putmail.set_content(content);
+		ckey = putmail.from() + " " + putmail.subject() + " " + putmail.time();
+		putmail.SerializeToString(&request_str);
+    	char req_length[11];
+    	snprintf (req_length, 11, "%10d", request_str.length()); 
+		if(to_email.second == "localhost") {
+			kvstore.put("MAILBOX_" + to_email.first, ckey, request_str);
+		}
+		else {
+			kvstore.put("MAILBOX_.mqueue", ckey, request_str);
+		}
+	}
 	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
 	*ss << R"(<br /><a href="/">Go Back</a>)";
 	return ss;
 }
 
 static std::unique_ptr<std::istream> delete_email(http::Response &resp) {
-	const std::unordered_map<std::string, std::string> params = resp.get_params();
-	std::string username;
-	if(params.find("index") == params.end()) {
-			throw http::Exception(http::Status::BAD_REQUEST, "Bad Request");
-	}
+	std::string username = resp.session.get_username();
+	std::string index;
+	resp.req_body >> index;
 	int val = -1;
-	std::string value = urlDecode(params.find("index")->second);
-	if (resp.session.get_username().empty()) {
-		resp.resp_headers.emplace("Content-Type", "text/html");
-		return std::make_unique<std::ifstream>("static/login.html");
-	}
-	username = resp.session.get_username();
-	kvstore.dele(username, "__" + value);
-	std::string email_val = kvstore.get(username, "__.mbox");
-	getmails(email_val, emails);
-	int index = -1;
-	for(int i = 0; i < emails.size(); i++) {
-		if(emails[i].key() == value) {
-			index = i;
-			break;
-		}
-	}
-	if (index == -1) return NULL;
+	kvstore.dele("MAILBOX_" + username, index);
 	std::unique_ptr<std::stringstream> ss = std::make_unique<std::stringstream>();
 	*ss << "Deleted!";
 	return ss;

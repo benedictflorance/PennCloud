@@ -5,7 +5,7 @@ package PennCloud;
 message Mail{
     required string from = 1;
     required string to = 2;
-    required string date = 3;
+    required string time = 3;
     required string subject = 4;
-    required string key = 5;
+    required string content = 5;
 }

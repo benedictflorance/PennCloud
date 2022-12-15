@@ -183,20 +183,20 @@ class Mail : public ::google::protobuf::Message /* @@protoc_insertion_point(clas
   ::std::string* release_to();
   void set_allocated_to(::std::string* to);
 
-  // required string date = 3;
-  bool has_date() const;
-  void clear_date();
-  static const int kDateFieldNumber = 3;
-  const ::std::string& date() const;
-  void set_date(const ::std::string& value);
+  // required string time = 3;
+  bool has_time() const;
+  void clear_time();
+  static const int kTimeFieldNumber = 3;
+  const ::std::string& time() const;
+  void set_time(const ::std::string& value);
   #if LANG_CXX11
-  void set_date(::std::string&& value);
+  void set_time(::std::string&& value);
   #endif
-  void set_date(const char* value);
-  void set_date(const char* value, size_t size);
-  ::std::string* mutable_date();
-  ::std::string* release_date();
-  void set_allocated_date(::std::string* date);
+  void set_time(const char* value);
+  void set_time(const char* value, size_t size);
+  ::std::string* mutable_time();
+  ::std::string* release_time();
+  void set_allocated_time(::std::string* time);
 
   // required string subject = 4;
   bool has_subject() const;
@@ -213,20 +213,20 @@ class Mail : public ::google::protobuf::Message /* @@protoc_insertion_point(clas
   ::std::string* release_subject();
   void set_allocated_subject(::std::string* subject);
 
-  // required string key = 5;
-  bool has_key() const;
-  void clear_key();
-  static const int kKeyFieldNumber = 5;
-  const ::std::string& key() const;
-  void set_key(const ::std::string& value);
+  // required string content = 5;
+  bool has_content() const;
+  void clear_content();
+  static const int kContentFieldNumber = 5;
+  const ::std::string& content() const;
+  void set_content(const ::std::string& value);
   #if LANG_CXX11
-  void set_key(::std::string&& value);
+  void set_content(::std::string&& value);
   #endif
-  void set_key(const char* value);
-  void set_key(const char* value, size_t size);
-  ::std::string* mutable_key();
-  ::std::string* release_key();
-  void set_allocated_key(::std::string* key);
+  void set_content(const char* value);
+  void set_content(const char* value, size_t size);
+  ::std::string* mutable_content();
+  ::std::string* release_content();
+  void set_allocated_content(::std::string* content);
 
   // @@protoc_insertion_point(class_scope:PennCloud.Mail)
  private:
@@ -234,12 +234,12 @@ class Mail : public ::google::protobuf::Message /* @@protoc_insertion_point(clas
   void clear_has_from();
   void set_has_to();
   void clear_has_to();
-  void set_has_date();
-  void clear_has_date();
+  void set_has_time();
+  void clear_has_time();
   void set_has_subject();
   void clear_has_subject();
-  void set_has_key();
-  void clear_has_key();
+  void set_has_content();
+  void clear_has_content();
 
   // helper for ByteSizeLong()
   size_t RequiredFieldsByteSizeFallback() const;
@@ -249,9 +249,9 @@ class Mail : public ::google::protobuf::Message /* @@protoc_insertion_point(clas
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr from_;
   ::google::protobuf::internal::ArenaStringPtr to_;
-  ::google::protobuf::internal::ArenaStringPtr date_;
+  ::google::protobuf::internal::ArenaStringPtr time_;
   ::google::protobuf::internal::ArenaStringPtr subject_;
-  ::google::protobuf::internal::ArenaStringPtr key_;
+  ::google::protobuf::internal::ArenaStringPtr content_;
   friend struct ::protobuf_mail_2eproto::TableStruct;
 };
 // ===================================================================
@@ -397,70 +397,70 @@ inline void Mail::set_allocated_to(::std::string* to) {
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Mail.to)
 }
 
-// required string date = 3;
-inline bool Mail::has_date() const {
+// required string time = 3;
+inline bool Mail::has_time() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void Mail::set_has_date() {
+inline void Mail::set_has_time() {
   _has_bits_[0] |= 0x00000004u;
 }
-inline void Mail::clear_has_date() {
+inline void Mail::clear_has_time() {
   _has_bits_[0] &= ~0x00000004u;
 }
-inline void Mail::clear_date() {
-  date_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_date();
+inline void Mail::clear_time() {
+  time_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_time();
 }
-inline const ::std::string& Mail::date() const {
-  // @@protoc_insertion_point(field_get:PennCloud.Mail.date)
-  return date_.GetNoArena();
+inline const ::std::string& Mail::time() const {
+  // @@protoc_insertion_point(field_get:PennCloud.Mail.time)
+  return time_.GetNoArena();
 }
-inline void Mail::set_date(const ::std::string& value) {
-  set_has_date();
-  date_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:PennCloud.Mail.date)
+inline void Mail::set_time(const ::std::string& value) {
+  set_has_time();
+  time_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:PennCloud.Mail.time)
 }
 #if LANG_CXX11
-inline void Mail::set_date(::std::string&& value) {
-  set_has_date();
-  date_.SetNoArena(
+inline void Mail::set_time(::std::string&& value) {
+  set_has_time();
+  time_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:PennCloud.Mail.date)
+  // @@protoc_insertion_point(field_set_rvalue:PennCloud.Mail.time)
 }
 #endif
-inline void Mail::set_date(const char* value) {
+inline void Mail::set_time(const char* value) {
   GOOGLE_DCHECK(value != NULL);
-  set_has_date();
-  date_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:PennCloud.Mail.date)
+  set_has_time();
+  time_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:PennCloud.Mail.time)
 }
-inline void Mail::set_date(const char* value, size_t size) {
-  set_has_date();
-  date_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+inline void Mail::set_time(const char* value, size_t size) {
+  set_has_time();
+  time_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:PennCloud.Mail.date)
+  // @@protoc_insertion_point(field_set_pointer:PennCloud.Mail.time)
 }
-inline ::std::string* Mail::mutable_date() {
-  set_has_date();
-  // @@protoc_insertion_point(field_mutable:PennCloud.Mail.date)
-  return date_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+inline ::std::string* Mail::mutable_time() {
+  set_has_time();
+  // @@protoc_insertion_point(field_mutable:PennCloud.Mail.time)
+  return time_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* Mail::release_date() {
-  // @@protoc_insertion_point(field_release:PennCloud.Mail.date)
-  if (!has_date()) {
+inline ::std::string* Mail::release_time() {
+  // @@protoc_insertion_point(field_release:PennCloud.Mail.time)
+  if (!has_time()) {
     return NULL;
   }
-  clear_has_date();
-  return date_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_time();
+  return time_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void Mail::set_allocated_date(::std::string* date) {
-  if (date != NULL) {
-    set_has_date();
+inline void Mail::set_allocated_time(::std::string* time) {
+  if (time != NULL) {
+    set_has_time();
   } else {
-    clear_has_date();
+    clear_has_time();
   }
-  date_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), date);
-  // @@protoc_insertion_point(field_set_allocated:PennCloud.Mail.date)
+  time_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), time);
+  // @@protoc_insertion_point(field_set_allocated:PennCloud.Mail.time)
 }
 
 // required string subject = 4;
@@ -529,70 +529,70 @@ inline void Mail::set_allocated_subject(::std::string* subject) {
   // @@protoc_insertion_point(field_set_allocated:PennCloud.Mail.subject)
 }
 
-// required string key = 5;
-inline bool Mail::has_key() const {
+// required string content = 5;
+inline bool Mail::has_content() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
-inline void Mail::set_has_key() {
+inline void Mail::set_has_content() {
   _has_bits_[0] |= 0x00000010u;
 }
-inline void Mail::clear_has_key() {
+inline void Mail::clear_has_content() {
   _has_bits_[0] &= ~0x00000010u;
 }
-inline void Mail::clear_key() {
-  key_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_key();
+inline void Mail::clear_content() {
+  content_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_content();
 }
-inline const ::std::string& Mail::key() const {
-  // @@protoc_insertion_point(field_get:PennCloud.Mail.key)
-  return key_.GetNoArena();
+inline const ::std::string& Mail::content() const {
+  // @@protoc_insertion_point(field_get:PennCloud.Mail.content)
+  return content_.GetNoArena();
 }
-inline void Mail::set_key(const ::std::string& value) {
-  set_has_key();
-  key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:PennCloud.Mail.key)
+inline void Mail::set_content(const ::std::string& value) {
+  set_has_content();
+  content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:PennCloud.Mail.content)
 }
 #if LANG_CXX11
-inline void Mail::set_key(::std::string&& value) {
-  set_has_key();
-  key_.SetNoArena(
+inline void Mail::set_content(::std::string&& value) {
+  set_has_content();
+  content_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:PennCloud.Mail.key)
+  // @@protoc_insertion_point(field_set_rvalue:PennCloud.Mail.content)
 }
 #endif
-inline void Mail::set_key(const char* value) {
+inline void Mail::set_content(const char* value) {
   GOOGLE_DCHECK(value != NULL);
-  set_has_key();
-  key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:PennCloud.Mail.key)
+  set_has_content();
+  content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:PennCloud.Mail.content)
 }
-inline void Mail::set_key(const char* value, size_t size) {
-  set_has_key();
-  key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+inline void Mail::set_content(const char* value, size_t size) {
+  set_has_content();
+  content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:PennCloud.Mail.key)
+  // @@protoc_insertion_point(field_set_pointer:PennCloud.Mail.content)
 }
-inline ::std::string* Mail::mutable_key() {
-  set_has_key();
-  // @@protoc_insertion_point(field_mutable:PennCloud.Mail.key)
-  return key_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+inline ::std::string* Mail::mutable_content() {
+  set_has_content();
+  // @@protoc_insertion_point(field_mutable:PennCloud.Mail.content)
+  return content_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* Mail::release_key() {
-  // @@protoc_insertion_point(field_release:PennCloud.Mail.key)
-  if (!has_key()) {
+inline ::std::string* Mail::release_content() {
+  // @@protoc_insertion_point(field_release:PennCloud.Mail.content)
+  if (!has_content()) {
     return NULL;
   }
-  clear_has_key();
-  return key_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_content();
+  return content_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void Mail::set_allocated_key(::std::string* key) {
-  if (key != NULL) {
-    set_has_key();
+inline void Mail::set_allocated_content(::std::string* content) {
+  if (content != NULL) {
+    set_has_content();
   } else {
-    clear_has_key();
+    clear_has_content();
   }
-  key_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), key);
-  // @@protoc_insertion_point(field_set_allocated:PennCloud.Mail.key)
+  content_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), content);
+  // @@protoc_insertion_point(field_set_allocated:PennCloud.Mail.content)
 }
 
 #ifdef __GNUC__

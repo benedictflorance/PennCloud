@@ -55,9 +55,9 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Mail, from_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Mail, to_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Mail, date_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Mail, time_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Mail, subject_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Mail, key_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::PennCloud::Mail, content_),
   0,
   1,
   2,
@@ -93,12 +93,12 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\nmail.proto\022\tPennCloud\"L\n\004Mail\022\014\n\004from\030"
-      "\001 \002(\t\022\n\n\002to\030\002 \002(\t\022\014\n\004date\030\003 \002(\t\022\017\n\007subje"
-      "ct\030\004 \002(\t\022\013\n\003key\030\005 \002(\t"
+      "\n\nmail.proto\022\tPennCloud\"P\n\004Mail\022\014\n\004from\030"
+      "\001 \002(\t\022\n\n\002to\030\002 \002(\t\022\014\n\004time\030\003 \002(\t\022\017\n\007subje"
+      "ct\030\004 \002(\t\022\017\n\007content\030\005 \002(\t"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 101);
+      descriptor, 105);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "mail.proto", &protobuf_RegisterTypes);
 }
@@ -123,9 +123,9 @@ void Mail::InitAsDefaultInstance() {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int Mail::kFromFieldNumber;
 const int Mail::kToFieldNumber;
-const int Mail::kDateFieldNumber;
+const int Mail::kTimeFieldNumber;
 const int Mail::kSubjectFieldNumber;
-const int Mail::kKeyFieldNumber;
+const int Mail::kContentFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Mail::Mail()
@@ -148,17 +148,17 @@ Mail::Mail(const Mail& from)
   if (from.has_to()) {
     to_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.to_);
   }
-  date_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.has_date()) {
-    date_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.date_);
+  time_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_time()) {
+    time_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.time_);
   }
   subject_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_subject()) {
     subject_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.subject_);
   }
-  key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.has_key()) {
-    key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.key_);
+  content_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_content()) {
+    content_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.content_);
   }
   // @@protoc_insertion_point(copy_constructor:PennCloud.Mail)
 }
@@ -166,9 +166,9 @@ Mail::Mail(const Mail& from)
 void Mail::SharedCtor() {
   from_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   to_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  date_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  time_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   subject_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  content_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 Mail::~Mail() {
@@ -179,9 +179,9 @@ Mail::~Mail() {
 void Mail::SharedDtor() {
   from_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   to_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  date_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  time_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   subject_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  key_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  content_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void Mail::SetCachedSize(int size) const {
@@ -213,13 +213,13 @@ void Mail::Clear() {
       to_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000004u) {
-      date_.ClearNonDefaultToEmptyNoArena();
+      time_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000008u) {
       subject_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000010u) {
-      key_.ClearNonDefaultToEmptyNoArena();
+      content_.ClearNonDefaultToEmptyNoArena();
     }
   }
   _has_bits_.Clear();
@@ -268,16 +268,16 @@ bool Mail::MergePartialFromCodedStream(
         break;
       }
 
-      // required string date = 3;
+      // required string time = 3;
       case 3: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_date()));
+                input, this->mutable_time()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-            this->date().data(), static_cast<int>(this->date().length()),
+            this->time().data(), static_cast<int>(this->time().length()),
             ::google::protobuf::internal::WireFormat::PARSE,
-            "PennCloud.Mail.date");
+            "PennCloud.Mail.time");
         } else {
           goto handle_unusual;
         }
@@ -300,16 +300,16 @@ bool Mail::MergePartialFromCodedStream(
         break;
       }
 
-      // required string key = 5;
+      // required string content = 5;
       case 5: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_key()));
+                input, this->mutable_content()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-            this->key().data(), static_cast<int>(this->key().length()),
+            this->content().data(), static_cast<int>(this->content().length()),
             ::google::protobuf::internal::WireFormat::PARSE,
-            "PennCloud.Mail.key");
+            "PennCloud.Mail.content");
         } else {
           goto handle_unusual;
         }
@@ -363,14 +363,14 @@ void Mail::SerializeWithCachedSizes(
       2, this->to(), output);
   }
 
-  // required string date = 3;
+  // required string time = 3;
   if (cached_has_bits & 0x00000004u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->date().data(), static_cast<int>(this->date().length()),
+      this->time().data(), static_cast<int>(this->time().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "PennCloud.Mail.date");
+      "PennCloud.Mail.time");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      3, this->date(), output);
+      3, this->time(), output);
   }
 
   // required string subject = 4;
@@ -383,14 +383,14 @@ void Mail::SerializeWithCachedSizes(
       4, this->subject(), output);
   }
 
-  // required string key = 5;
+  // required string content = 5;
   if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->key().data(), static_cast<int>(this->key().length()),
+      this->content().data(), static_cast<int>(this->content().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "PennCloud.Mail.key");
+      "PennCloud.Mail.content");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      5, this->key(), output);
+      5, this->content(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -430,15 +430,15 @@ void Mail::SerializeWithCachedSizes(
         2, this->to(), target);
   }
 
-  // required string date = 3;
+  // required string time = 3;
   if (cached_has_bits & 0x00000004u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->date().data(), static_cast<int>(this->date().length()),
+      this->time().data(), static_cast<int>(this->time().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "PennCloud.Mail.date");
+      "PennCloud.Mail.time");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        3, this->date(), target);
+        3, this->time(), target);
   }
 
   // required string subject = 4;
@@ -452,15 +452,15 @@ void Mail::SerializeWithCachedSizes(
         4, this->subject(), target);
   }
 
-  // required string key = 5;
+  // required string content = 5;
   if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->key().data(), static_cast<int>(this->key().length()),
+      this->content().data(), static_cast<int>(this->content().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "PennCloud.Mail.key");
+      "PennCloud.Mail.content");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        5, this->key(), target);
+        5, this->content(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -489,11 +489,11 @@ size_t Mail::RequiredFieldsByteSizeFallback() const {
         this->to());
   }
 
-  if (has_date()) {
-    // required string date = 3;
+  if (has_time()) {
+    // required string time = 3;
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->date());
+        this->time());
   }
 
   if (has_subject()) {
@@ -503,11 +503,11 @@ size_t Mail::RequiredFieldsByteSizeFallback() const {
         this->subject());
   }
 
-  if (has_key()) {
-    // required string key = 5;
+  if (has_content()) {
+    // required string content = 5;
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->key());
+        this->content());
   }
 
   return total_size;
@@ -532,20 +532,20 @@ size_t Mail::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormatLite::StringSize(
         this->to());
 
-    // required string date = 3;
+    // required string time = 3;
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->date());
+        this->time());
 
     // required string subject = 4;
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
         this->subject());
 
-    // required string key = 5;
+    // required string content = 5;
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->key());
+        this->content());
 
   } else {
     total_size += RequiredFieldsByteSizeFallback();
@@ -588,16 +588,16 @@ void Mail::MergeFrom(const Mail& from) {
       to_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.to_);
     }
     if (cached_has_bits & 0x00000004u) {
-      set_has_date();
-      date_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.date_);
+      set_has_time();
+      time_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.time_);
     }
     if (cached_has_bits & 0x00000008u) {
       set_has_subject();
       subject_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.subject_);
     }
     if (cached_has_bits & 0x00000010u) {
-      set_has_key();
-      key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.key_);
+      set_has_content();
+      content_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.content_);
     }
   }
 }
@@ -631,11 +631,11 @@ void Mail::InternalSwap(Mail* other) {
     GetArenaNoVirtual());
   to_.Swap(&other->to_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
-  date_.Swap(&other->date_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  time_.Swap(&other->time_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   subject_.Swap(&other->subject_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
-  key_.Swap(&other->key_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  content_.Swap(&other->content_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
