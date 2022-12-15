@@ -73,7 +73,7 @@ void checkpoint_kvstore_primary()
 {
 	while(true){
 		auto t = UpdateManager::start();
-		this_thread::sleep_for(120s);
+		this_thread::sleep_for(60s);
         // Before starting to checkpoint, send start checkpoint command to other secondaries
         ask_secondaries_to_checkpoint();
         checkpoint_kvstore_secondary();
@@ -101,6 +101,27 @@ void checkpoint_kvstore_secondary()
             }
         }
     }
+    if(max_version != -1)
+    {
+        try 
+        {
+            string earlier_checkpt_file = checkpt_dir + curr_ip_addr + "_checkpoint_" + to_string(max_version);
+            string earlier_checkpt_meta_file = checkpt_meta_dir + curr_ip_addr + "_metadata_" + to_string(max_version);
+            if (std::filesystem::remove(earlier_checkpt_file))
+                std::cout << "file " << earlier_checkpt_file << " deleted.\n";
+            else
+                std::cout << "file " << earlier_checkpt_file << " not found.\n";
+            if (std::filesystem::remove(earlier_checkpt_meta_file))
+                std::cout << "file " << earlier_checkpt_meta_file << " deleted.\n";
+            else
+                std::cout << "file " << earlier_checkpt_meta_file << " not found.\n";
+        }
+        catch(const std::filesystem::filesystem_error& err) 
+        {
+        std::cout << "filesystem error: " << err.what() << '\n';
+        }
+    }
+    max_version = max(max_version, recovered_version);
     fstream checkpt_file(checkpt_dir + curr_ip_addr + "_checkpoint_" + to_string(max_version + 1), ios::out);
     fstream meta_file(checkpt_meta_dir + curr_ip_addr + "_metadata_" + to_string(max_version + 1), ios::out);
     for(auto &rowlock : rowkey_lock)
