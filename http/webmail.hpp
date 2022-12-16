@@ -4,11 +4,11 @@
 #include "http.hpp"
 #include "util.hpp"
 
+#include "deliver-mails.hpp"
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include "deliver-mails.hpp"
 static inline std::vector<std::string_view> split(const std::string_view &s) {
 	std::vector<std::string_view> res;
 	std::size_t start = 0;
@@ -55,10 +55,31 @@ static std::unique_ptr<std::istream> get_email(http::Response &resp) {
 	return std::make_unique<std::istringstream>(std::move(email_buf));
 }
 
+static inline std::string decodeURIComponent(const std::string &inp) {
+	std::string res;
+	res.reserve(inp.size());
+	for (std::size_t i = 0; i < inp.size(); ++i) {
+		if (inp[i] == '%' && i + 2 < inp.size()) {
+			const char c1 = inp[i + 1];
+			const char c2 = inp[i + 2];
+			if (std::isxdigit(c1) && std::isxdigit(c2)) {
+				const char c = (c1 <= '9' ? c1 - '0' : (c1 <= 'F' ? c1 - 'A' + 10 : c1 - 'a' + 10)) * 16 +
+							   (c2 <= '9' ? c2 - '0' : (c2 <= 'F' ? c2 - 'A' + 10 : c2 - 'a' + 10));
+				res.push_back(c);
+				i += 2;
+				continue;
+			}
+		}
+		res.push_back(inp[i]);
+	}
+	return res;
+}
+
 static std::unique_ptr<std::istream> send_email(http::Response &resp) {
 	static unsigned short inc = 0;
 
-	const std::string from = resp.get_username_api() + "@penncloud";
+	const std::string username = resp.get_username_api();
+	const std::string from = username + "@penncloud";
 
 	const std::string bodyc = resp.dump_body();
 	const std::string_view body = bodyc;
@@ -72,48 +93,67 @@ static std::unique_ptr<std::istream> send_email(http::Response &resp) {
 	if (pos2 == std::string::npos) {
 		throw http::Exception(http::Status::BAD_REQUEST, "No emails");
 	}
-	const std::vector<std::string_view> email_vec = split(body.substr(pos + 1, pos2 - pos - 1));
 
 	const std::time_t dt = std::time(nullptr);
+	const std::string subject = bodyc.substr(0, pos);
 
-	const std::string ckey =
-		std::to_string(static_cast<uint64_t>(dt) * 1000 + inc++) + "/" + from + "/" + bodyc.substr(0, pos);
+	const std::string ckey = std::to_string(static_cast<uint64_t>(dt) * 1000 + inc++) + "/" + from + "/" + subject;
 	if (inc == 1000)
 		inc = 0;
 
-	std::vector<std::pair<std::string, std::string_view>> to_emails;
 	const std::string ser = bodyc.substr(pos + 1);
 
-	// 1st pass: check if all users exist
-	for (const auto &email : email_vec) {
-		const auto p = split_email(email);
-		if (p.second == "penncloud") {
-			if (kvstore.get("ACCOUNT", p.first).empty()) {
-				throw http::Exception(http::Status::BAD_REQUEST, "User " + p.first + " does not exist");
-			}
-			to_emails.emplace_back(std::move(p));
-		} else {
-			std::string subject = bodyc.substr(0, pos + 1);
-			auto time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
-			string date = string(ctime(&time_now));
-			const std::string from_str = "From: User at PennCloud <" + from + ">\r\n";
-			const std::string to_str = "To: Friend in External World <" + std::string(email) + ">\r\n";
-			const std::string date_str = "Date: Fri, 16 Dec 2022 16:40:11 -0400\r\n";
-			const std::string subject_str = "Subject: " + subject + "\r\n\r\n";
-			bool suceed = send_nonlocal_email(from, std::string(email), from_str + to_str + date_str + subject_str + ser);
-			if(!suceed) {
-				throw http::Exception(http::Status::BAD_REQUEST, "Email to " + std::string(email) + " failed to send");
-			}
+	// external body
+	std::ostringstream ebody;
+	ebody << "From: " << username << " <" << from << ">\r\n";
+	ebody << "To: ";
 
+	// 1st pass: construct external body
+	std::vector<std::pair<std::string, std::string_view>> to_emails;
+	bool comma = false;
+	for (const auto &email : split(body.substr(pos + 1, pos2 - pos - 1))) {
+		const auto p = split_email(email);
+		if (comma) {
+			ebody << ", ";
+		} else {
+			comma = true;
+		}
+		ebody << p.first << " <" << email << ">";
+		to_emails.emplace_back(std::move(p));
+	}
+	ebody << "\r\n";
+	std::string date = ctime(&dt);
+	date.pop_back();
+	ebody << "Date: " << date << "\r\n";
+	ebody << "Subject: " << decodeURIComponent(subject) << "\r\n";
+	ebody << "\r\n";
+	ebody << body.substr(pos2 + 1);
+
+	// 2nd pass: check emails
+	for (const auto &[to, domain] : to_emails) {
+		if (domain == "penncloud") {
+			if (kvstore.get("ACCOUNT", to).empty()) {
+				throw http::Exception(http::Status::BAD_REQUEST, "User " + to + " does not exist");
+			}
 		}
 	}
 
-	// 2nd pass: send emails
+	const std::string ebody_s = ebody.str();
+	// 3rd pass: send external emails
+	for (const auto &[to, domain] : to_emails) {
+		if (domain != "penncloud") {
+			const std::string email = to + '@' + std::string(domain);
+			bool succeed = send_nonlocal_email(from, email, ebody_s);
+			if (!succeed) {
+				throw http::Exception(http::Status::BAD_REQUEST, "Email to " + email + " failed to send");
+			}
+		}
+	}
+
+	// 4th pass: send internal emails
 	for (const auto &[to, domain] : to_emails) {
 		if (domain == "penncloud") {
 			kvstore.put("MAILBOX_" + to, ckey, ser);
-		} else {
-			// Construct headers
 		}
 	}
 
