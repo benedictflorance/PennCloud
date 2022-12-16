@@ -44,6 +44,7 @@ bool do_read(int fd, char *buf, int len){
   return true;
 }
 
+//function to create log files per server
 void create_log_file(){
 	log_file_name = log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
 	meta_log_file_name = meta_log_dir + "tablet_log_"+ to_string(curr_server_index)+".txt";
@@ -57,6 +58,7 @@ void create_log_file(){
 	create_file(meta_log_file_name);
 }
 
+//function to process requests using Protobuf
 void process_request(string request_str, int client_socket){
 	PennCloud::Request request;
 	request.ParseFromString(request_str);
@@ -108,6 +110,7 @@ void process_request(string request_str, int client_socket){
 	}
 }
 
+//function to execute the client threads
 void process_client_thread(int client_socket)
 {	
 	if(verbose)
@@ -172,6 +175,8 @@ void process_client_thread(int client_socket)
 			//this is the primary server receiving request to WRITE
 			else if(request.command() == "REQUEST"){
 				//locally update
+
+				//Primary assigns a sequence number to the request using the version of the rowkey
 				rowkey_version_lock[request.rowkey()].lock();
 				// Initialize seq to 0 if it sees rkey for first time, else increment
 				if(rowkey_version.find(request.rowkey()) == rowkey_version.end())
@@ -236,6 +241,7 @@ void process_client_thread(int client_socket)
 				thread sec_checkpoint_thread(checkpoint_kvstore_secondary);
 				sec_checkpoint_thread.detach();
 			}
+			//A new server has resurrected, informing servers of the primary
 			else if ((strcasecmp(request.type().c_str(), "NEW_PRIMARY") == 0)){
 				// is new_primary
 				if(stoi(request.modified_server_index()) == curr_server_index)
@@ -260,8 +266,10 @@ void process_client_thread(int client_socket)
 					tablet_server_group[rowkey_range[i]].erase(it);
 				}
 			}
+			//Informing tablet group of the newly resurrected server
 			else if ((strcasecmp(request.type().c_str(), "RESURRECT") == 0)){
 				int resurrected_server_index = stoi(request.modified_server_index());
+				//if the current server is resurrected, follow the recovery protocal by contacting current primary
 				if(resurrected_server_index == curr_server_index)
 				{
 					is_dead = false;				
@@ -279,10 +287,12 @@ void process_client_thread(int client_socket)
 					get_checkpoint_from_primary();
 				}
 			}
+			//if primary, then process RECOVERY request
 			else if ((strcasecmp(request.type().c_str(), "RECOVERY") == 0)){
 				int requesting_server_index = stoi(request.sender_server_index());
 				send_sequence_numbers(requesting_server_index);
 			}
+			//if secondary that's recently resurrected, process reply for RECOVERY
 			else if ((strcasecmp(request.type().c_str(), "RECOVERYREPLY") == 0)){
 				rowkey_version.clear();
 				for(auto item : (*request.mutable_rowkey_version()))

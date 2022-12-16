@@ -2,6 +2,7 @@ void process_config_file(string config_file);
 sockaddr_in get_address(string socket_address);
 void signal_handler(int arg);
 
+//get socket address from string
 sockaddr_in get_address(string socket_address)
 {
     int colon_index = socket_address.find(":");
@@ -31,6 +32,7 @@ sockaddr_in get_address(string socket_address)
     return servaddr;
 }
 
+//process configuration file for master address, tablet address and replica groups per row key
 void process_config_file(string config_file)
 {
     ifstream config_fstream(config_file);
@@ -83,6 +85,7 @@ void process_config_file(string config_file)
     }
     curr_ip_addr = string(inet_ntoa(tablet_addresses[curr_server_index].sin_addr)) + ":" + to_string(ntohs(tablet_addresses[curr_server_index].sin_port));
 }
+//initiliaze primary info per tablet group
 void initialize_primary_info(string config_file)
 {
     ifstream config_fstream(config_file);

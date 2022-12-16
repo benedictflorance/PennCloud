@@ -8,6 +8,7 @@ void grant_secondary(string request_str);
 void request_primary(string request_str);
 bool  do_write(int fd, char *buf, int len);
 
+//check if the message is from a peer replica server in the tablet server group
 bool replica_msg_check(sockaddr_in clientaddr){
     char ip[INET_ADDRSTRLEN];
     uint16_t port;
@@ -24,6 +25,7 @@ bool replica_msg_check(sockaddr_in clientaddr){
     return false;
 }
 
+//function to write
 bool do_write(int fd, char *buf, int len){
   int sent = 0;
   while (sent < len)
@@ -36,6 +38,7 @@ bool do_write(int fd, char *buf, int len){
   return true;
 }
 
+//function to return time
 string get_time(){
     string time_str;
     struct timeval val;
@@ -50,7 +53,7 @@ string get_time(){
     return time_str;
 }
 
-
+//function to find servers in your own replica group
 vector<int> find_my_replica_group(string request_str){
     PennCloud::Request request;
     request.ParseFromString(request_str);
@@ -65,6 +68,7 @@ vector<int> find_my_replica_group(string request_str){
     return my_tablet_server_group;
 }
 
+//find row key range
 pair<int,int> find_rowkey_range(string request_str){
     PennCloud::Request request;
     request.ParseFromString(request_str);
@@ -80,6 +84,7 @@ pair<int,int> find_rowkey_range(string request_str){
     return rkey_range;
 }
 
+//function to update KV store
 string update_kv_store(string request_str, int client_socket){
     PennCloud::Request request;
     request.ParseFromString(request_str);
@@ -141,6 +146,8 @@ string update_kv_store(string request_str, int client_socket){
 
 
     response.SerializeToString(&response_str);
+
+    //if not primary then send an ACK command to the primary informing it about the update
     if(!isPrimary){
         //send an ACK
         cout<<"Sending an ACK to primary"<<endl;
@@ -167,9 +174,7 @@ string update_kv_store(string request_str, int client_socket){
             request.clear_value2();
         string ack_request_str;
         request.SerializeToString(&ack_request_str);
-        //ack_request_str += "\r\n";
         cout<<"Sending ACK"<<endl;
-        //int return_val = write(sockfd, ack_request_str.c_str(), strlen(ack_request_str.c_str()));
         char req_length[11];
         snprintf (req_length, 11, "%10d", ack_request_str.length()); 
         std::string message = std::string(req_length) + ack_request_str;
@@ -179,6 +184,7 @@ string update_kv_store(string request_str, int client_socket){
     return response_str;
 }
 
+//function that primary uses to update secondary's KV stores using a "WRITE" command
 void update_secondary(string request_str){
     PennCloud::Request request;
     request.ParseFromString(request_str);
@@ -278,7 +284,7 @@ void grant_secondary(string request_str){
     }
 }
 
-//send the request to primary
+//send the request to primary to update its own and all secondary's KV store
 void request_primary(string request_str){
     //send a REQUEST to primary
     cout<<"Sending an REQUEST to primary"<<endl;

@@ -4,6 +4,7 @@ void process_put_request(PennCloud::Request &request, PennCloud::Response &respo
 void process_cput_request(PennCloud::Request &request, PennCloud::Response &response);
 void process_delete_request(PennCloud::Request &request, PennCloud::Response &response);
 
+//check if the row key range is accepted by the current tablet server
 bool is_rowkey_accepted(string rowkey)
 {
     int start_letter = (int)(compute_hash(rowkey)[0]);
@@ -15,6 +16,8 @@ bool is_rowkey_accepted(string rowkey)
     }
     return false;
 }
+
+//function for GET request
 void process_get_request(PennCloud::Request &request, PennCloud::Response &response)
 {
     if(!request.has_rowkey() || !request.has_columnkey())
@@ -52,6 +55,7 @@ void process_get_request(PennCloud::Request &request, PennCloud::Response &respo
     }
 }
 
+//function to LIST COL KEYs for admin console
 void process_listcolkey_request(PennCloud::Request &request, PennCloud::Response &response)
 {
     if(!request.has_rowkey())
@@ -84,6 +88,7 @@ void process_listcolkey_request(PennCloud::Request &request, PennCloud::Response
     }
 }
 
+//function to LIST COL KEYs for admin console
 void process_listrowkey_request(PennCloud::Request &request, PennCloud::Response &response)
 {
     for(auto itr: kv_store){
@@ -92,6 +97,7 @@ void process_listrowkey_request(PennCloud::Request &request, PennCloud::Response
     response.set_status("+OK");
 }
 
+//create mutexes per row key
 void create_nonexistent_mutex(string rowkey)
 {
     //create rowkey lock if it doesn't exist
@@ -105,6 +111,8 @@ void create_nonexistent_mutex(string rowkey)
     	rowkeymaplock.unlock();
     }
 }
+
+//function to process put requests
 void process_put_request(PennCloud::Request &request, PennCloud::Response &response)
 {
 
@@ -136,6 +144,8 @@ void process_put_request(PennCloud::Request &request, PennCloud::Response &respo
         rowkey_lock[request.rowkey()].unlock();
     }
 }
+
+//function to process CPUT requests
 void process_cput_request(PennCloud::Request &request, PennCloud::Response &response)
 {
     if(!request.has_rowkey() || !request.has_columnkey() || !request.has_value1() || !request.has_value2())
@@ -181,6 +191,7 @@ void process_cput_request(PennCloud::Request &request, PennCloud::Response &resp
         rowkey_lock[request.rowkey()].unlock();
     }
 }
+//function to process DELETE requests
 void process_delete_request(PennCloud::Request &request, PennCloud::Response &response)
 {
     if(!request.has_rowkey() || !request.has_columnkey())
@@ -218,7 +229,7 @@ void process_delete_request(PennCloud::Request &request, PennCloud::Response &re
         rowkey_lock[request.rowkey()].unlock();
     }
 }
-
+//function to process CREATE storage requests
 void process_create_request(PennCloud::Request &request, PennCloud::Response &response)
 {
     if(!request.has_rowkey() || !request.has_columnkey() || !request.has_value1() || !request.has_value2())
@@ -282,7 +293,7 @@ void process_create_request(PennCloud::Request &request, PennCloud::Response &re
         rowkey_lock[request.rowkey()].unlock();
     }
 }
-
+//function to support RENAMING and MOVING in storage
 void process_rename_request(PennCloud::Request &request, PennCloud::Response &response)
 {
     if(!request.has_rowkey() || !request.has_columnkey() || !request.has_value1() || !request.has_value2())

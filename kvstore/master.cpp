@@ -42,10 +42,14 @@ bool v = false;
 
 int NUM_SERVERS = 9;
 
+//native handlers for the threads
 pthread_t id_heartbeat;
 pthread_t id_frontend;
 
+//config file
 string config_file = "configs/tablet_server_config.txt";
+
+//master address from the config file
 string master_address;
 
 //vector of pair of rowkeyrange: start, end, vector of tablets supporting it
@@ -69,9 +73,12 @@ typedef struct Heartbeat{
 //mapping from tablet server address to heartbeat
 unordered_map<string, Heartbeat > heartbeat;
 
-//primary info  kvst
+//mapping from rowkey to primary
 unordered_map<int, int> rkey_to_primary;
+//keeping track of tablet server group
 unordered_map<int, vector<int> > tablet_server_group;
+
+//getting socket address from tablet address strinh
 sockaddr_in get_address(string socket_address)
 {
     int colon_index = socket_address.find(":");
@@ -98,6 +105,8 @@ sockaddr_in get_address(string socket_address)
     inet_pton(AF_INET, ip_address.c_str(), &(servaddr.sin_addr));
     return servaddr;
 }
+
+//initializing information of primary servers in each tablet group
 void initialize_primary_info(string config_file)
 {
     ifstream config_fstream(config_file);
@@ -286,6 +295,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
   char buffer[100000];
   int msg_size = 0;
   string left_over="";
+  //requests served by master
   string req = "req";
   string alive ="alive";
   string kill = "kill";
@@ -300,6 +310,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
     bzero(buffer, sizeof(buffer));
     msg_size=0;
 
+    //buffering logic
     if(left_over.find(crlf)!= string::npos){
       strcpy(buffer, left_over.c_str()); 
     }
@@ -331,9 +342,11 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
     // if(v){
     //   fprintf(stderr, "[%d] C: %s", comm_fd,buffer);
     // }
+    //converting buffer to lowercase
     for (char &c : lower_case){
       c = to_lowercase(c);
     }
+    //REQ(rowkey) command sent by client to request the tablet server address for the rowkey
     if (lower_case.find(req) != string::npos){
       // capture the string before \r\n and extract argument
       string argument(buffer);
@@ -362,13 +375,14 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
                 cout<<"Found appropriate tablet servers"<<endl;
             }
 
-            //SEG FAULT HERE:
-            //now pick a random server
+            
             vector<int> row_key_tablet_server = pair.second;
             int tablet_servers_size = row_key_tablet_server.size();
+            //if some tablet server is alive in the group
             if(tablet_servers_size!=0){
               //generate a random index from the list of servers
               int index = (int)(rand() % (tablet_servers_size));
+              //now pick a random server
               string tablet_address = tablet_addresses[row_key_tablet_server[index]];
               if(v){
                   fprintf(stderr, "[%d] Generated Index Is: %d \n", comm_fd,index);
@@ -383,17 +397,17 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
               break;
 
             }
+            //else all tablet servers in the group are dead
             else{
               //catch exception
               string servers_dead = "DEAD";
               cout<<servers_dead<<endl;
               do_write(comm_fd, (char *)servers_dead.c_str(), servers_dead.size());
             }
-            
         }
       }
-
     }
+    // if Admin Console sends a kill command
     else if (lower_case.find(kill)!=string::npos){
       // capture the string before \r\n and extract argument
       string argument(buffer);
@@ -431,9 +445,11 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
             }
           }
         }
+        //call the function to assign a new primary
         assign_new_primary(start, end, tablet_server_index);
       }
     }
+    // if Admin Console send a resurrect command
     else if (lower_case.find(resurrect)!=string::npos){
       // capture the string before \r\n and extract argument
       string argument(buffer);
@@ -454,6 +470,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
       
       string tablet_server_index = argument.substr(bracket_start+1,bracket_end-1);
       cout<<"Received unkill for "<<tablet_server_index<<endl;
+      //update your tablet server group to add the newly alive server in the relevant tablet group
       if(!server_status[stoi(tablet_server_index)])
       {
         server_status[stoi(tablet_server_index)] = true;
@@ -479,9 +496,11 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
           }
 
         }      
+        //call the resurrect function to inform the tablet group of the newly resurrected server
         resurrect_server(start, end, tablet_server_index);        
       }
     }
+    // Tracking "ALIVE" commands from tablet servers as heartbeats
     else if(lower_case.find(alive) != string::npos){
         //check which server it is
         string argument(buffer);
@@ -512,6 +531,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
         //   cerr<<"Heartbeat received from "<<str<<" with counter "<<heartbeat[str].counter<<" and timestamp "<<heartbeat[str].timestamp<<endl;
         // }
     }
+    // if Admin Console wants the current server status
     else if(lower_case.find(status)!=string::npos){
 
         string response_str;
@@ -528,6 +548,7 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
         do_write(comm_fd, message.data(), message.length());
 
     }
+    // Unknown Command
     else{
       char unknown[] = "-ERR Unknown command\r\n";
       do_write(comm_fd, unknown, sizeof(unknown)-1);
