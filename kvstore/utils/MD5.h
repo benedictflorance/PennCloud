@@ -22,6 +22,6 @@ string compute_hash(string message)
     hash += "0123456789ABCDEF"[digest[i] / 16];
     hash += "0123456789ABCDEF"[digest[i] % 16];          
   }
-  delete digest;
+  delete[] digest;
   return hash;
 }

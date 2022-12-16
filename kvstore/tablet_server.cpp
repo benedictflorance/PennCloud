@@ -401,7 +401,7 @@ void process_client_thread(int client_socket)
 				process_request(new_request_str, client_socket);
 			}
 		}
-		delete request_buffer;
+		delete[] request_buffer;
 	}
 }
 

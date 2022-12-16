@@ -519,7 +519,6 @@ void *process_client_thread(void *arg)
 		current_buffer = net_buffer;
 		while(*current_buffer != NULL)
 			current_buffer++;
-		delete command_end_index;
 	}
 	close(client_socket);
 	if(verbose)

@@ -91,11 +91,11 @@ void replay_log(string file_name, string metadata_file){
             cout<<request<<" "<<rowk<<" "<<colk<<" "<<v1.size()<<" "<<v2.size()<<endl;
         
         process_request(request, rowk, colk, v1, v2);
-        delete req_char;
-        delete rkey_char;
-        delete ckey_char;
-        delete value1_char;
-        delete value2_char;
+        delete[] req_char;
+        delete[] rkey_char;
+        delete[] ckey_char;
+        delete[] value1_char;
+        delete[] value2_char;
     }
 }
 

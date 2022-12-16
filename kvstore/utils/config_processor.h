@@ -222,9 +222,9 @@ void load_kvstore_from_disk(string ip_addr = curr_ip_addr)
                 kv_store[rkey][ckey] = value;   
             }
             cout<<"rowkey: "<<rkey<< " colkey: "<<ckey<<" value size: "<<value.size()<<endl;
-            delete rkey_char;
-            delete ckey_char;
-            delete value_char;
+            delete[] rkey_char;
+            delete[] ckey_char;
+            delete[] value_char;
         }
         if(verbose)
             cerr<<"Checkpoint loaded into memory with "<<count<<" k-v pairs"<<endl;

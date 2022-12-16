@@ -300,7 +300,7 @@ std::vector<bool> KVstore::list_server_status(){
             std::cout << t.first << " " << t.second<<std::endl;
             list_server.push_back(t.second);
         }
-        delete response_buffer;
+        delete[] response_buffer;
     }
     return list_server;
 }
