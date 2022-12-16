@@ -289,9 +289,13 @@ std::unordered_map<std::string, std::string> Response::parse_www_form() {
 	return parse_params(body);
 }
 
-std::string Session::get_username() const { return username; }
+std::string Session::get_username() {
+	std::lock_guard<std::mutex> _(lock);
+	return username;
+}
 
 void Session::set_username(const std::string &name) {
+	std::lock_guard<std::mutex> _(lock);
 	kvstore.put("SESSION", session_id, name);
 	username = name;
 }

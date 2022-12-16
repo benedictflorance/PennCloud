@@ -1,12 +1,12 @@
 #pragma once
 
+#include <atomic>
 #include <functional>
 #include <istream>
 #include <memory>
+#include <mutex>
 #include <thread>
 #include <unordered_map>
-#include <mutex>
-#include <atomic>
 
 namespace http {
 enum class Method {
@@ -37,7 +37,7 @@ struct Status : std::string_view {
 class Session {
 	std::mutex lock;
 	const std::string session_id;
-	std::atomic<std::string> username;
+	std::string username;
 
   public:
 	Session(const Session &) = delete;
@@ -45,7 +45,7 @@ class Session {
 	Session(const std::string &sid) : session_id(sid) {}
 
 	static std::pair<Session &, bool> get_session(const std::string &cookie);
-	std::string get_username() const;
+	std::string get_username();
 	void set_username(const std::string &username);
 };
 

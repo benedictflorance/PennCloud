@@ -361,23 +361,35 @@ void worker(int comm_fd,struct sockaddr_in clientaddr){
             if(v){
                 cout<<"Found appropriate tablet servers"<<endl;
             }
+
+            //SEG FAULT HERE:
             //now pick a random server
             vector<int> row_key_tablet_server = pair.second;
             int tablet_servers_size = row_key_tablet_server.size();
-            //generate a random index from the list of servers
-            int index = (int)(rand() % (tablet_servers_size));
-            string tablet_address = tablet_addresses[row_key_tablet_server[index]];
-            if(v){
-                fprintf(stderr, "[%d] Generated Index Is: %d \n", comm_fd,index);
-                fprintf(stderr, "[%d] Selected Tablet Server Is: %s \n", comm_fd,tablet_address.c_str());
-            }
+            if(tablet_servers_size!=0){
+              //generate a random index from the list of servers
+              int index = (int)(rand() % (tablet_servers_size));
+              string tablet_address = tablet_addresses[row_key_tablet_server[index]];
+              if(v){
+                  fprintf(stderr, "[%d] Generated Index Is: %d \n", comm_fd,index);
+                  fprintf(stderr, "[%d] Selected Tablet Server Is: %s \n", comm_fd,tablet_address.c_str());
+              }
 
-            do_write(comm_fd, (char *)tablet_address.c_str(), tablet_address.size());
+              do_write(comm_fd, (char *)tablet_address.c_str(), tablet_address.size());
 
-            if(v){
-                fprintf(stderr, "[%d] S: %s", comm_fd,tablet_address.c_str());
+              if(v){
+                  fprintf(stderr, "[%d] S: %s", comm_fd,tablet_address.c_str());
+              }
+              break;
+
             }
-            break;
+            else{
+              //catch exception
+              string servers_dead = "DEAD";
+              cout<<servers_dead<<endl;
+              do_write(comm_fd, (char *)servers_dead.c_str(), servers_dead.size());
+            }
+            
         }
       }
 

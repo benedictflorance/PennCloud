@@ -83,6 +83,10 @@ bool send_nonlocal_email(string sender, string receiver, string email)
     if(sender.find("@") == string::npos)
         return false;
     string sender_domain_name = sender.substr(sender.find("@") + 1, sender.length() - (sender.find("@") + 1));
+    if(receiver_domain_name == "seas.upenn.edu")
+        sender_domain_name = "seas.upenn.edu";
+        sender = sender.substr(0, sender.find("@") + 1) + sender_domain_name;
+
     map<int, string> ip_addresses;
     get_ip_addresses(receiver_domain_name, ip_addresses);
     if(ip_addresses.size() < 1)
@@ -112,7 +116,6 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         int read_return = 0;
         string command_return_val, response;
         memset(response_buffer, 0, sizeof(response_buffer)); 
-        sleep_for(1s);       
         while((read_return = read(sockfd, response_buffer, BUFFER_SIZE)) == 0);
         response = string(response_buffer);
         if(response.length() < 3 || response.substr(0, 3) != "220")
@@ -131,7 +134,6 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         HELO phase
         */
         memset(response_buffer, 0, sizeof(response_buffer));  
-        // sleep_for(1s);
         response.clear();
         string command = "HELO " + sender_domain_name + "\r\n";
         write(sockfd, command.c_str(), strlen(command.c_str()));
@@ -153,7 +155,6 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         MAIL FROM phase
         */
         memset(response_buffer, 0, sizeof(response_buffer));  
-        sleep_for(1s);
         response.clear();
         command = "MAIL FROM:<" + sender +">\r\n";
         write(sockfd, command.c_str(), strlen(command.c_str()));
@@ -175,7 +176,6 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         RCPT TO phase
         */
         memset(response_buffer, 0, sizeof(response_buffer));  
-        sleep_for(1s);
         response.clear();
         command = "RCPT TO:<" + receiver +">\r\n";
         write(sockfd, command.c_str(), strlen(command.c_str()));
@@ -197,7 +197,6 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         DATA phase
         */
         memset(response_buffer, 0, sizeof(response_buffer));  
-        sleep_for(1s);
         response.clear();
         command = "DATA\r\n";
         write(sockfd, command.c_str(), strlen(command.c_str()));
@@ -223,7 +222,6 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         DATA END phase
         */
         memset(response_buffer, 0, sizeof(response_buffer));  
-        sleep_for(1s);
         response.clear();
         command = "\r\n.\r\n";
         write(sockfd, command.c_str(), strlen(command.c_str()));
@@ -249,7 +247,6 @@ bool send_nonlocal_email(string sender, string receiver, string email)
         QUIT phase
         */
         memset(response_buffer, 0, sizeof(response_buffer));  
-        sleep_for(1s);
         response.clear();
         command = "QUIT\r\n";
         write(sockfd, command.c_str(), strlen(command.c_str()));
