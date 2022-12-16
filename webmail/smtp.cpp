@@ -242,12 +242,11 @@ string process_rcpt_to_command(int &client_socket, char* net_buffer, int full_co
 		{
 			string username = email.substr(0, at_index-0);
 			string hostname = email.substr(at_index+1, email.length()-at_index-1);
-			vector<string> colkeys = kvstore.list_colkeys("ACCOUNT");
-			if(strcasecmp(hostname.c_str(), "penncloud") != 0)
+			if(hostname != "penncloud")
 			{
 				response = nonlocal_failure_message;
 			}
-			else if(find(colkeys.begin(), colkeys.end(), username) == colkeys.end())
+			else if(kvstore.get("ACCOUNT", username).empty())
 			{
 				response = mailbox_notfound_message;
 			}
@@ -309,17 +308,30 @@ string process_data_command(int &client_socket, char* net_buffer, int full_comma
 		string time_string = string(ctime(&time_now));
 		string header = "From <" + reverse_path_buffer + "> " + time_string.substr(0, time_string.size() - 1) + "\r\n";
 		bool wrote_atleast_one_email = false; // Set to true only if atleast mail to one recipient succeeds!
+
+		size_t content_begin = mail_data_buffer.find("\r\n\r\n");
+		size_t sub_start = mail_data_buffer.find("Subject: ");
+		size_t sub_end = mail_data_buffer.substr(sub_start + 9).find("\r\n");
+		std::string subject = mail_data_buffer.substr(sub_start + 9, sub_end);
+
+		std::string content;
+
+		bool space = false;
+		for (auto mailbox: forward_path_buffer) {
+			if (space)
+				content += " ";
+			else
+			 	space = true;
+			content += mailbox + "@penncloud";
+		}
+		content += "\n" + mail_data_buffer.substr(content_begin + 4);
+		
 		for(auto mailbox: forward_path_buffer)
 		{	int inc = 0;
 			const std::time_t dt = std::time(nullptr);
-			size_t content_begin = mail_data_buffer.find("\r\n\r\n");
-			size_t sub_start = mail_data_buffer.find("Subject: ");
-			size_t sub_end = mail_data_buffer.substr(sub_start + 9).find("\r\n");
-			std::string subject = mail_data_buffer.substr(sub_start + 9, sub_end);
 			subject = urlEncode(subject);
 			const std::string ckey = std::to_string(static_cast<uint64_t>(dt) * 1000 + inc++) + "/" + reverse_path_buffer + "/" + subject;
 
-			std::string content = mailbox + "@penncloud" + "\r\n" + mail_data_buffer.substr(content_begin + 4);
 			kvstore.put("MAILBOX_" + mailbox, ckey, content);
 			wrote_atleast_one_email = true;
 		}
@@ -371,7 +383,7 @@ void *process_client_thread(void *arg)
 	// We use unordered set to prevent duplicates here!
 	unordered_set<string> forward_path_buffer; 
 	string mail_data_buffer;
-	FILE* fout;
+	FILE* fout = NULL;
 	while(true)
 	{	
 		char *command_end_index;
@@ -400,7 +412,7 @@ void *process_client_thread(void *arg)
 		{
 			const int command_length = 5, suffix_length = 2; // "\r\n" is 2 letters
 			int full_command_length = command_end_index + suffix_length - net_buffer;
-			char* command = new char[command_length]; 
+			char* command = new char[command_length + 1]; 
 			strncpy(command, net_buffer, command_length);
 			command[command_length] = '\0'; 
 			string response;

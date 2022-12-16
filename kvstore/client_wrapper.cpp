@@ -106,7 +106,7 @@ std::pair<std::string, std::string> KVstore::send_request(int sockfd, const std:
     else
         response_str  = std::make_pair(response.value(), response.status()); 
     
-    delete response_buffer; 
+    delete[] response_buffer; 
     return response_str;
 }
 std::pair<std::string, std::string> KVstore::contact_tablet_server(const std::string &type, const std::string &rkey, const std::string &ckey, const std::string &value1, const std::string &value2)

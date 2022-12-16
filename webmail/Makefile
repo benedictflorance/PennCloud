@@ -1,7 +1,4 @@
-TARGETS = webmail
+all: smtp
 
-all: $(TARGETS)
-
-
-webmail: index.cpp 
-	g++ $< mail.pb.cc -O3 ../kvstore/client_wrapper.o  ../http/http_server.cpp ../kvstore/request.pb.cc ../kvstore/response.pb.cc -std=c++17 -Wall -lpthread -lcrypto -lprotobuf  -o $@ 
+smtp: smtp.cpp ../kvstore/libkvstore.a
+	clang++ -g -std=c++17 -Wall -lpthread -lprotobuf -o smtp $^

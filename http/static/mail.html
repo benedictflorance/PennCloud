@@ -249,6 +249,11 @@ ${content}
             switch_tab(2);
         });
 
+        function email_to_pretty(email) {
+            const [name, domain] = email.split("@");
+            return `${name} <${email}>`;
+        }
+
         document.getElementById("fwd-btn").addEventListener("click", function () {
             const active = mails.querySelector(".list-group-item.active");
             if (!active) return;
@@ -265,7 +270,7 @@ ${content}
 
             document.getElementById("input-sub").value = "Fwd: " + sub;
             compose_content.getElementsByTagName('textarea')[0].value = "\n\n---------- Forwarded message ----------\n" +
-                "From: <" + from + ">\n" +
+                "From: " + email_to_pretty(from) + "\n" +
                 "Date: " + t.toLocaleString() + "\n" +
                 "Subject: " + sub + "\n" +
                 "To: " + to + "\n" +
@@ -288,7 +293,7 @@ ${content}
             switch_tab(2);
 
             document.getElementById("input-sub").value = "Re: " + sub;
-            compose_content.getElementsByTagName('textarea')[0].value = "\n\nOn " + t.toLocaleString() + ", <" + from + "> wrote:\n" +
+            compose_content.getElementsByTagName('textarea')[0].value = "\n\nOn " + t.toLocaleString() + ", " + email_to_pretty(from) + " wrote:\n" +
                 mail_content.children[1].textContent.split('\n').map(e => "> " + e).join('\n');
         });
 
@@ -342,8 +347,8 @@ ${content}
                 const header = mail_content.children[0];
                 header.firstElementChild.textContent = sub;
                 const l = header.lastElementChild.children;
-                l[1].textContent = '<' + from + '>';
-                l[3].textContent = to.map(s => '<' + s + '>').join(", ");
+                l[1].textContent = email_to_pretty(from);
+                l[3].textContent = to.map(email_to_pretty).join(", ");
                 l[5].textContent = t.toString();
 
                 mail_content.children[1].textContent = body;
@@ -371,7 +376,7 @@ ${content}
                     const [t, from, sub] = parse_key(key);
                     mails.insertAdjacentHTML("beforeend", `<button type="button" class="list-group-item list-group-item-action">
 <div class="d-flex align-items-center justify-content-between"><strong class="mb-1 text-truncate">${sub}</strong><small>${t.toLocaleString()}</small></div>
-<div class="text-truncate mb-1 small">${from}</div>
+<div class="text-truncate mb-1 small"><i>From</i> ${email_to_pretty(from).replace('<', '&lt;').replace('>', '&gt;')}</div>
 </button>`);
                     const c = mails.lastElementChild;
                     c.dataset["key"] = key;
