@@ -82,7 +82,7 @@ static std::unique_ptr<std::istream> send_email(http::Response &resp) {
 		inc = 0;
 
 	std::vector<std::pair<std::string, std::string_view>> to_emails;
-	const std::string ser = bodyc.substr(pos2 + 1);
+	const std::string ser = bodyc.substr(pos + 1);
 
 	// 1st pass: check if all users exist
 	for (const auto &email : email_vec) {
@@ -110,10 +110,8 @@ static std::unique_ptr<std::istream> send_email(http::Response &resp) {
 
 	// 2nd pass: send emails
 	for (const auto &[to, domain] : to_emails) {
-		std::string reconstruct = to + "@";
-		reconstruct += domain;
 		if (domain == "penncloud") {
-			kvstore.put("MAILBOX_" + to, ckey, reconstruct + "\r\n" + ser);
+			kvstore.put("MAILBOX_" + to, ckey, ser);
 		} else {
 			// Construct headers
 		}
