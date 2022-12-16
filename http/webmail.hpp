@@ -90,8 +90,8 @@ static std::unique_ptr<std::istream> send_email(http::Response &resp) {
 		if (p.second == "penncloud") {
 			if (kvstore.get("ACCOUNT", p.first).empty()) {
 				throw http::Exception(http::Status::BAD_REQUEST, "User " + p.first + " does not exist");
-						to_emails.emplace_back(std::move(p));
 			}
+			to_emails.emplace_back(std::move(p));
 		} else {
 			std::string subject = bodyc.substr(0, pos + 1);
 			auto time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
