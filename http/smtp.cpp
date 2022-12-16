@@ -110,6 +110,31 @@ void signal_handler(int arg)
 	}
 	exit(-1);
 }
+
+// Encode subjects so the server doesn't fail to retrieve the value
+std::string urlEncode(std::string str){
+    std::string new_str = "";
+    char c;
+    int ic;
+    const char* chars = str.c_str();
+    char bufHex[10];
+    int len = str.length();
+    for(int i=0;i<len;i++){
+        c = chars[i];
+        ic = c;
+    	if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') new_str += c;
+        else {
+            sprintf(bufHex,"%X",c);
+            if(ic < 16) 
+                new_str += "%0"; 
+            else
+                new_str += "%";
+            new_str += bufHex;
+        }
+    }
+    return new_str;
+ }
+
 /*
 	HELO command is used to identify the sender-SMTP to the receiver-SMTP.  The argument field contains 
 	the host name of the sender-SMTP.
@@ -291,6 +316,7 @@ string process_data_command(int &client_socket, char* net_buffer, int full_comma
 			size_t sub_start = mail_data_buffer.find("Subject: ");
 			size_t sub_end = mail_data_buffer.substr(sub_start + 9).find("\r\n");
 			std::string subject = mail_data_buffer.substr(sub_start + 9, sub_end);
+			subject = urlEncode(subject);
 			const std::string ckey = std::to_string(static_cast<uint64_t>(dt) * 1000 + inc++) + "/" + reverse_path_buffer + "/" + subject;
 
 			std::string content = mailbox + "@penncloud" + "\r\n" + mail_data_buffer.substr(content_begin + 4);
