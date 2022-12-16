@@ -279,11 +279,11 @@ void process_client_thread(int client_socket)
 					get_checkpoint_from_primary();
 				}
 			}
-			else if ((strcasecmp(request.type().c_str(), "SEQUENCE") == 0)){
+			else if ((strcasecmp(request.type().c_str(), "RECOVERY") == 0)){
 				int requesting_server_index = stoi(request.sender_server_index());
 				send_sequence_numbers(requesting_server_index);
 			}
-			else if ((strcasecmp(request.type().c_str(), "SEQUENCEREPLY") == 0)){
+			else if ((strcasecmp(request.type().c_str(), "RECOVERYREPLY") == 0)){
 				rowkey_version.clear();
 				for(auto item : (*request.mutable_rowkey_version()))
 				{
