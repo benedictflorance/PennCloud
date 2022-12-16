@@ -1,0 +1,47 @@
+Full name: Andrew Zhao Benedict Florance Arockioraj Hanbang Wang Namita Shukla
+SEAS login: anzhao benarock hanbangw nashukla
+
+Which features did you implement? 
+  (list features, or write 'Entire Project')
+  Entire Project
+
+Did you complete any extra-credit tasks? If so, which ones?
+  (list extra-credit tasks)
+  1.1 KV supports larger files
+  1.2 Interactive and Elaborate UI
+
+Did you personally write _all_ the code you are submitting
+(other than code from the course web page)?
+  [X] Yes
+  [ ] No
+
+Did you copy any code from the Internet, or from classmates?
+  [ ] Yes
+  [X] No
+
+Did you collaborate with anyone on this assignment?
+  [ ] Yes
+  [X] No
+
+
+Instructions to run the KV store:
+1. cd kvstore
+2. make
+3. Run the master server: ./master -v
+4. Run the 9 tablet servers: 
+./tablet_server -v configs/tablet_server_config.txt 0 & ./tablet_server -v configs/tablet_server_config.txt 1 & ./tablet_server -v configs/tablet_server_config.txt 2 & ./tablet_server -v configs/tablet_server_config.txt 3 & ./tablet_server -v configs/tablet_server_config.txt 4 & ./tablet_server -v configs/tablet_server_config.txt 5 & ./tablet_server -v configs/tablet_server_config.txt 6 & ./tablet_server -v configs/tablet_server_config.txt 7 & ./tablet_server -v configs/tablet_server_config.txt 
+5. We use protobuf for our tablet server requests.
+6. For more information on installation and KV store, see kvstore/README
+
+Instructions to run the frontend servers:
+1. cd http
+2. cd balancer
+3. Run load balancer: ./load_balancer config.txt
+4. cd ..
+5. make
+6. run HTTP servers: ./web_server <port>
+7. ports supported are
+    12450
+    12451
+    12452
+    12453
