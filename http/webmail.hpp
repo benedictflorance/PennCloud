@@ -97,7 +97,7 @@ static std::unique_ptr<std::istream> send_email(http::Response &resp) {
 			auto time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
 			string date = string(ctime(&time_now));
 			const std::string from_str = "From: User at PennCloud <" + from + ">\r\n";
-			const std::string to_str = "To: Friend in External World <" + to + ">\r\n";
+			const std::string to_str = "To: Friend in External World <" + std::string(email) + ">\r\n";
 			const std::string date_str = "Date: Fri, 16 Dec 2022 16:40:11 -0400\r\n";
 			const std::string subject_str = "Subject: " + subject + "\r\n\r\n";
 			bool suceed = send_nonlocal_email(from, std::string(email), from_str + to_str + date_str + subject_str + ser);
