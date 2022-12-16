@@ -33,7 +33,7 @@ void ask_sequence_numbers()
     }
     string request_str;
     PennCloud::Request request;
-    request.set_type("SEQUENCE");
+    request.set_type("RECOVERY");
     request.set_isserver("true");
     request.set_sender_server_index(to_string(curr_server_index));
     request.SerializeToString(&request_str);
@@ -59,7 +59,7 @@ void send_sequence_numbers(int requesting_server_index)
     }
     string request_str;
     PennCloud::Request request;
-    request.set_type("SEQUENCEREPLY");
+    request.set_type("RECOVERYREPLY");
     request.set_isserver("true");
     for(auto item : rowkey_version)
     {

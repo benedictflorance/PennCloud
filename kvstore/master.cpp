@@ -646,12 +646,62 @@ void alive(){
                 if(v){
                     cout<<"DEAD server detected "<<h.first<<endl;
                 }
-                server_status[current_h.server_index] = false;
                 h.second.status = "DEAD";
+                // We detect a dead server
+                // If dead server is already killed according to server_status, it means it was killed via webpage. If not it is killed via terminal
+                if(server_status[current_h.server_index] != false)
+                {
+                  server_status[current_h.server_index] = false;
+                  int start, end;
+                  bool primary_crash = false;
+                  for(auto &nested_pair: rowkey_range){
+                    vector<int> &current_group =   nested_pair.second.second;
+                    auto it = find(current_group.begin(),current_group.end(), current_h.server_index);
+                    if(it!=current_group.end()){
+                      start = nested_pair.first;
+                      end = nested_pair.second.first;
+                      current_group.erase(it);
+                      if(rkey_to_primary[toKey(start, end)] == current_h.server_index){
+                          rkey_to_primary[toKey(start, end)] = current_group[0]; 
+                          primary_crash = true;
+                      }
+                    }
+                  }
+                  assign_new_primary(start, end, to_string(current_h.server_index));
+                }
             }
             else{
                 h.second.status = "ALIVE";
-                server_status[current_h.server_index] = true;
+                // We detect a dead server
+                // If dead server is already alive according to the server_status, 
+                // it means it was recovered via webpage (no more action needed). If not it recovered via terminal.
+                if(server_status[current_h.server_index] != true)
+                {
+                  server_status[current_h.server_index] = true;
+
+                  vector<pair<int, int>> matching_rowkeys;
+                  int start, end;
+                  for(auto &nested_pair: original_rowkey_range){
+                    vector<int> &current_group =   nested_pair.second.second;
+                    auto it = find(current_group.begin(),current_group.end(), current_h.server_index);
+                    if(it != current_group.end()){
+                      start = nested_pair.first;
+                      end = nested_pair.second.first;
+                      matching_rowkeys.push_back(make_pair(nested_pair.first, nested_pair.second.first));
+                    }
+                  }
+                  for(auto &nested_pair: rowkey_range){
+                    vector<int> &current_group =   nested_pair.second.second;
+                    auto it = find(current_group.begin(),current_group.end(), current_h.server_index);
+                    int rkey_start = nested_pair.first, rkey_end = nested_pair.second.first;
+                    if(find(matching_rowkeys.begin(), matching_rowkeys.end(), pair<int, int> (rkey_start, rkey_end)) != matching_rowkeys.end())
+                    {
+                      current_group.push_back(current_h.server_index);
+                    }
+
+                  }      
+                  resurrect_server(start, end, to_string(current_h.server_index));        
+                }
             }
         }
     }   

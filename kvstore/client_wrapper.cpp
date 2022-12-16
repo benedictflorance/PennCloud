@@ -167,7 +167,6 @@ std::pair<std::string, std::string> KVstore::process_kvstore_request(const std::
             std::string tablet_ip_str = std::string(response_buffer);
             // Cache it 
             std::cout<<"Client connected to: "<<tablet_ip_str<<std::endl;
-            std::cout<<"Client connected to length:"<<tablet_ip_str.length()<<std::endl;
             if(tablet_ip_str == "DEAD"){
                 std::cout<<"All servers are dead :("<<std::endl;
                 response_str= std::make_pair("", "-DEAD");
