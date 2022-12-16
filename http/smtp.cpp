@@ -242,12 +242,12 @@ string process_rcpt_to_command(int &client_socket, char* net_buffer, int full_co
 		{
 			string username = email.substr(0, at_index-0);
 			string hostname = email.substr(at_index+1, email.length()-at_index-1);
-			vector<string> rowkeys = kvstore.list_rowkeys();
+			vector<string> colkeys = kvstore.list_colkeys("ACCOUNT");
 			if(strcasecmp(hostname.c_str(), "penncloud") != 0)
 			{
 				response = nonlocal_failure_message;
 			}
-			else if(find(rowkeys.begin(), rowkeys.end(), "ACCOUNT_" + username) == rowkeys.end())
+			else if(find(colkeys.begin(), colkeys.end(), username) == colkeys.end())
 			{
 				response = mailbox_notfound_message;
 			}
