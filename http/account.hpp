@@ -51,6 +51,7 @@ static std::unique_ptr<std::istream> signup(http::Response &resp) {
 	if (kvstore.cput("ACCOUNT", username, "", password)) {
 		kvstore.put("STORAGE_" + username, "c", "0");
 		kvstore.put("STORAGE_" + username, "0", "/");
+		kvstore.put("MAILBOX_" + username, "", "");
 		resp.session.set_username(username);
 		return nullptr;
 	}
