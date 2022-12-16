@@ -313,6 +313,11 @@ string process_data_command(int &client_socket, char* net_buffer, int full_comma
 		size_t sub_start = mail_data_buffer.find("Subject: ");
 		size_t sub_end = mail_data_buffer.substr(sub_start + 9).find("\r\n");
 		std::string subject = mail_data_buffer.substr(sub_start + 9, sub_end);
+		subject = urlEncode(subject);
+		const std::time_t dt = std::time(nullptr);
+		static int inc = 0;
+		const std::string ckey = std::to_string(static_cast<uint64_t>(dt) * 1000 + inc++) + "/" + reverse_path_buffer + "/" + subject;
+		inc %= 1000;
 
 		std::string content;
 
@@ -327,10 +332,7 @@ string process_data_command(int &client_socket, char* net_buffer, int full_comma
 		content += "\n" + mail_data_buffer.substr(content_begin + 4);
 		
 		for(auto mailbox: forward_path_buffer)
-		{	int inc = 0;
-			const std::time_t dt = std::time(nullptr);
-			subject = urlEncode(subject);
-			const std::string ckey = std::to_string(static_cast<uint64_t>(dt) * 1000 + inc++) + "/" + reverse_path_buffer + "/" + subject;
+		{
 
 			kvstore.put("MAILBOX_" + mailbox, ckey, content);
 			wrote_atleast_one_email = true;
