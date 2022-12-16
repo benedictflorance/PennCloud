@@ -247,7 +247,7 @@ string process_rcpt_to_command(int &client_socket, char* net_buffer, int full_co
 			{
 				response = nonlocal_failure_message;
 			}
-			else if(find(rowkeys.begin(), rowkeys.end(), "MAILBOX_" + username) == rowkeys.end())
+			else if(find(rowkeys.begin(), rowkeys.end(), "ACCOUNT_" + username) == rowkeys.end())
 			{
 				response = mailbox_notfound_message;
 			}
